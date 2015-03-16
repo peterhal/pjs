@@ -1,6 +1,6 @@
 <?hh // strict
 
-require_once 'Characters.hh';
+require_once 'Char.hh';
 
 class LineMap
 {
@@ -15,11 +15,11 @@ class LineMap
     for ($index = 0; $index < strlen($values); $index++)
     {
       $char = ord($values[$index]);
-      if (Characters::isNewLine($char))
+      if (Char::isNewLine($char))
       {
-        if ($char == Characters::CARRIAGE_RETURN
+        if ($char == Char::CARRIAGE_RETURN
             && $index + 1 < strlen($values)
-            && $values[$index + 1] == Characters::LINE_FEED)
+            && $values[$index + 1] == Char::LINE_FEED)
         {
           $index++;
         }

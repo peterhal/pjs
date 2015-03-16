@@ -1,79 +1,10 @@
 <?hh //strict
 
-require_once 'Characters.hh';
+require_once 'Char.hh';
 require_once 'ErrorReporter.hh';
+require_once 'LexerBase.hh';
 require_once 'Location.hh';
 require_once 'SourceFile.hh';
-
-class LexerBase
-{
-  protected function __construct(
-    protected SourceFile $file,
-    protected ErrorReporter $reporter)
-  {
-    $this->offset = 0;
-  }
-
-  protected function location(): Location
-  {
-    return $this->file->location($this->offset);
-  }
-
-  protected function next(): int
-  {
-    $result = $this->peek();
-    $this->offset++;
-    return $result;
-  }
-
-  protected function peekCharOffset(int $ch, int $offset): bool
-  {
-    return $this->peekOffset($offset) == $ch;
-  }
-
-  protected function peekChar(int $ch): bool
-  {
-    return $this->peekCharOffset($ch, 0);
-  }
-
-  protected function peek(): int
-  {
-    return $this->peekOffset(0);
-  }
-
-  protected function peekOffset(int $offset): int
-  {
-    $index = $this->offset + $offset;
-    if ($index < $this->count()) {
-      return ord($this->contents()[$index]);
-    } else {
-      return Characters::EOF;
-    }
-  }
-
-  protected function contents(): string
-  {
-    return $this->file->contents();
-  }
-
-  protected function count(): int
-  {
-    return $this->file->count();
-  }
-
-  protected function eof(): bool
-  {
-    return $this->offset >= $this->count();
-  }
-
-  protected function error(string $message): void
-  {
-    $formattedMessage = $this->location()->toString() . ": " . $message;
-    $this->reporter->error($formattedMessage);
-  }
-
-  protected int $offset;
-}
 
 class Lexer extends LexerBase
 {
@@ -100,7 +31,155 @@ class Lexer extends LexerBase
   public function nextToken(): Token
   {
     $this->skipWhitespaceAndComments();
+    $start = $this->offset;
+    $peek = () ==> $this->peek();
+    $peekChar = $char ==> $this->peekChar($char);
+    $next = () ==> $this->next();
+    $ch = $next();
+
+    $create = $kind ==> $this->createToken($start, $kind);
+    switch ($ch)
+    {
+    case Char::EOF: return $create(TokenKind::EOF);
+
+    case Char::OPEN_SQUARE: return $create(TokenKind::OPEN_SQUARE);
+    case Char::CLOSE_SQUARE: return $create(TokenKind::CLOSE_SQUARE);
+    case Char::OPEN_PAREN: return $create(TokenKind::OPEN_PAREN);
+    case Char::CLOSE_PAREN: return $create(TokenKind::CLOSE_PAREN);
+    case Char::OPEN_CURLY: return $create(TokenKind::OPEN_CURLY);
+    case Char::CLOSE_CURLY: return $create(TokenKind::CLOSE_CURLY);
+    case Char::PERIOD: 
+      if ($peekChar(Char::EQUAL)) {
+        $next();
+        return $create(TokenKind::PERIOD_EQUAL);
+      }
+      return $create(TokenKind::PERIOD);
+    case Char::MINUS:
+      switch ($peek())
+      {
+      case Char::CLOSE_ANGLE: $next(); return $create(TokenKind::ARROW);
+      case Char::MINUS: $next(); return $create(TokenKind::MINUS_MINUS);
+      case Char::EQUAL: $next(); return $create(TokenKind::MINUS_EQUAL);
+      default: return $create(TokenKind::MINUS);
+      }
+    case Char::PLUS:
+      switch ($peek())
+      {
+      case Char::PLUS: $next(); return $create(TokenKind::PLUS_PLUS);
+      case Char::EQUAL: $next(); return $create(TokenKind::PLUS_EQUAL);
+      default: return $create(TokenKind::PLUS);
+      }
+    case Char::STAR:
+      switch ($peek())
+      {
+      case Char::STAR:
+        $next();
+        if ($peekChar(Char::EQUAL)) {
+          $next();
+          return $create(TokenKind::STAR_STAR_EQUAL);
+        }
+        return $create(TokenKind::PLUS_PLUS);
+      case Char::EQUAL: $next(); return $create(TokenKind::STAR_EQUAL);
+      default: return $create(TokenKind::STAR);
+      }
+    case Char::TILDE: return $create(TokenKind::TILDE);
+    case Char::BANG:
+      if ($peekChar(Char::EQUAL)) {
+        $next();
+        if ($peekChar(Char::EQUAL)) {
+          $next();
+          return $create(TokenKind::BANG_EQUAL_EQUAL);
+        }
+        return $create(TokenKind::BANG_EQUAL);
+      }
+      return $create(TokenKind::BANG);
+    case Char::DOLLAR: return $create(TokenKind::DOLLAR);
+    case Char::FORWARD_SLASH:
+      if ($peekChar(Char::EQUAL)) {
+        $next();
+        return $create(TokenKind::SLASH_EQUAL);
+      }
+      return $create(TokenKind::FORWARD_SLASH);
+    case Char::PERCENT:
+      if ($peekChar(Char::EQUAL)) {
+        $next();
+        return $create(TokenKind::PERCENT_EQUAL);
+      }
+      return $create(TokenKind::PERCENT);
+    case Char::OPEN_ANGLE:
+      switch ($peek()) 
+      {
+      case Char::OPEN_ANGLE:
+        $next();
+        if ($peekChar(Char::EQUAL)) {
+          $next();
+          return $create(TokenKind::LEFT_SHIFT_EQUAL);
+        }
+        return $create(TokenKind::LEFT_SHIFT);
+      case Char::EQUAL: return $create(TokenKind::LESS_EQUAL);
+      default: return $create(TokenKind::OPEN_ANGLE);
+      }
+    case Char::CLOSE_ANGLE:
+      switch ($peek())
+      {
+      case Char::EQUAL: $next(); return $create(TokenKind::GREATER_EQUAL);
+      case Char::CLOSE_ANGLE:
+        $next();
+        if ($peekChar(Char::EQUAL)) {
+          $next();
+          return $create(TokenKind::RIGHT_SHIFT_EQUAL);
+        }
+        return $create(TokenKind::RIGHT_SHIFT);
+      default: return $create(TokenKind::CLOSE_ANGLE);
+      }
+    case Char::EQUAL:
+      if ($peekChar(Char::EQUAL)) {
+        $next();
+        if ($peekChar(Char::EQUAL)) {
+          $next();
+          return $create(TokenKind::EQUAL_EQUAL_EQUAL);
+        }
+        return $create(TokenKind::EQUAL_EQUAL);
+      }
+      return $create(TokenKind::EQUAL);
+    case Char::HAT:
+      if ($peekChar(Char::EQUAL)) {
+        $next();
+        return $create(TokenKind::HAT_EQUAL);
+      }
+      return $create(TokenKind::HAT);
+    case Char::BAR:
+      switch ($peek())
+      {
+      case Char::BAR: $next(); return $create(TokenKind::BAR_BAR);
+      case Char::EQUAL: $next(); return $create(TokenKind::BAR_EQUAL);
+      default: return $create(TokenKind::BAR);
+      }
+    case Char::AMPERSAND:
+      switch ($peek())
+      {
+      case Char::AMPERSAND: $next(); return $create(TokenKind::AMPERSAND_AMPERSAND);
+      case Char::EQUAL: $next(); return $create(TokenKind::AMPERSAND_EQUAL);
+      default: return $create(TokenKind::AMPERSAND);
+      }
+      case Char::QUESTION: return $create(TokenKind::QUESTION);
+      case Char::COLON: return $create(TokenKind::COLON);
+      case Char::SEMI_COLON: return $create(TokenKind::SEMI_COLON);
+      case Char::COMMA: return $create(TokenKind::COMMA);
+    }
+
     return new Token($this->location(), TokenKind::EOF);
+  }
+
+  private function createToken(int $start, TokenKind $kind): Token
+  {
+    return new Token($this->createRange($start), $kind);
+  }
+
+  private function createRange(int $start): Location
+  {
+    // TODO: Range
+    return $this->file->location($start); 
   }
 
   private function skipWhitespaceAndComments(): void
@@ -112,24 +191,24 @@ class Lexer extends LexerBase
 
   private function skipWhitespace(): void
   {
-    while (!$this->eof() && Characters::isWhitespace($this->peek())) {
+    while (!$this->eof() && Char::isWhitespace($this->peek())) {
       $this->next();
     }
   }
 
   private function skipComment(): bool
   {
-    if ($this->peekChar(Characters::HASH)) {
+    if ($this->peekChar(Char::HASH)) {
       $this->next();
       $this->skipToEndOfLine();
       return true;
-    } else if ($this->peekChar(Characters::FORWARD_SLASH)) {
-      if ($this->peekCharOffset(Characters::FORWARD_SLASH, 1)) {
+    } else if ($this->peekChar(Char::FORWARD_SLASH)) {
+      if ($this->peekCharOffset(Char::FORWARD_SLASH, 1)) {
         $this->next();
         $this->next();
         $this->skipToEndOfLine();
         return true;
-      } else if ($this->peekCharOffset(Characters::STAR, 1)) {
+      } else if ($this->peekCharOffset(Char::STAR, 1)) {
         $this->next();
         $this->next();
         $this->skipToEndOfDelimitedComment();
@@ -142,7 +221,7 @@ class Lexer extends LexerBase
 
   private function skipToEndOfLine(): void
   {
-    while (!$this->eof() && !Characters::isNewLine($this->peek())) {
+    while (!$this->eof() && !Char::isNewLine($this->peek())) {
       $this->next();
     }
   }
@@ -153,8 +232,8 @@ class Lexer extends LexerBase
         $this->error("Expected end of delimited comment.");
         return;
       }
-      if ($this->peekCharOffset(Characters::STAR, 0)
-        && $this->peekCharOffset(Characters::FORWARD_SLASH, 1)) {
+      if ($this->peekCharOffset(Char::STAR, 0)
+        && $this->peekCharOffset(Char::FORWARD_SLASH, 1)) {
         $this->next();
         $this->next();
         return;
