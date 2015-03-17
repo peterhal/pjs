@@ -17,7 +17,7 @@ function main(array<string> $argv) : int
 
   $tokens = Lexer::lexFile($file, new ConsoleErrorReporter());
   for ($i = 0; $i < $tokens->count(); $i++) {
-    var_dump($tokens[$i]);
+    var_dump($tokens[$i]->kind());
   }
 
   return 0;

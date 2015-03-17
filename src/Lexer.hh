@@ -6,6 +6,7 @@ require_once 'Keywords.hh';
 require_once 'LexerBase.hh';
 require_once 'Location.hh';
 require_once 'SourceFile.hh';
+require_once 'Token.hh';
 
 class Lexer extends LexerBase
 {
