@@ -16,6 +16,9 @@ function main(array<string> $argv) : int
   fwrite(STDOUT, $file->contents());
 
   $tokens = Lexer::lexFile($file, new ConsoleErrorReporter());
+  for ($i = 0; $i < $tokens->count(); $i++) {
+    var_dump($tokens[$i]);
+  }
 
   return 0;
 }

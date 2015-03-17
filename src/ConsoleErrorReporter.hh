@@ -6,6 +6,6 @@ class ConsoleErrorReporter implements ErrorReporter
 {
   public function error(string $message): void
   {
-    fwrite(STDERR, $message);
+    fwrite(STDERR, $message . "\n");
   }
 }

@@ -26,7 +26,11 @@ class Lexer extends LexerBase
   public function lexAll(): Vector<Token>
   {
     $this->skipWhitespaceAndComments();
-    return Vector{};
+    $result = Vector{};
+    while (!$this->eof()) {
+      $result->add($this->nextToken());
+    }
+    return $result;
   }
 
   public function nextToken(): Token
