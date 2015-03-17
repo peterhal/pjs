@@ -23,6 +23,10 @@ class Char
   const int MINUS = 0x2D; // -
   const int PERIOD = 0x2E; // .
   const int FORWARD_SLASH = 0x2F; // /
+  const int ZERO = 0x30; // 0
+  const int ONE = 0x31; // 1
+  const int SEVEN = 0x37; // 7
+  const int NINE = 0x39; // 9
   const int COLON = 0x3A; // :
   const int SEMI_COLON = 0x3B; // ;
   const int OPEN_ANGLE = 0x3C; // <
@@ -30,11 +34,23 @@ class Char
   const int CLOSE_ANGLE = 0x3E; // >
   const int QUESTION = 0x3F; // ?
   const int AT = 0x40; // @
+  const int A = 0x41; // A
+  const int B = 0x42; // B
+  const int E = 0x45; // E
+  const int F = 0x46; // F
+  const int X = 0x58; // X
+  const int Z = 0x5A; // Z
   const int OPEN_SQUARE = 0x5B; // [
   const int BACK_SLASH = 0x5C; // \
   const int CLOSE_SQUARE = 0x5D; // ]
   const int HAT = 0x5E; // ^
   const int UNDERSCORE = 0x5F; // _
+  const int a = 0x61; // a
+  const int b = 0x62; // b
+  const int e = 0x65; // e
+  const int f = 0x66; // f
+  const int x = 0x78; // x
+  const int z = 0x7A; // z
   const int OPEN_CURLY = 0x7B; // {
   const int BAR = 0x7C; // |
   const int CLOSE_CURLY = 0x7D; // }
@@ -56,5 +72,61 @@ class Char
     default:
       return false;
     }
+  }
+
+  public static function isHexDigit(int $ch): bool
+  {
+    return Char::isDigit($ch)
+      || ($ch >= Char::A && $ch <= Char::F)
+      || ($ch >= Char::a && $ch <= Char::f);
+  }
+
+  public static function hexDigitValue(int $ch): int
+  {
+    return (Char::isDigit($ch) 
+      ? Char::digitValue($ch)
+      : ($ch <= Char::F 
+        ? $ch - Char::F + 10
+        : $ch - Char::f + 10));
+  }
+
+  public static function digitValue(int $ch) : int
+  {
+    return $ch - Char::ZERO;
+  }
+
+  public static function isDigit(int $ch): bool
+  {
+    return $ch >= Char::ZERO
+      && $ch <= Char::NINE;
+  }
+
+  public static function isOctalDigit(int $ch): bool
+  {
+    return $ch >= Char::ZERO
+      && $ch <= Char::SEVEN;
+  }
+
+  public static function isBinaryDigit(int $ch): bool
+  {
+    return $ch === Char::ZERO || $ch === Char::ONE;
+  }
+
+  public static function isNonDigit(int $ch): bool
+  {
+    return $ch === Char::UNDERSCORE
+      || ($ch >= Char::A && $ch <= Char::Z)
+      || ($ch >= Char::a && $ch <= Char::z);
+  }
+
+  public static function isNameNonDigit(int $ch): bool
+  { 
+    return Char::isNonDigit($ch)
+      || ($ch >= 0x7F && $ch <= 0xFF);
+  }
+
+  public static function isName(int $ch): bool
+  {
+    return Char::isNameNonDigit($ch) || Char::isDigit($ch);
   }
 }

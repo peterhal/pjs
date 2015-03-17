@@ -2,6 +2,7 @@
 
 require_once 'Char.hh';
 require_once 'ErrorReporter.hh';
+require_once 'Keywords.hh';
 require_once 'LexerBase.hh';
 require_once 'Location.hh';
 require_once 'SourceFile.hh';
@@ -93,7 +94,11 @@ class Lexer extends LexerBase
         return $create(TokenKind::BANG_EQUAL);
       }
       return $create(TokenKind::BANG);
-    case Char::DOLLAR: return $create(TokenKind::DOLLAR);
+    case Char::DOLLAR: 
+      if (Char::isNameNonDigit($peek())) {
+        return $this->lexVariableName($start);
+      }
+      return $create(TokenKind::DOLLAR);
     case Char::FORWARD_SLASH:
       if ($peekChar(Char::EQUAL)) {
         $next();
@@ -111,7 +116,11 @@ class Lexer extends LexerBase
       {
       case Char::OPEN_ANGLE:
         $next();
-        if ($peekChar(Char::EQUAL)) {
+        switch ($peek()) {
+        case Char::OPEN_ANGLE:
+          $next();
+          return $this->lexMultiLineString($start);
+        case Char::EQUAL:
           $next();
           return $create(TokenKind::LEFT_SHIFT_EQUAL);
         }
@@ -166,9 +175,189 @@ class Lexer extends LexerBase
       case Char::COLON: return $create(TokenKind::COLON);
       case Char::SEMI_COLON: return $create(TokenKind::SEMI_COLON);
       case Char::COMMA: return $create(TokenKind::COMMA);
+      case Char::SINGLE_QUOTE:
+        return $this->lexSingleQuotedString($start);
+      case Char::DOUBLE_QUOTE:
+        return $this->lexDoubleQuotedString($start);
+      default:
+        if (Char::isNameNonDigit($ch)) {
+          return $this->lexName($start, $ch);
+        } elseif (Char::isDigit($ch)) {
+          return $this->lexNumber($start, $ch);
+        }
     }
 
     return new Token($this->location(), TokenKind::EOF);
+  }
+
+  private function lexMultiLineString(int $start): Token
+  {
+    // TODO
+    return $this->createToken($start, TokenKind::STRING);
+  }
+
+  private function lexDoubleQuotedString(int $start): Token
+  {
+    $value = '';
+    while ($this->eof() && $this->peek() !== Char::DOUBLE_QUOTE) {
+      if ($this->peekChar(Char::BACK_SLASH)) {
+        $value .= chr($this->next());
+        // TODO: Escape sequences.
+      }
+      $value .= chr($this->next());
+    }
+    if ($this->eof()) {
+      $this->errorOffset($start, "Unterminated double quoted string.");
+    }
+
+    return $this->createToken($start, TokenKind::STRING);
+  }
+
+  private function lexSingleQuotedString(int $start): Token
+  {
+    $value = '';
+    while ($this->eof() && $this->peek() !== Char::SINGLE_QUOTE) {
+      if ($this->peekChar(Char::BACK_SLASH)) {
+        $this->next();
+      }
+      $value .= chr($this->next());
+    }
+    if ($this->eof()) {
+      $this->errorOffset($start, "Unterminated single quoted string.");
+    }
+
+    return $this->createToken($start, TokenKind::STRING);
+  }
+
+  private function lexNumber(int $start, int $firstChar): Token
+  {
+    if ($firstChar === Char::ZERO) {
+      switch ($this->peek())
+      {
+      case Char::X:
+      case Char::x:
+        return $this->lexHexLiteral($start);
+      case Char::B:
+      case Char::b:
+        return $this->lexBinaryLiteral($start);
+      default:
+        return $this->lexOctalLiteral($start);
+      }
+    }
+
+    $divisor = 1;
+    $value = Char::digitValue($firstChar);
+    while (Char::isDigit($this->peek())) {
+      $value *= 10;
+      $divisor *= 10;
+      $value += Char::digitValue($this->next());
+    }
+    if ($this->peek() === Char::PERIOD) {
+      $this->next();
+      while (Char::isDigit($this->peek())) {
+        $value *= 10;
+        $value += Char::digitValue($this->next());
+      }
+    }
+
+    $exponent = 0;
+    if ($this->peek() === Char::E || $this->peek() === Char::e) {
+      $this->next();
+      $sign = 1;
+      switch ($this->peek())
+      {
+      case Char::PLUS:
+        $this->next();
+        break;
+      case Char::MINUS:
+        $this->next();
+        $sign = -1;
+        break;
+      }
+      if (!Char::isDigit($this->peek())) {
+        $this->error("Missing exponent.");
+      } else {
+        $exponent = Char::digitValue($this->next());
+      }
+      while (Char::isDigit($this->peek())) {
+        $exponent *= 10;
+        $exponent += Char::digitValue($this->next());
+      }
+    }
+
+    return $this->createToken($start, TokenKind::NUMBER);
+  }
+
+  private function lexHexLiteral(int $start): Token
+  {
+    $this->next(); // x or X
+    if (!Char::isHexDigit($this->peek())) {
+      $this->error("Missing hex digit.");
+      $value = 0;
+    } else {
+      $value = Char::hexDigitValue($this->next());
+    }
+    while (Char::isHexDigit($this->peek())) {
+      $value <<= 4;
+      $value += Char::hexDigitValue($this->next());
+    }
+    // TODO: NumberToken
+    return $this->createToken($start, TokenKind::NUMBER);
+  }
+
+  private function lexOctalLiteral(int $start): Token
+  {
+    $this->next(); // 0
+    $value = 0;
+    while (Char::isOctalDigit($this->peek())) {
+      $value <<= 3;
+      $value += Char::digitValue($this->next());
+    }
+    // TODO: NumberToken
+    return $this->createToken($start, TokenKind::NUMBER);
+  }
+
+  private function lexBinaryLiteral(int $start): Token
+  {
+    $this->next(); // b or B
+    if (!Char::isBinaryDigit($this->peek())) {
+      $this->error("Missing binary digit.");
+      $value = 0;
+    } else {
+      $value = Char::digitValue($this->next());
+    }
+    while (Char::isBinaryDigit($this->peek())) {
+      $value <<= 1;
+      $value += Char::digitValue($this->next());
+    }
+    // TODO: NumberToken
+    return $this->createToken($start, TokenKind::NUMBER);
+  }
+
+  private function lexVariableName(int $start): Token
+  {
+    $value = '$';
+    while (Char::isName($this->peek())) {
+      $value .= chr($this->next());
+    }
+
+    // TODO: new VariableNameToken
+    return $this->createToken($start, TokenKind::VARIABLE_NAME);
+  }
+
+  private function lexName(int $start, int $firstChar): Token
+  {
+    $value = chr($firstChar);
+    while (Char::isName($this->peek())) {
+      $value .= chr($this->next());
+    }
+
+    if (Keywords::isKeyword($value)) {
+      return $this->createToken($start, Keywords::getKeyword($value));
+    }
+
+    // TODO: new NameToken
+    return $this->createToken($start, TokenKind::NAME);
   }
 
   private function createToken(int $start, TokenKind $kind): Token

@@ -56,4 +56,65 @@ enum TokenKind : int
   HAT_EQUAL = 49;
   BAR_EQUAL = 50;
   COMMA = 51;
+
+  NAME = 52;
+  VARIABLE_NAME = 53;
+  NUMBER = 54;
+  STRING = 55;
+
+  // Keywords
+  ABSTRACT = 100;
+  ARRAYKEY = 101;
+  AS = 102;
+  ASYNC = 103;
+  BREAK = 104;
+  CASE = 105;
+  CATCH = 106;
+  CLASS = 107;
+  CLONE = 108;
+  CONST = 109;
+  CONTINUE = 110;
+  DEFAULT = 111;
+  DO = 112;
+  ECHO = 113;
+  ELSE = 114;
+  ELSEIF = 115;
+  ENUM = 116;
+  EXTENDS = 117;
+  FINAL = 118;
+  FINALLY = 119;
+  FOR = 120;
+  FOREACH = 121;
+  FUNCTION = 122;
+  IF = 123;
+  IMPLEMENTS = 124;
+  INSTANCEOF = 125;
+  INSTEADOF = 126;
+  INTERFACE = 127;
+  MIXED = 128;
+  NAMESPACE = 129;
+  NEW = 130;
+  NEWTYPE = 131;
+  NUM = 132;
+  PRIVATE = 133;
+  PROTECTED = 134;
+  PUBLIC = 135;
+  REQUIRE = 136;
+  REQUIRE_ONCE = 137;
+  RETURN = 138;
+  SHAPE = 139;
+  STATIC = 140;
+  SWITCH = 141;
+  THROW = 142;
+  TRAIT = 143;
+  TRY = 144;
+  TUPLE = 145;
+  TYPE = 146;
+  USE = 147;
+  WHILE = 148;
+  YIELD = 149;
+ 
+  FALSE = 150;
+  NULL = 151;
+  TRUE = 152;
 }

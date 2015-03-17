@@ -14,9 +14,14 @@ class LexerBase
     $this->offset = 0;
   }
 
+  protected function locationOfOffset(int $offset): Location
+  {
+    return $this->file->location($offset);
+  }
+
   protected function location(): Location
   {
-    return $this->file->location($this->offset);
+    return $this->locationOfOffset($this->offset);
   }
 
   protected function next(): int
@@ -68,7 +73,12 @@ class LexerBase
 
   protected function error(string $message): void
   {
-    $formattedMessage = $this->location()->toString() . ": " . $message;
+    $this->errorOffset($this->offset, $message);
+  }
+
+  protected function errorOffset(int $offset, string $message): void
+  {
+    $formattedMessage = $this->locationOfOffset($offset)->toString() . ": " . $message;
     $this->reporter->error($formattedMessage);
   }
 
