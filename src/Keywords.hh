@@ -1,6 +1,7 @@
 <?hh // strict
 
 require_once 'TokenKind.hh';
+require_once 'utils.hh';
 
 class Keywords
 {
@@ -59,78 +60,70 @@ class Keywords
   const string KW_NULL = 'null';
   const string KW_TRUE = 'true';
 
-  private static Map<string, TokenKind> $all = Map {};
+  private static Map<string, TokenKind> $all = Map {
+    Keywords::KW_ABSTRACT => TokenKind::KW_ABSTRACT,
+    Keywords::KW_ARRAYKEY => TokenKind::KW_ARRAYKEY,
+    Keywords::KW_AS => TokenKind::KW_AS,
+    Keywords::KW_ASYNC => TokenKind::KW_ASYNC,
+    Keywords::KW_BREAK => TokenKind::KW_BREAK,
+    Keywords::KW_CASE => TokenKind::KW_CASE,
+    Keywords::KW_CATCH => TokenKind::KW_CATCH,
+    Keywords::KW_CLASS => TokenKind::KW_CLASS,
+    Keywords::KW_CLONE => TokenKind::KW_CLONE,
+    Keywords::KW_CONST => TokenKind::KW_CONST,
+    Keywords::KW_CONTINUE => TokenKind::KW_CONTINUE,
+    Keywords::KW_DEFAULT => TokenKind::KW_DEFAULT,
+    Keywords::KW_DO => TokenKind::KW_DO,
+    Keywords::KW_ECHO => TokenKind::KW_ECHO,
+    Keywords::KW_ELSE => TokenKind::KW_ELSE,
+    Keywords::KW_ELSEIF => TokenKind::KW_ELSEIF,
+    Keywords::KW_ENUM => TokenKind::KW_ENUM,
+    Keywords::KW_EXTENDS => TokenKind::KW_EXTENDS,
+    Keywords::KW_FINAL => TokenKind::KW_FINAL,
+    Keywords::KW_FINALLY => TokenKind::KW_FINALLY,
+    Keywords::KW_FOR => TokenKind::KW_FOR,
+    Keywords::KW_FOREACH => TokenKind::KW_FOREACH,
+    Keywords::KW_FUNCTION => TokenKind::KW_FUNCTION,
+    Keywords::KW_IF => TokenKind::KW_IF,
+    Keywords::KW_IMPLEMENTS => TokenKind::KW_IMPLEMENTS,
+    Keywords::KW_INSTANCEOF => TokenKind::KW_INSTANCEOF,
+    Keywords::KW_INSTEADOF => TokenKind::KW_INSTEADOF,
+    Keywords::KW_INTERFACE => TokenKind::KW_INTERFACE,
+    Keywords::KW_MIXED => TokenKind::KW_MIXED,
+    Keywords::KW_NAMESPACE => TokenKind::KW_NAMESPACE,
+    Keywords::KW_NEW => TokenKind::KW_NEW,
+    Keywords::KW_NEWTYPE => TokenKind::KW_NEWTYPE,
+    Keywords::KW_NUM => TokenKind::KW_NUM,
+    Keywords::KW_PRIVATE => TokenKind::KW_PRIVATE,
+    Keywords::KW_PROTECTED => TokenKind::KW_PROTECTED,
+    Keywords::KW_PUBLIC => TokenKind::KW_PUBLIC,
+    Keywords::KW_REQUIRE => TokenKind::KW_REQUIRE,
+    Keywords::KW_REQUIRE_ONCE => TokenKind::KW_REQUIRE_ONCE,
+    Keywords::KW_RETURN => TokenKind::KW_RETURN,
+    Keywords::KW_SHAPE => TokenKind::KW_SHAPE,
+    Keywords::KW_STATIC => TokenKind::KW_STATIC,
+    Keywords::KW_SWITCH => TokenKind::KW_SWITCH,
+    Keywords::KW_THROW => TokenKind::KW_THROW,
+    Keywords::KW_TRAIT => TokenKind::KW_TRAIT,
+    Keywords::KW_TRY => TokenKind::KW_TRY,
+    Keywords::KW_TUPLE => TokenKind::KW_TUPLE,
+    Keywords::KW_TYPE => TokenKind::KW_TYPE,
+    Keywords::KW_USE => TokenKind::KW_USE,
+    Keywords::KW_WHILE => TokenKind::KW_WHILE,
+    Keywords::KW_YIELD => TokenKind::KW_YIELD,
 
-  private static function initialize(): void
-  {
-    Keywords::$all->set(Keywords::KW_ABSTRACT, TokenKind::KW_ABSTRACT);
-    Keywords::$all->set(Keywords::KW_ARRAYKEY, TokenKind::KW_ARRAYKEY);
-    Keywords::$all->set(Keywords::KW_AS, TokenKind::KW_AS);
-    Keywords::$all->set(Keywords::KW_ASYNC, TokenKind::KW_ASYNC);
-    Keywords::$all->set(Keywords::KW_BREAK, TokenKind::KW_BREAK);
-    Keywords::$all->set(Keywords::KW_CASE, TokenKind::KW_CASE);
-    Keywords::$all->set(Keywords::KW_CATCH, TokenKind::KW_CATCH);
-    Keywords::$all->set(Keywords::KW_CLASS, TokenKind::KW_CLASS);
-    Keywords::$all->set(Keywords::KW_CLONE, TokenKind::KW_CLONE);
-    Keywords::$all->set(Keywords::KW_CONST, TokenKind::KW_CONST);
-    Keywords::$all->set(Keywords::KW_CONTINUE, TokenKind::KW_CONTINUE);
-    Keywords::$all->set(Keywords::KW_DEFAULT, TokenKind::KW_DEFAULT);
-    Keywords::$all->set(Keywords::KW_DO, TokenKind::KW_DO);
-    Keywords::$all->set(Keywords::KW_ECHO, TokenKind::KW_ECHO);
-    Keywords::$all->set(Keywords::KW_ELSE, TokenKind::KW_ELSE);
-    Keywords::$all->set(Keywords::KW_ELSEIF, TokenKind::KW_ELSEIF);
-    Keywords::$all->set(Keywords::KW_ENUM, TokenKind::KW_ENUM);
-    Keywords::$all->set(Keywords::KW_EXTENDS, TokenKind::KW_EXTENDS);
-    Keywords::$all->set(Keywords::KW_FINAL, TokenKind::KW_FINAL);
-    Keywords::$all->set(Keywords::KW_FINALLY, TokenKind::KW_FINALLY);
-    Keywords::$all->set(Keywords::KW_FOR, TokenKind::KW_FOR);
-    Keywords::$all->set(Keywords::KW_FOREACH, TokenKind::KW_FOREACH);
-    Keywords::$all->set(Keywords::KW_FUNCTION, TokenKind::KW_FUNCTION);
-    Keywords::$all->set(Keywords::KW_IF, TokenKind::KW_IF);
-    Keywords::$all->set(Keywords::KW_IMPLEMENTS, TokenKind::KW_IMPLEMENTS);
-    Keywords::$all->set(Keywords::KW_INSTANCEOF, TokenKind::KW_INSTANCEOF);
-    Keywords::$all->set(Keywords::KW_INSTEADOF, TokenKind::KW_INSTEADOF);
-    Keywords::$all->set(Keywords::KW_INTERFACE, TokenKind::KW_INTERFACE);
-    Keywords::$all->set(Keywords::KW_MIXED, TokenKind::KW_MIXED);
-    Keywords::$all->set(Keywords::KW_NAMESPACE, TokenKind::KW_NAMESPACE);
-    Keywords::$all->set(Keywords::KW_NEW, TokenKind::KW_NEW);
-    Keywords::$all->set(Keywords::KW_NEWTYPE, TokenKind::KW_NEWTYPE);
-    Keywords::$all->set(Keywords::KW_NUM, TokenKind::KW_NUM);
-    Keywords::$all->set(Keywords::KW_PRIVATE, TokenKind::KW_PRIVATE);
-    Keywords::$all->set(Keywords::KW_PROTECTED, TokenKind::KW_PROTECTED);
-    Keywords::$all->set(Keywords::KW_PUBLIC, TokenKind::KW_PUBLIC);
-    Keywords::$all->set(Keywords::KW_REQUIRE, TokenKind::KW_REQUIRE);
-    Keywords::$all->set(Keywords::KW_REQUIRE_ONCE, TokenKind::KW_REQUIRE_ONCE);
-    Keywords::$all->set(Keywords::KW_RETURN, TokenKind::KW_RETURN);
-    Keywords::$all->set(Keywords::KW_SHAPE, TokenKind::KW_SHAPE);
-    Keywords::$all->set(Keywords::KW_STATIC, TokenKind::KW_STATIC);
-    Keywords::$all->set(Keywords::KW_SWITCH, TokenKind::KW_SWITCH);
-    Keywords::$all->set(Keywords::KW_THROW, TokenKind::KW_THROW);
-    Keywords::$all->set(Keywords::KW_TRAIT, TokenKind::KW_TRAIT);
-    Keywords::$all->set(Keywords::KW_TRY, TokenKind::KW_TRY);
-    Keywords::$all->set(Keywords::KW_TUPLE, TokenKind::KW_TUPLE);
-    Keywords::$all->set(Keywords::KW_TYPE, TokenKind::KW_TYPE);
-    Keywords::$all->set(Keywords::KW_USE, TokenKind::KW_USE);
-    Keywords::$all->set(Keywords::KW_WHILE, TokenKind::KW_WHILE);
-    Keywords::$all->set(Keywords::KW_YIELD, TokenKind::KW_YIELD);
-
-    Keywords::$all->set(Keywords::KW_FALSE, TokenKind::KW_FALSE);
-    Keywords::$all->set(Keywords::KW_NULL, TokenKind::KW_NULL);
-    Keywords::$all->set(Keywords::KW_TRUE, TokenKind::KW_TRUE);
-  }
+    Keywords::KW_FALSE => TokenKind::KW_FALSE,
+    Keywords::KW_NULL => TokenKind::KW_NULL,
+    Keywords::KW_TRUE => TokenKind::KW_TRUE
+  };
 
   public static function isKeyword(string $value): bool
   {
-    if (Keywords::$all->isEmpty()) {
-      Keywords::initialize();
-    }
     return Keywords::$all->containsKey($value);
   }
 
   public static function getKeyword(string $value): TokenKind
   {
-    // TODO
-    return TokenKind::EOF;
-    // return Keywords::$all->get($value);
+    return nullthrows(Keywords::$all->get($value));
   }
 }
