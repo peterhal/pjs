@@ -60,7 +60,9 @@ enum TokenKind : int
   NAME = 52;
   VARIABLE_NAME = 53;
   NUMBER = 54;
-  STRING = 55;
+  SINGLE_QUOTED_STRING = 55;
+  DOUBLE_QUOTED_STRING = 56;
+  MULTI_LINE_STRING = 57;
 
   // Keywords
   KW_ABSTRACT = 100;

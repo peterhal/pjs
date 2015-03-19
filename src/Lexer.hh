@@ -198,13 +198,13 @@ class Lexer extends LexerBase
   private function lexMultiLineString(int $start): Token
   {
     // TODO
-    return $this->createToken($start, TokenKind::STRING);
+    return $this->createToken($start, TokenKind::MULTI_LINE_STRING);
   }
 
   private function lexDoubleQuotedString(int $start): Token
   {
     $value = '';
-    while ($this->eof() && $this->peek() !== Char::DOUBLE_QUOTE) {
+    while (!$this->eof() && !$this->peekChar(Char::DOUBLE_QUOTE)) {
       if ($this->peekChar(Char::BACK_SLASH)) {
         $value .= chr($this->next());
         // TODO: Escape sequences.
@@ -213,15 +213,17 @@ class Lexer extends LexerBase
     }
     if ($this->eof()) {
       $this->errorOffset($start, "Unterminated double quoted string.");
+    } else {
+      $this->next();
     }
 
-    return $this->createToken($start, TokenKind::STRING);
+    return $this->createToken($start, TokenKind::DOUBLE_QUOTED_STRING);
   }
 
   private function lexSingleQuotedString(int $start): Token
   {
     $value = '';
-    while ($this->eof() && $this->peek() !== Char::SINGLE_QUOTE) {
+    while (!$this->eof() && !$this->peekChar(Char::SINGLE_QUOTE)) {
       if ($this->peekChar(Char::BACK_SLASH)) {
         $this->next();
       }
@@ -229,9 +231,11 @@ class Lexer extends LexerBase
     }
     if ($this->eof()) {
       $this->errorOffset($start, "Unterminated single quoted string.");
+    } else {
+      $this->next();
     }
 
-    return $this->createToken($start, TokenKind::STRING);
+    return $this->createToken($start, TokenKind::SINGLE_QUOTED_STRING);
   }
 
   private function lexNumber(int $start, int $firstChar): Token
