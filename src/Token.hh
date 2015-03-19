@@ -3,9 +3,9 @@
 class Token
 {
   public function __construct(
-    private Location $location,
+    private Range $range,
     private TokenKind $kind)
   {}
-  public function location(): Location { return $this->location; }
+  public function range(): Range { return $this->range; }
   public function kind(): TokenKind { return $this->kind; }
 }

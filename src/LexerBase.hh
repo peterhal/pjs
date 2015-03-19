@@ -3,6 +3,7 @@
 require_once 'Char.hh';
 require_once 'ErrorReporter.hh';
 require_once 'Location.hh';
+require_once 'Range.hh';
 require_once 'SourceFile.hh';
 
 class LexerBase
@@ -12,6 +13,18 @@ class LexerBase
     protected ErrorReporter $reporter)
   {
     $this->offset = 0;
+  }
+
+  protected function range(int $start, int $end): Range
+  {
+    return new Range(
+      $this->locationOfOffset($start),
+      $this->locationOfOffset($end));
+  }
+
+  protected function currentRange(int $start): Range
+  {
+    return $this->range($start, $this->offset);
   }
 
   protected function locationOfOffset(int $offset): Location

@@ -192,7 +192,7 @@ class Lexer extends LexerBase
         }
     }
 
-    return new Token($this->location(), TokenKind::EOF);
+    return new Token($this->currentRange($start), TokenKind::EOF);
   }
 
   private function lexMultiLineString(int $start): Token
@@ -371,13 +371,7 @@ class Lexer extends LexerBase
 
   private function createToken(int $start, TokenKind $kind): Token
   {
-    return new Token($this->createRange($start), $kind);
-  }
-
-  private function createRange(int $start): Location
-  {
-    // TODO: Range
-    return $this->file->location($start); 
+    return new Token($this->currentRange($start), $kind);
   }
 
   private function skipWhitespaceAndComments(): void
