@@ -16,10 +16,13 @@ function main(array<string> $argv) : int
   $file = SourceFile::read($filename);
   fwrite(STDOUT, $file->contents());
 
-  $tokens = Lexer::lexFile($file, new ConsoleErrorReporter());
+  $reporter = new ConsoleErrorReporter();
+  $tokens = Lexer::lexFile($file, $reporter);
   for ($i = 0; $i < $tokens->count(); $i++) {
     var_dump(TokenKind::getNames()[$tokens[$i]->kind()]);
   }
+
+  $tree = Parser::parse($tokens, $reporter);
 
   return 0;
 }

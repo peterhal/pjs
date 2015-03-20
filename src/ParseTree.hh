@@ -19,3 +19,40 @@ class ScriptTree extends ParseTree
     parent::__construct($range, ParseTreeKind::SCRIPT);
   }
 }
+
+class RequireMultipleDirectiveTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $includeFilename)
+  {
+    parent::__construct(
+      $range,
+      ParseTreeKind::REQUIRE_MULTIPLE_DIRECTIVE);
+  }
+}
+
+class RequireOnceDirectiveTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $includeFilename)
+  {
+    parent::__construct(
+      $range,
+      ParseTreeKind::REQUIRE_ONCE_DIRECTIVE);
+  }
+}
+
+class LiteralTree extends ParseTree
+{
+    public function __construct(
+      Range $range,
+      public Token $value)
+    {
+      parent::__construct(
+        $range,
+        ParseTreeKind::LITERAL);
+    }
+}
+

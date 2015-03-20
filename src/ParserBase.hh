@@ -13,15 +13,15 @@ class ParserBase
     $this->index = 0;
   }
 
-  protected function eat(TokenKind $kind): bool
+  protected function eat(TokenKind $kind): Token
   {
     if ($this->peek() === $kind) {
-      $this->next();
-      return true;
+      $result = $this->next();
+      return $result;
     } else {
       // TODO: Better message.
       $this->error("Expected " . TokenKind::getNames()[$kind]);
-      return false;
+      return $this->next();
     }
   }
 
@@ -29,11 +29,11 @@ class ParserBase
   {
     $peek = $this->peekToken();
     if ($peek->kind() !== TokenKind::NAME) {
-      $this->error("Expected name \'" . $name . "\'.");
+      $this->error("Expected name '" . $name . "'.");
       return false;
     } else if ($peek->asName()->value() !== $name) {
-      $this->error("Expected name \'" . $name
-        . "\'. Found \'" . $peek->asName()->value() . "\'.");
+      $this->error("Expected name '" . $name
+        . "'. Found '" . $peek->asName()->value() . "'.");
       return false;
     } else {
       $this->next();
@@ -59,7 +59,7 @@ class ParserBase
   protected function next(): Token
   {
     $result = $this->peekToken();
-    $this->index;
+    $this->index++;
     return $result;
   }
 
