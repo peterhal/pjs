@@ -100,12 +100,53 @@ class CompoundStatementTree extends ParseTree
   }
 }
 
-class ThisTypeTree extends ParseTree
+class PredefinedNameTypeTree extends ParseTree
 {
   public function __construct(
     Range $range,
     public Token $token)
   {
-    parent::__construct($range, ParseTreeKind::THIS_TYPE);
+    parent::__construct($range, ParseTreeKind::PREDEFINED_NAME_TYPE);
   }
 }
+
+class KeywordTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Token $token)
+  {
+    parent::__construct($range, ParseTreeKind::KEYWORD_TYPE);
+  }
+}
+
+class NullableTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $type)
+  {
+    parent::__construct($range, ParseTreeKind::NULLABLE_TYPE);
+  }
+}
+
+class ArrayTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?ParseTree $typeArguments)
+  {
+    parent::__construct($range, ParseTreeKind::ARRAY_TYPE);
+  }
+}
+
+class TypeArgumentsTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $types)
+  {
+    parent::__construct($range, ParseTreeKind::TYPE_ARGUMENTS_TYPE);
+  }
+}
+

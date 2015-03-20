@@ -35,14 +35,14 @@ class ParserBase
     }
   }
 
-  protected function peekPredefinedName(PredefinedName $name): bool
+  protected function peekPredefinedName(string $name): bool
   {
     $peek = $this->peekToken();
     return $peek->kind() === TokenKind::NAME && 
-      $peek->asName()->value() !== $name;
+      $peek->asName()->value() === $name;
   }
 
-  protected function eatPredefinedName(PredefinedName $name): Token
+  protected function eatPredefinedName(string $name): Token
   {
     $peek = $this->peekToken();
     if ($peek->kind() !== TokenKind::NAME) {
@@ -76,9 +76,14 @@ class ParserBase
     }
   }
 
+  protected function peekTokenIndex(int $index): Token
+  {
+    return $this->tokens[$this->index + $index];
+  }
+
   protected function peekToken(): Token
   {
-    return $this->tokens[$this->index];
+    return $this->peekTokenIndex(0);
   }
 
   protected function peekKind(TokenKind $kind): bool
@@ -86,9 +91,14 @@ class ParserBase
     return $this->peek() === $kind;
   }
 
+  protected function peekIndex(int $index): TokenKind
+  {
+    return $this->peekTokenIndex($index)->kind();
+  }
+
   protected function peek(): TokenKind
   {
-    return $this->peekToken()->kind();
+    return $this->peekIndex(0);
   }
 
   protected function next(): Token
