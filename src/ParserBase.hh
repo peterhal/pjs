@@ -25,19 +25,54 @@ class ParserBase
     }
   }
 
-  protected function eatName(PredefinedName $name): bool
+  protected function eatOpt(TokenKind $kind): bool
+  {
+    if ($this->peek() === $kind) {
+      $result = $this->next();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  protected function peekPredefinedName(PredefinedName $name): bool
+  {
+    $peek = $this->peekToken();
+    return $peek->kind() === TokenKind::NAME && 
+      $peek->asName()->value() !== $name;
+  }
+
+  protected function eatPredefinedName(PredefinedName $name): Token
   {
     $peek = $this->peekToken();
     if ($peek->kind() !== TokenKind::NAME) {
       $this->error("Expected name '" . $name . "'.");
-      return false;
     } else if ($peek->asName()->value() !== $name) {
       $this->error("Expected name '" . $name
         . "'. Found '" . $peek->asName()->value() . "'.");
-      return false;
+    }
+    return $this->next();
+  }
+
+  protected function eatName(): NameToken
+  {
+    $token = $this->eat(TokenKind::NAME);
+    if ($token instanceof NameToken) {
+      return $token;
     } else {
-      $this->next();
-      return true;
+      // TODO: String value?
+      return new NameToken($token->range(), '');
+    }
+  }
+
+  protected function eatVariableName(): VariableNameToken
+  {
+    $token = $this->eat(TokenKind::VARIABLE_NAME);
+    if ($token instanceof VariableNameToken) {
+      return $token;
+    } else {
+      // TODO: String value?
+      return new VariableNameToken($token->range(), '');
     }
   }
 

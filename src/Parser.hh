@@ -31,7 +31,7 @@ class Parser extends ParserBase
     // <?hh
     $this->eat(TokenKind::OPEN_ANGLE);
     $this->eat(TokenKind::QUESTION);
-    $this->eatName(PredefinedName::hh);
+    $this->eatPredefinedName(PredefinedName::hh);
     // TODO: Check for whitespace
 
     // TODO: CHeck for //strict
@@ -62,6 +62,9 @@ class Parser extends ParserBase
     switch ($this->peek()) {
     case TokenKind::KW_REQUIRE:
     case TokenKind::KW_REQUIRE_ONCE:
+    case TokenKind::KW_FUNCTION:
+    case TokenKind::KW_ASYNC:
+    case TokenKind::LEFT_SHIFT: // attributes
       return true;
     default:
       // TODO
@@ -76,6 +79,12 @@ class Parser extends ParserBase
       return $this->parseRequireMultipleDirective();
     case TokenKind::KW_REQUIRE_ONCE:
       return $this->parseRequireOnceDirective();
+    case TokenKind::KW_ASYNC:
+    case TokenKind::KW_FUNCTION:
+      return $this->parseFunctionDefinition();
+    case TokenKind::LEFT_SHIFT:
+      // TODO: attributes
+      throw new Exception();
     default:
       // TODO
       throw new Exception();
@@ -88,6 +97,7 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::KW_REQUIRE_ONCE);
     $includeFilename = $this->parseExpression();
+    // TODO: SPEC missing ; in grammar
     $this->eat(TokenKind::SEMI_COLON);
 
     return new RequireOnceDirectiveTree(
@@ -101,6 +111,7 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::KW_REQUIRE);
     $includeFilename = $this->parseExpression();
+    // TODO: SPEC missing ; in grammar
     $this->eat(TokenKind::SEMI_COLON);
 
     return new RequireMultipleDirectiveTree(
@@ -112,8 +123,110 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
+    // TODO
     $value = $this->eat(TokenKind::SINGLE_QUOTED_STRING);
+
     return new LiteralTree($this->getRange($start) , $value);
+  }
+
+  public function parseFunctionDefinition(): ParseTree
+  {
+    $start = $this->position();
+
+    // TODO: attributes
+    // TODO: async
+    $this->eat(TokenKind::KW_FUNCTION);
+    $name = $this->eatName();
+    // TODO: type parameters
+    $parameters = $this->parseParameterList();
+    $this->eat(TokenKind::COLON);
+    $returnType = $this->parseReturnType();
+    $body = $this->parseCompoundStatement();
+
+    return new FunctionDefinitionTree(
+      $this->getRange($start),
+      $name,
+      $parameters,
+      $returnType,
+      $body);
+  }
+
+  public function parseParameterList(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::OPEN_PAREN);
+
+    $parameters = Vector {};
+    if ($this->peekParameter()) {
+      $parameters[] = $this->parseParameterDeclaration();
+      while ($this->eatOpt(TokenKind::COMMA)) {
+        $parameters[] = $this->parseParameterDeclaration();
+      }
+    }
+
+    $this->eat(TokenKind::CLOSE_PAREN);
+
+    return new ParameterListTree(
+      $this->getRange($start),
+      $parameters);
+  }
+
+  private function peekParameter(): bool
+  {
+    // TODO: attribute
+    return $this->peekType();
+  }
+
+  private function parseParameterDeclaration(): ParseTree
+  {
+    $start = $this->position();
+
+    // TODO: Attribute
+    $type = $this->parseTypeSpecifier();
+    $name = $this->eatVariableName();
+    // TODO: default argument specifier
+
+    return new ParameterDeclarationTree(
+      $this->getRange($start),
+      $type,
+      $name);
+  }
+
+  public function parseCompoundStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $statements = Vector {};
+    // TODO: parseStatements ...
+    //
+    return new CompoundStatementTree(
+      $this->getRange($start),
+      $statements);
+  }
+
+  private function peekType(): bool
+  {
+    // TODO
+    return true;
+  }
+
+  private function parseTypeSpecifier(): ParseTree
+  {
+    // TODO:
+    return new CompoundStatementTree(
+      $this->getRange($this->position()), 
+      Vector{});
+  }
+
+  private function parseReturnType(): ParseTree
+  {
+    $start = $this->position();
+    if ($this->peekPredefinedName(PredefinedName::this)) {
+      $token = $this->eatPredefinedName(PredefinedName::this);
+      return new ThisTypeTree($this->getRange($start), $token);
+    }
+    return $this->parseTypeSpecifier();
   }
 }
 

@@ -30,6 +30,18 @@ class NameToken extends Token
   {
     parent::__construct($range, TokenKind::NAME);
   }
-
   public function value(): string { return $this->value; }
 }
+
+class VariableNameToken extends Token
+{
+  public function __construct(
+    Range $range,
+    private string $value)
+  {
+    parent::__construct($range, TokenKind::VARIABLE_NAME);
+  }
+  public function value(): string { return $this->value; }
+}
+
+

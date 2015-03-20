@@ -56,3 +56,56 @@ class LiteralTree extends ParseTree
     }
 }
 
+class FunctionDefinitionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public NameToken $name,
+    public ParseTree $parameters,
+    public ParseTree $returnType,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::FUNCTION_DEFINITION);
+  }
+}
+
+class ParameterListTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $parameters)
+  {
+    parent::__construct($range, ParseTreeKind::PARAMETER_LIST);
+  }
+}
+
+class ParameterDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $type,
+    public VariableNameToken $name)
+  {
+    parent::__construct($range, ParseTreeKind::PARAMETER_DECLARATION);
+  }
+}
+
+class CompoundStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $statements)
+  {
+    parent::__construct($range, ParseTreeKind::COMPOUND_STATEMENT);
+  }
+}
+
+class ThisTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Token $token)
+  {
+    parent::__construct($range, ParseTreeKind::THIS_TYPE);
+  }
+}

@@ -349,9 +349,9 @@ class Lexer extends LexerBase
     while (Char::isName($this->peek())) {
       $value .= chr($this->next());
     }
-
-    // TODO: new VariableNameToken
-    return $this->createToken($start, TokenKind::VARIABLE_NAME);
+    return new VariableNameToken(
+      $this->currentRange($start), 
+      $value);
   }
 
   private function lexName(int $start, int $firstChar): Token
