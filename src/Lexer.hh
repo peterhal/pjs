@@ -365,8 +365,7 @@ class Lexer extends LexerBase
       return $this->createToken($start, Keywords::getKeyword($value));
     }
 
-    // TODO: new NameToken
-    return $this->createToken($start, TokenKind::NAME);
+    return new NameToken($this->currentRange($start), $value);
   }
 
   private function createToken(int $start, TokenKind $kind): Token

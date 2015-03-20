@@ -2,6 +2,7 @@
 
 require_once 'ConsoleErrorReporter.hh';
 require_once 'Lexer.hh';
+require_once 'Parser.hh';
 require_once 'SourceFile.hh';
 
 function main(array<string> $argv) : int
