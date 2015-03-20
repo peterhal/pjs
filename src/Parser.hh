@@ -197,12 +197,31 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
+    $this->eat(TokenKind::OPEN_CURLY);
     $statements = Vector {};
-    // TODO: parseStatements ...
-    //
+    while ($this->peekStatement()) {
+      $statements[] = $this->parseStatement();
+    }
+    $this->eat(TokenKind::CLOSE_CURLY);
+
     return new CompoundStatementTree(
       $this->getRange($start),
       $statements);
+  }
+
+  private function peekStatement(): bool
+  {
+    // TODO
+    return false;
+  }
+
+  private function parseStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    return new CompoundStatementTree(
+      $this->getRange($start),
+      Vector {});
   }
 
   private function peekType(): bool
