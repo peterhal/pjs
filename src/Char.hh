@@ -115,8 +115,18 @@ class Char
   public static function isNonDigit(int $ch): bool
   {
     return $ch === Char::UNDERSCORE
-      || ($ch >= Char::A && $ch <= Char::Z)
-      || ($ch >= Char::a && $ch <= Char::z);
+      || Char::isUpperCaseLetter($ch)
+      || Char::isLowerCaseLetter($ch);
+  }
+
+  public static function isLowerCaseLetter(int $ch): bool
+  {
+    return $ch >= Char::a && $ch <= Char::z;
+  }
+
+  public static function isUpperCaseLetter(int $ch): bool
+  {
+    return $ch >= Char::A && $ch <= Char::Z;
   }
 
   public static function isNameNonDigit(int $ch): bool
