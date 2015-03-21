@@ -70,6 +70,49 @@ FILE_HEADER
       fwrite($file, "  $name = $index;\n");
       $index++;
     }
+    fwrite($file, "}\n");
+    fclose($file);
+  }
+
+  private static function writeParseTreeFile(string $filename): void
+  {
+    $file = fopen($filename, 'w');
+    fwrite($file, <<< 'FILE_HEADER'
+<?hh //strict
+
+require_once 'ParseTreeKind.hh';
+
+class ParseTree
+{
+  public function __construct(
+    private Range $range,
+    private ParseTreeKind $kind)
+  {}
+  public function range(): Range { return $this->range; }
+  public function kind(): ParseTreeKind { return $this->kind; }
+
+FILE_HEADER
+);
+    foreach (ParseTreeSpecifications::$specs as $spec) {
+      $name = $spec->name;
+      $upperName = $spec->upperName();
+      $tree = $name . "Tree";
+      fwrite($file, <<<IS
+  public function is$name(): bool {
+    return \$this->kind === ParseTreeKind::$upperName;
+  }
+
+IS
+);
+      fwrite($file, <<<AS
+  public function as$name(): $tree { 
+    invariant(\$this instanceof $tree, "Wrong type.");
+    return \$this;
+  }
+
+AS
+);
+    }
 
     fwrite($file, "}\n");
     fclose($file);
@@ -78,9 +121,9 @@ FILE_HEADER
   public static function main(array<string> $argv): int
   {
     $kindFileName = $argv[1];
-
+    $parseTreeFileName = $argv[2];
     ParseTreeGenerator::writeKindFile($kindFileName);
-
+    ParseTreeGenerator::writeParseTreeFile($parseTreeFileName);
     return 0;
   }
 }
