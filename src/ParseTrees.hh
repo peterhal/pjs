@@ -1,4 +1,8 @@
-<?hh //strict
+<?hh // strict
+
+require_once 'ParseTree.hh'
+require_once 'ParseTreeKind.hh'
+
 
 class ScriptTree extends ParseTree
 {
@@ -16,9 +20,7 @@ class RequireMultipleDirectiveTree extends ParseTree
     Range $range,
     public ParseTree $includeFilename)
   {
-    parent::__construct(
-      $range,
-      ParseTreeKind::REQUIRE_MULTIPLE_DIRECTIVE);
+    parent::__construct($range, ParseTreeKind::REQUIRE_MULTIPLE_DIRECTIVE);
   }
 }
 
@@ -28,22 +30,18 @@ class RequireOnceDirectiveTree extends ParseTree
     Range $range,
     public ParseTree $includeFilename)
   {
-    parent::__construct(
-      $range,
-      ParseTreeKind::REQUIRE_ONCE_DIRECTIVE);
+    parent::__construct($range, ParseTreeKind::REQUIRE_ONCE_DIRECTIVE);
   }
 }
 
 class LiteralTree extends ParseTree
 {
-    public function __construct(
-      Range $range,
-      public Token $value)
-    {
-      parent::__construct(
-        $range,
-        ParseTreeKind::LITERAL);
-    }
+  public function __construct(
+    Range $range,
+    public Token $value)
+  {
+    parent::__construct($range, ParseTreeKind::LITERAL);
+  }
 }
 
 class FunctionDefinitionTree extends ParseTree
@@ -136,7 +134,6 @@ class TypeArgumentsTree extends ParseTree
     Range $range,
     public Vector<ParseTree> $types)
   {
-    parent::__construct($range, ParseTreeKind::TYPE_ARGUMENTS_TYPE);
+    parent::__construct($range, ParseTreeKind::TYPE_ARGUMENTS);
   }
 }
-
