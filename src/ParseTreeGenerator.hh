@@ -97,7 +97,7 @@ FILE_HEADER
 IS
 );
       fwrite($file, <<<AS
-  public function as$name(): $tree { 
+  public function as$name(): $tree {
     invariant(\$this instanceof $tree, "Wrong type.");
     return \$this;
   }
@@ -116,8 +116,8 @@ AS
     fwrite($file, <<< 'FILE_HEADER'
 <?hh // strict
 
-require_once 'ParseTree.hh'
-require_once 'ParseTreeKind.hh'
+require_once 'ParseTree.hh';
+require_once 'ParseTreeKind.hh';
 
 
 FILE_HEADER

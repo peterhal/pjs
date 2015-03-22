@@ -1,7 +1,7 @@
 <?hh // strict
 
-require_once 'ParseTree.hh'
-require_once 'ParseTreeKind.hh'
+require_once 'ParseTree.hh';
+require_once 'ParseTreeKind.hh';
 
 
 class ScriptTree extends ParseTree
