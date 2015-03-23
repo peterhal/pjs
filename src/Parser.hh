@@ -66,6 +66,7 @@ class Parser extends ParserBase
     case TokenKind::KW_FUNCTION:
     case TokenKind::KW_ASYNC:
     case TokenKind::LEFT_SHIFT: // attributes
+    case TokenKind::KW_ENUM:
       return true;
     default:
       // TODO
@@ -86,6 +87,8 @@ class Parser extends ParserBase
     case TokenKind::LEFT_SHIFT:
       // TODO: attributes
       throw new Exception();
+    case TokenKind::KW_ENUM:
+      return $this->parseEnum();
     default:
       // TODO
       throw new Exception();
@@ -118,6 +121,72 @@ class Parser extends ParserBase
     return new RequireMultipleDirectiveTree(
       $this->getRange($start),
       $includeFilename);
+  }
+
+  public function parseEnum(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_ENUM);
+    $name = $this->eatName();
+
+    $this->eat(TokenKind::COLON);
+    $base = $this->parseTypeSpecifier();
+    if (!Parser::isValidEnumBase($base)) {
+      $this->errorLocation(
+        $base->start(), 
+        "Invalid enum base. Expected 'int' or 'string'.");
+    }
+
+    if ($this->eatOpt(TokenKind::KW_AS)) {
+      $constraint = $this->parseTypeSpecifier();
+    } else {
+      $constraint = null;
+    }
+
+    $this->eat(TokenKind::OPEN_CURLY);
+    $enumerators = $this->parseEnumeratorList();
+    $this->eat(TokenKind::CLOSE_CURLY);
+
+    return new EnumDeclarationTree(
+      $this->getRange($start),
+      $name,
+      $base,
+      $constraint,
+      $enumerators);
+  }
+
+  private static function isValidEnumBase(ParseTree $value): bool
+  {
+    if (!$value->isPredefinedNameType()) {
+      return false;
+    }
+    $name = $value->asPredefinedNameType()->token->value();
+    return $name === PredefinedName::string || $name == PredefinedName::int;
+  }
+
+  private function parseEnumeratorList(): Vector<ParseTree>
+  {
+    $result = Vector {};
+    $result[] = $this->parseEnumerator();
+    while ($this->eatOpt(TokenKind::SEMI_COLON)) {
+      $result[] = $this->parseEnumerator();
+    }
+    return $result;
+  }
+
+  private function parseEnumerator(): ParseTree
+  {
+    $start = $this->position();
+
+    $name = $this->eatName();
+    $this->eat(TokenKind::EQUAL);
+    $value = $this->parseExpression();
+
+    return new EnumeratorTree(
+      $this->getRange($start),
+      $name,
+      $value);
   }
 
   public function parseExpression(): ParseTree
@@ -368,7 +437,7 @@ class Parser extends ParserBase
   {
     $start = $this->position();
     if ($this->peekPredefinedName(PredefinedName::this)) {
-      $token = $this->eatPredefinedName(PredefinedName::this);
+      $token = $this->eatName();
       return new PredefinedNameTypeTree($this->getRange($start), $token);
     }
     return $this->parseTypeSpecifier();

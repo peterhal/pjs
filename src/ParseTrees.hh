@@ -55,6 +55,30 @@ class LiteralTree extends ParseTree
   }
 }
 
+class EnumDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public NameToken $name,
+    public ParseTree $base,
+    public ?ParseTree $constraint,
+    public Vector<ParseTree> $enumerators)
+  {
+    parent::__construct($range, ParseTreeKind::ENUM_DECLARATION);
+  }
+}
+
+class EnumeratorTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public NameToken $name,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::ENUMERATOR);
+  }
+}
+
 class FunctionDefinitionTree extends ParseTree
 {
   public function __construct(
@@ -103,7 +127,7 @@ class PredefinedNameTypeTree extends ParseTree
 {
   public function __construct(
     Range $range,
-    public Token $token)
+    public NameToken $token)
   {
     parent::__construct($range, ParseTreeKind::PREDEFINED_NAME_TYPE);
   }

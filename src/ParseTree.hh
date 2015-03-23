@@ -9,6 +9,7 @@ class ParseTree
     private ParseTreeKind $kind)
   {}
   public function range(): Range { return $this->range; }
+  public function start(): Location { return $this->range->start(); }
   public function kind(): ParseTreeKind { return $this->kind; }
   public function isScript(): bool {
     return $this->kind === ParseTreeKind::SCRIPT;
@@ -43,6 +44,20 @@ class ParseTree
   }
   public function asLiteral(): LiteralTree {
     invariant($this instanceof LiteralTree, "Wrong type.");
+    return $this;
+  }
+  public function isEnumDeclaration(): bool {
+    return $this->kind === ParseTreeKind::ENUM_DECLARATION;
+  }
+  public function asEnumDeclaration(): EnumDeclarationTree {
+    invariant($this instanceof EnumDeclarationTree, "Wrong type.");
+    return $this;
+  }
+  public function isEnumerator(): bool {
+    return $this->kind === ParseTreeKind::ENUMERATOR;
+  }
+  public function asEnumerator(): EnumeratorTree {
+    invariant($this instanceof EnumeratorTree, "Wrong type.");
     return $this;
   }
   public function isFunctionDefinition(): bool {

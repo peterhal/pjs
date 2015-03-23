@@ -81,6 +81,7 @@ class ParseTree
     private ParseTreeKind $kind)
   {}
   public function range(): Range { return $this->range; }
+  public function start(): Location { return $this->range->start(); }
   public function kind(): ParseTreeKind { return $this->kind; }
 
 FILE_HEADER
@@ -180,6 +181,18 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "value", "Token" }
           }),
+      new ParseTreeSpecification("EnumDeclaration",
+          Vector {
+            Pair { "name", "NameToken" },
+            Pair { "base", "ParseTree" },
+            Pair { "constraint", "?ParseTree" },
+            Pair { "enumerators", "Vector<ParseTree>" }
+          }),
+      new ParseTreeSpecification("Enumerator",
+          Vector {
+            Pair { "name", "NameToken" },
+            Pair { "value", "ParseTree" }
+          }),
       new ParseTreeSpecification("FunctionDefinition",
           Vector {
             Pair { "name", "NameToken" },
@@ -202,7 +215,7 @@ CONSTRUCTOR_BODY
           }),
       new ParseTreeSpecification("PredefinedNameType",
           Vector {
-            Pair { "token", "Token" }
+            Pair { "token", "NameToken" }
           }),
       new ParseTreeSpecification("KeywordType",
           Vector {
