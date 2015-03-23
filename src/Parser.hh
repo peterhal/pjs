@@ -2,6 +2,7 @@
 
 require_once 'ParseTreeKind.hh';
 require_once 'ParseTree.hh';
+require_once 'ParseTrees.hh';
 require_once 'ParserBase.hh';
 require_once 'PredefinedName.hh';
 require_once 'Token.hh';
@@ -175,7 +176,7 @@ class Parser extends ParserBase
   private function peekParameter(): bool
   {
     // TODO: attribute
-    return $this->peekType();
+    return $this->peekTypeSpecifier();
   }
 
   private function parseParameterDeclaration(): ParseTree
@@ -224,7 +225,7 @@ class Parser extends ParserBase
       Vector {});
   }
 
-  private function peekType(): bool
+  private function peekTypeSpecifier(): bool
   {
     switch ($this->peek()) {
     case TokenKind::KW_ARRAYKEY:
@@ -246,6 +247,21 @@ class Parser extends ParserBase
     default:
       return false;
     }
+  }
+
+  private function parseQualifiedName(): ParseTree
+  {
+    $start = $this->position();
+
+    $fullyQualified = $this->eatOpt(TokenKind::BACK_SLASH);
+    $names = Vector {};
+
+    do
+    {
+      $names[] = $this->eatName();
+    } while ($this->eatOpt(TokenKind::BACK_SLASH));
+
+    return new QualifiedNameTree($this->getRange($start), $fullyQualified, $names);
   }
 
   private function parseTypeSpecifier(): ParseTree
@@ -274,54 +290,60 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $name = $this->eatName();
-    $value = $name->value();
+    if ($this->peekKind(TokenKind::NAME)) {
+      $value = $this->peekToken()->asName()->value();
 
-    switch ($value) {
-    case PredefinedName::bool:
-    case PredefinedName::int:
-    case PredefinedName::float:
-    case PredefinedName::mixed:
-    case PredefinedName::pn_resource:
-    case PredefinedName::string:
-    case PredefinedName::void:
-      return new PredefinedNameTypeTree($this->getRange($start), $name);
-    case PredefinedName::pn_array:
-      if ($this->peekKind(TokenKind::OPEN_ANGLE)) {
-        $typeArguments = $this->parseTypeArguments();
-        return new ArrayTypeTree($this->getRange($start), $typeArguments);
-      } else {
-        return new ArrayTypeTree($this->getRange($start), null);
+      switch ($value) {
+      case PredefinedName::bool:
+      case PredefinedName::int:
+      case PredefinedName::float:
+      case PredefinedName::mixed:
+      case PredefinedName::pn_resource:
+      case PredefinedName::string:
+      case PredefinedName::void:
+        $name = $this->eatName();
+        return new PredefinedNameTypeTree($this->getRange($start), $name);
+      case PredefinedName::pn_array:
+        // Parse as regular possibly generic class.
+        break;
       }
-
     }
 
-    // TODO
-    $start = $this->position();
-
-    $type = $this->parseTypeSpecifier();
-
-    return new NullableTypeTree($this->getRange($start), $type);
+    $name = $this->parseQualifiedName();
+    $typeArguments = $this->parseTypeArgumentsOpt();
+    return new NamedTypeTree($this->getRange($start), $name, $typeArguments);
   }
 
   private function parseTupleType(): ParseTree
   {
-    // TODO
     $start = $this->position();
 
-    $type = $this->parseTypeSpecifier();
+    $this->eat(TokenKind::OPEN_PAREN);
 
-    return new NullableTypeTree($this->getRange($start), $type);
+    $types = Vector {};
+
+    $types[] = $this->parseTypeSpecifier();
+    $this->eat(TokenKind::COMMA);
+    $types = $this->parseTypeSpecifierList($types);
+    $this->eat(TokenKind::CLOSE_PAREN);
+
+    return new TupleTypeTree($this->getRange($start), $types);
   }
 
   private function parseClosureType(): ParseTree
   {
-    // TODO
     $start = $this->position();
 
-    $type = $this->parseTypeSpecifier();
+    $this->eat(TokenKind::OPEN_PAREN);
+    $this->eat(TokenKind::KW_FUNCTION);
+    $this->eat(TokenKind::OPEN_PAREN);
+    $parameterTypes = $this->parseTypeSpecifierListOpt();
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $this->eat(TokenKind::COLON);
+    $returnType = $this->parseTypeSpecifier();
+    $this->eat(TokenKind::CLOSE_PAREN);
 
-    return new NullableTypeTree($this->getRange($start), $type);
+    return new ClosureTypeTree($this->getRange($start), $parameterTypes, $returnType);
   }
 
   private function parseNullableType(): ParseTree
@@ -352,16 +374,39 @@ class Parser extends ParserBase
     return $this->parseTypeSpecifier();
   }
 
+  private function parseTypeArgumentsOpt(): ?ParseTree
+  {
+    if ($this->peekKind(TokenKind::OPEN_ANGLE)) {
+      return $this->parseTypeArguments();
+    } else {
+      return null;
+    }
+  }
+
+  private function parseTypeSpecifierListOpt(): ?Vector<ParseTree>
+  {
+    if ($this->peekTypeSpecifier()) {
+      return $this->parseTypeSpecifierList(Vector {});
+    } else {
+      return null;
+    }
+  }
+
+  private function parseTypeSpecifierList(Vector<ParseTree> $types): Vector<ParseTree>
+  {
+    $types[] = $this->parseTypeSpecifier();
+    while ($this->eatOpt(TokenKind::COMMA)) {
+      $types[] = $this->parseTypeSpecifier();
+    }
+    return $types;
+  }
+
   private function parseTypeArguments(): ParseTree
   {
     $start = $this->position();
 
     $this->eat(TokenKind::OPEN_ANGLE);
-    $types = Vector {};
-    $types[] = $this->parseTypeSpecifier();
-    while ($this->eatOpt(TokenKind::COMMA)) {
-      $types[] = $this->parseTypeSpecifier();
-    }
+    $types = $this->parseTypeSpecifierList(Vector {});
     $this->eat(TokenKind::CLOSE_ANGLE);
 
     return new TypeArgumentsTree($this->getRange($start), $types);

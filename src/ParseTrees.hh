@@ -14,6 +14,17 @@ class ScriptTree extends ParseTree
   }
 }
 
+class QualifiedNameTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public bool $fullyQualified,
+    public Vector<NameToken> $names)
+  {
+    parent::__construct($range, ParseTreeKind::QUALIFIED_NAME);
+  }
+}
+
 class RequireMultipleDirectiveTree extends ParseTree
 {
   public function __construct(
@@ -118,13 +129,35 @@ class NullableTypeTree extends ParseTree
   }
 }
 
-class ArrayTypeTree extends ParseTree
+class NamedTypeTree extends ParseTree
 {
   public function __construct(
     Range $range,
+    public ParseTree $name,
     public ?ParseTree $typeArguments)
   {
-    parent::__construct($range, ParseTreeKind::ARRAY_TYPE);
+    parent::__construct($range, ParseTreeKind::NAMED_TYPE);
+  }
+}
+
+class ClosureTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?Vector<ParseTree> $parameterTypes,
+    public ParseTree $returnType)
+  {
+    parent::__construct($range, ParseTreeKind::CLOSURE_TYPE);
+  }
+}
+
+class TupleTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $types)
+  {
+    parent::__construct($range, ParseTreeKind::TUPLE_TYPE);
   }
 }
 

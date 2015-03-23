@@ -163,6 +163,11 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "declarations", "Vector<ParseTree>" }
           }),
+      new ParseTreeSpecification("QualifiedName",
+          Vector {
+            Pair { "fullyQualified", "bool" },
+            Pair { "names", "Vector<NameToken>" }
+          }),
       new ParseTreeSpecification("RequireMultipleDirective",
           Vector {
             Pair { "includeFilename", "ParseTree" }
@@ -207,9 +212,19 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "type", "ParseTree" }
           }),
-      new ParseTreeSpecification("ArrayType",
+      new ParseTreeSpecification("NamedType",
           Vector {
-            Pair { "typeArguments", "?ParseTree" }
+            Pair { "name", "ParseTree" },
+              Pair { "typeArguments", "?ParseTree" }
+          }),
+      new ParseTreeSpecification("ClosureType",
+          Vector {
+            Pair { "parameterTypes", "?Vector<ParseTree>" },
+            Pair { "returnType", "ParseTree" }
+          }),
+      new ParseTreeSpecification("TupleType",
+          Vector {
+            Pair { "types", "Vector<ParseTree>" }
           }),
       new ParseTreeSpecification("TypeArguments",
           Vector {
