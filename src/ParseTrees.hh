@@ -96,7 +96,7 @@ class ParameterListTree extends ParseTree
 {
   public function __construct(
     Range $range,
-    public Vector<ParseTree> $parameters)
+    public ?Vector<ParseTree> $parameters)
   {
     parent::__construct($range, ParseTreeKind::PARAMETER_LIST);
   }

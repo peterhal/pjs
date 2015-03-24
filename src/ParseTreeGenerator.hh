@@ -202,7 +202,7 @@ CONSTRUCTOR_BODY
           }),
       new ParseTreeSpecification("ParameterList",
           Vector {
-            Pair { "parameters", "Vector<ParseTree>" }
+            Pair { "parameters", "?Vector<ParseTree>" }
           }),
       new ParseTreeSpecification("ParameterDeclaration",
           Vector {

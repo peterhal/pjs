@@ -37,25 +37,16 @@ class Parser extends ParserBase
 
     // TODO: CHeck for //strict
 
-    $declarations = $this->parseDeclarationList();
+    $declarations = $this->parseList(
+      () ==> $this->peekDeclaration(),
+      () ==> $this->parseDeclaration());
+    if (!$this->eof()) {
+      $this->error("Expected declaration.");
+    }
+
     return new ScriptTree(
         $this->getRange($start),
         $declarations);
-  }
-
-  public function parseDeclarationList(): Vector<ParseTree>
-  {
-    $result = Vector {};
-
-    while (!$this->eof()) {
-      if (!$this->peekDeclaration()) {
-        $this->error("Expected declaration.");
-        break;
-      }
-      $result[] = $this->parseDeclaration();
-    }
-
-    return $result;
   }
 
   public function peekDeclaration(): bool
@@ -139,23 +130,15 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $this->eat(TokenKind::KW_USE);
-    $useClauses = $this->parseNamespaceUseClauses();
-    $this->eat(TokenKind::SEMI_COLON);
+    $useClauses = 
+      $this->parseDelimitedCommaSeparatedList(
+        TokenKind::KW_USE,
+        TokenKind::SEMI_COLON,
+        () ==> $this->parseNamespaceUseClause());
 
     return new NamespaceUseDeclarationTree(
       $this->getRange($start),
       $useClauses);
-  }
-
-  private function parseNamespaceUseClauses(): Vector<ParseTree>
-  {
-    $useClauses = Vector {};
-    $useClauses[] = $this->parseNamespaceUseClause();
-    while ($this->eatOpt(TokenKind::COMMA)) {
-      $useClauses[] = $this->parseNamespaceUseClause();
-    }
-    return $useClauses;
   }
 
   private function parseNamespaceUseClause(): ParseTree
@@ -190,9 +173,11 @@ class Parser extends ParserBase
           $name,
           null);
       } else {
-        $this->eat(TokenKind::OPEN_CURLY);
-        $declarations = $this->parseDeclarationList();
-        $this->eat(TokenKind::CLOSE_CURLY);
+        $declarations = $this->parseDelimitedList(
+          TokenKind::OPEN_CURLY,
+          TokenKind::CLOSE_CURLY,
+          () ==> $this->peekDeclaration(),
+          () ==> $this->parseDeclaration());
 
         return new NamespaceDefinitionTree(
           $this->getRange($start),
@@ -200,9 +185,11 @@ class Parser extends ParserBase
           $declarations);
       }
     } else {
-        $this->eat(TokenKind::OPEN_CURLY);
-        $declarations = $this->parseDeclarationList();
-        $this->eat(TokenKind::CLOSE_CURLY);
+        $declarations = $this->parseDelimitedList(
+          TokenKind::OPEN_CURLY,
+          TokenKind::CLOSE_CURLY,
+          () ==> $this->peekDeclaration(),
+          () ==> $this->parseDeclaration());
 
         return new NamespaceDefinitionTree(
           $this->getRange($start),
@@ -232,9 +219,14 @@ class Parser extends ParserBase
       $constraint = null;
     }
 
-    $this->eat(TokenKind::OPEN_CURLY);
-    $enumerators = $this->parseEnumeratorList();
-    $this->eat(TokenKind::CLOSE_CURLY);
+    $enumerators = $this->parseDelimitedList(
+      TokenKind::OPEN_CURLY,
+      TokenKind::CLOSE_CURLY,
+      () ==> $this->peekEnumerator(),
+      () ==> $this->parseEnumerator());
+    if ($enumerators->count() < 1) {
+      $this->error("Expectd enumerator.");
+    }
 
     return new EnumDeclarationTree(
       $this->getRange($start),
@@ -253,14 +245,9 @@ class Parser extends ParserBase
     return $name === PredefinedName::string || $name == PredefinedName::int;
   }
 
-  private function parseEnumeratorList(): Vector<ParseTree>
+  private function peekEnumerator(): bool
   {
-    $result = Vector {};
-    $result[] = $this->parseEnumerator();
-    while ($this->eatOpt(TokenKind::SEMI_COLON)) {
-      $result[] = $this->parseEnumerator();
-    }
-    return $result;
+    return $this->peekKind(TokenKind::NAME);
   }
 
   private function parseEnumerator(): ParseTree
@@ -270,6 +257,7 @@ class Parser extends ParserBase
     $name = $this->eatName();
     $this->eat(TokenKind::EQUAL);
     $value = $this->parseExpression();
+    $this->eat(TokenKind::SEMI_COLON);
 
     return new EnumeratorTree(
       $this->getRange($start),
@@ -296,15 +284,15 @@ class Parser extends ParserBase
       $extendsClause = null;
     }
     if ($this->eatOpt(TokenKind::KW_IMPLEMENTS)) {
-      $implementsClause = Vector {};
-      $implementsClause[] = $this->parseQualifiedNameType();
-      while ($this->eatOpt(TokenKind::COMMA)) {
-        $implementsClause[] = $this->parseQualifiedNameType();
-      }
+      $implementsClause =
+        $this->parseCommaSeparatedList(() ==> $this->parseQualifiedNameType());
     } else {
       $implementsClause = null;
     }
-    $traits = $this->parseTraitUseClauses();
+    $traits =
+      $this->parseList(
+        () ==> $this->peekKind(TokenKind::KW_USE),
+        () ==> $this->parseTraitUseClause());
     // TODO:
     $members = Vector {};
 
@@ -320,26 +308,14 @@ class Parser extends ParserBase
       $members);
   }
 
-  private function parseTraitUseClauses(): Vector<ParseTree>
-  {
-    $result = Vector {};
-    while ($this->peekKind(TokenKind::KW_USE)) {
-      $result[] = $this->parseTraitUseClause();
-    }
-    return $result;
-  }
-
   private function parseTraitUseClause(): ParseTree
   {
     $start = $this->position();
 
     $this->eat(TokenKind::KW_USE);
 
-    $traits = Vector {};
-    $traits[] = $this->parseQualifiedNameType();
-    while ($this->eatOpt(TokenKind::COMMA)) {
-      $traits[] = $this->parseQualifiedNameType();
-    }
+    $traits = 
+      $this->parseCommaSeparatedList(() ==> $this->parseQualifiedNameType());
 
     return new TraitUseClauseTree(
       $this->getRange($start),
@@ -353,13 +329,10 @@ class Parser extends ParserBase
     } else {
       $start = $this->position();
 
-      $this->eat(TokenKind::OPEN_ANGLE);
-      $result = Vector {};
-      $result[] = $this->parseTypeParameter();
-      while ($this->eatOpt(TokenKind::COMMA)) {
-        $result[] = $this->parseTypeParameter();
-      }
-      $this->eat(TokenKind::CLOSE_ANGLE);
+      $result = $this->parseDelimitedCommaSeparatedList(
+        TokenKind::OPEN_ANGLE,
+        TokenKind::CLOSE_ANGLE,
+        () ==> $this->parseTypeParameter());
 
       return $result;
     }
@@ -433,13 +406,9 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::OPEN_PAREN);
 
-    $parameters = Vector {};
-    if ($this->peekParameter()) {
-      $parameters[] = $this->parseParameterDeclaration();
-      while ($this->eatOpt(TokenKind::COMMA)) {
-        $parameters[] = $this->parseParameterDeclaration();
-      }
-    }
+    $parameters = $this->parseCommaSeparatedListOpt(
+        () ==> $this->peekParameter(),
+        () ==> $this->parseParameterDeclaration());
 
     $this->eat(TokenKind::CLOSE_PAREN);
 
@@ -473,12 +442,11 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $this->eat(TokenKind::OPEN_CURLY);
-    $statements = Vector {};
-    while ($this->peekStatement()) {
-      $statements[] = $this->parseStatement();
-    }
-    $this->eat(TokenKind::CLOSE_CURLY);
+    $statements = $this->parseDelimitedList(
+      TokenKind::OPEN_CURLY,
+      TokenKind::CLOSE_CURLY,
+      () ==> $this->peekStatement(),
+      () ==> $this->parseStatement());
 
     return new CompoundStatementTree(
       $this->getRange($start),
@@ -593,6 +561,7 @@ class Parser extends ParserBase
 
     $name = $this->parseQualifiedName();
     $typeArguments = $this->parseTypeArgumentsOpt();
+
     return new NamedTypeTree($this->getRange($start), $name, $typeArguments);
   }
 
@@ -600,14 +569,14 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $this->eat(TokenKind::OPEN_PAREN);
-
-    $types = Vector {};
-
-    $types[] = $this->parseTypeSpecifier();
-    $this->eat(TokenKind::COMMA);
-    $types = $this->parseTypeSpecifierList($types);
-    $this->eat(TokenKind::CLOSE_PAREN);
+    $types =
+      $this->parseDelimitedCommaSeparatedList(
+        TokenKind::OPEN_PAREN,
+        TokenKind::CLOSE_PAREN,
+        () ==> $this->parseTypeSpecifier());
+    if ($types->count() < 2) {
+      $this->error("Tuple type requires at least 2 types.");
+    }
 
     return new TupleTypeTree($this->getRange($start), $types);
   }
@@ -667,32 +636,85 @@ class Parser extends ParserBase
 
   private function parseTypeSpecifierListOpt(): ?Vector<ParseTree>
   {
-    if ($this->peekTypeSpecifier()) {
-      return $this->parseTypeSpecifierList(Vector {});
-    } else {
-      return null;
-    }
-  }
-
-  private function parseTypeSpecifierList(Vector<ParseTree> $types): Vector<ParseTree>
-  {
-    $types[] = $this->parseTypeSpecifier();
-    while ($this->eatOpt(TokenKind::COMMA)) {
-      $types[] = $this->parseTypeSpecifier();
-    }
-    return $types;
+    return $this->parseCommaSeparatedListOpt(
+      () ==> $this->peekTypeSpecifier(),
+      () ==> $this->parseTypeSpecifier());
   }
 
   private function parseTypeArguments(): ParseTree
   {
     $start = $this->position();
 
-    $this->eat(TokenKind::OPEN_ANGLE);
-    $types = $this->parseTypeSpecifierList(Vector {});
-    $this->eat(TokenKind::CLOSE_ANGLE);
+    $types =
+      $this->parseDelimitedCommaSeparatedList(
+        TokenKind::OPEN_ANGLE,
+        TokenKind::CLOSE_ANGLE,
+        () ==> $this->parseTypeSpecifier());
 
     return new TypeArgumentsTree($this->getRange($start), $types);
   }
-}
 
+  private function parseCommaSeparatedListOpt(
+    (function (): bool) $peek,
+    (function (): ParseTree) $element): ?Vector<ParseTree>
+  {
+    if ($peek()) {
+      return $this->parseCommaSeparatedList($element);
+    } else {
+      return null;
+    }
+  }
+
+  private function parseDelimitedCommaSeparatedList(
+    TokenKind $first,
+    TokenKind $end,
+    (function (): ParseTree) $element): Vector<ParseTree>
+  {
+    $this->eat($first);
+    $result = $this->parseCommaSeparatedList($element);
+    $this->eat($end);
+    return $result;
+  }
+
+  private function parseCommaSeparatedList(
+    (function (): ParseTree) $element): Vector<ParseTree>
+  {
+    return $this->parseSeparatedList(TokenKind::COMMA, $element);
+  }
+
+  private function parseSeparatedList(
+    TokenKind $separator,
+    (function (): ParseTree) $element): Vector<ParseTree>
+  {
+    $result = Vector {};
+    $result[] = $element();
+    while ($this->eatOpt($separator)) {
+      $result[] = $element();
+    }
+    return $result;
+  }
+
+  private function parseDelimitedList(
+    TokenKind $first,
+    TokenKind $end,
+    (function(): bool) $peek,
+    (function(): ParseTree) $element): Vector<ParseTree>
+  {
+    $this->eat($first);
+    $result = $this->parseList($peek, $element);
+    $this->eat($end);
+    return $result;
+  }
+
+  private function parseList(
+    (function(): bool) $peek,
+    (function(): ParseTree) $element): Vector<ParseTree>
+  {
+    $result = Vector {};
+    while ($peek()) {
+      $result[] = $element();
+    }
+    return $result;
+  }
+}
 
