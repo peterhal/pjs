@@ -271,8 +271,12 @@ CONSTRUCTOR_BODY
             Pair { "typeParameters", "?Vector<ParseTree>" },
             Pair { "extendsClause", "?ParseTree" },
             Pair { "implementsClause", "?Vector<ParseTree>" },
-            Pair { "traits", "?Vector<ParseTree>" },
+            Pair { "traits", "Vector<ParseTree>" },
             Pair { "members", "Vector<ParseTree>" }
+          }),
+      new ParseTreeSpecification("TraitUseClause",
+          Vector {
+            Pair { "traits", "Vector<ParseTree>" },
           }),
     };
   }

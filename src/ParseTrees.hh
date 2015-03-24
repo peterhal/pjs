@@ -249,9 +249,19 @@ class ClassDeclarationTree extends ParseTree
     public ?Vector<ParseTree> $typeParameters,
     public ?ParseTree $extendsClause,
     public ?Vector<ParseTree> $implementsClause,
-    public ?Vector<ParseTree> $traits,
+    public Vector<ParseTree> $traits,
     public Vector<ParseTree> $members)
   {
     parent::__construct($range, ParseTreeKind::CLASS_DECLARATION);
+  }
+}
+
+class TraitUseClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $traits)
+  {
+    parent::__construct($range, ParseTreeKind::TRAIT_USE_CLAUSE);
   }
 }

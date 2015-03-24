@@ -304,8 +304,8 @@ class Parser extends ParserBase
     } else {
       $implementsClause = null;
     }
+    $traits = $this->parseTraitUseClauses();
     // TODO:
-    $traits = null;
     $members = Vector {};
 
     return new ClassDeclarationTree(
@@ -318,6 +318,32 @@ class Parser extends ParserBase
       $implementsClause,
       $traits,
       $members);
+  }
+
+  private function parseTraitUseClauses(): Vector<ParseTree>
+  {
+    $result = Vector {};
+    while ($this->peekKind(TokenKind::KW_USE)) {
+      $result[] = $this->parseTraitUseClause();
+    }
+    return $result;
+  }
+
+  private function parseTraitUseClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_USE);
+
+    $traits = Vector {};
+    $traits[] = $this->parseQualifiedNameType();
+    while ($this->eatOpt(TokenKind::COMMA)) {
+      $traits[] = $this->parseQualifiedNameType();
+    }
+
+    return new TraitUseClauseTree(
+      $this->getRange($start),
+      $traits);
   }
 
   private function parseTypeParametersOpt(): ?Vector<ParseTree>

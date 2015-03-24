@@ -172,4 +172,11 @@ class ParseTree
     invariant($this instanceof ClassDeclarationTree, "Wrong type.");
     return $this;
   }
+  public function isTraitUseClause(): bool {
+    return $this->kind === ParseTreeKind::TRAIT_USE_CLAUSE;
+  }
+  public function asTraitUseClause(): TraitUseClauseTree {
+    invariant($this instanceof TraitUseClauseTree, "Wrong type.");
+    return $this;
+  }
 }
