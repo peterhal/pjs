@@ -13,5 +13,7 @@ abstract class PredefinedName
   const string pn_array = 'array';
   const string string = 'string';
   const string void = 'void';
+  const string __construct = '__construct';
+  const string __destruct = '__destruct';
 }
 

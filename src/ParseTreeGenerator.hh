@@ -293,6 +293,32 @@ CONSTRUCTOR_BODY
             Pair { "name", "VariableNameToken" },
             Pair { "initializer", "?ParseTree" }
           }),
+      new ParseTreeSpecification("MethodDefinition",
+          Vector {
+            Pair { "modifiers", "Vector<Token>" },
+            Pair { "name", "NameToken" },
+            Pair { "parameters", "ParseTree" },
+            Pair { "returnType", "ParseTree" },
+            Pair { "body", "ParseTree" }
+          }),
+      new ParseTreeSpecification("DestructorDeclaration",
+          Vector {
+            Pair { "modifiers", "Vector<Token>" },
+            Pair { "body", "ParseTree" }
+          }),
+      new ParseTreeSpecification("ConstructorDeclaration",
+          Vector {
+            Pair { "modifiers", "Vector<Token>" },
+            Pair { "parameters", "?Vector<ParseTree>" },
+            Pair { "body", "ParseTree" }
+          }),
+      new ParseTreeSpecification("ConstructorParameter",
+          Vector {
+            Pair { "modifiers", "Vector<Token>" },
+            Pair { "type", "ParseTree" },
+            Pair { "name", "VariableNameToken" },
+            Pair { "defaultValue", "?ParseTree" }
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

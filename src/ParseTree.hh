@@ -200,6 +200,34 @@ class ParseTree
     invariant($this instanceof PropertyDeclaratorTree, "Wrong type.");
     return $this;
   }
+  public function isMethodDefinition(): bool {
+    return $this->kind === ParseTreeKind::METHOD_DEFINITION;
+  }
+  public function asMethodDefinition(): MethodDefinitionTree {
+    invariant($this instanceof MethodDefinitionTree, "Wrong type.");
+    return $this;
+  }
+  public function isDestructorDeclaration(): bool {
+    return $this->kind === ParseTreeKind::DESTRUCTOR_DECLARATION;
+  }
+  public function asDestructorDeclaration(): DestructorDeclarationTree {
+    invariant($this instanceof DestructorDeclarationTree, "Wrong type.");
+    return $this;
+  }
+  public function isConstructorDeclaration(): bool {
+    return $this->kind === ParseTreeKind::CONSTRUCTOR_DECLARATION;
+  }
+  public function asConstructorDeclaration(): ConstructorDeclarationTree {
+    invariant($this instanceof ConstructorDeclarationTree, "Wrong type.");
+    return $this;
+  }
+  public function isConstructorParameter(): bool {
+    return $this->kind === ParseTreeKind::CONSTRUCTOR_PARAMETER;
+  }
+  public function asConstructorParameter(): ConstructorParameterTree {
+    invariant($this instanceof ConstructorParameterTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

@@ -330,7 +330,7 @@ class Parser extends ParserBase
       $modifiers = $this->parseModifiers();
       switch ($this->peek()) {
       case TokenKind::KW_FUNCTION:
-        return $this->parseMethodDeclaration($modifiers);
+        return $this->parseMethodLikeDeclaration($modifiers);
       case TokenKind::VARIABLE_NAME:
         return $this->parsePropertyDeclaration($modifiers);
       default:
@@ -343,15 +343,108 @@ class Parser extends ParserBase
     }
   }
 
-  private function parseMethodDeclaration(Vector<Token> $tokens): ParseTree
+  private function parseConstructorDeclaration(
+    Vector<Token> $modifiers,
+    NameToken $name): ParseTree
   {
-    // TODO
-    return new ParseErrorTree($this->getRange($this->position()));
+    $start = $modifiers[0]->start();
+
+    $this->eat(TokenKind::OPEN_PAREN);
+    $parameters = $this->parseCommaSeparatedListOpt(
+      () ==> $this->peekConstructorParameter(),
+      () ==> $this->parseConstructorParameter());
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $body = $this->parseCompoundStatement();
+
+    return new ConstructorDeclarationTree(
+      $this->getRange($start),
+      $modifiers,
+      $parameters,
+      $body);
+  }
+
+  private function peekConstructorParameter(): bool
+  {
+    return $this->peek() || Parser::isModifier($this->peek());
+  }
+
+  private function parseConstructorParameter(): ParseTree
+  {
+    $start = $this->position();
+
+    $modifiers = $this->parseModifiers();
+    $type = $this->parseTypeSpecifier();
+    $name = $this->eatVariableName();
+    $defaultValue = $this->parseInitializerOpt();
+
+    return new ConstructorParameterTree(
+      $this->getRange($start),
+      $modifiers,
+      $type,
+      $name,
+      $defaultValue);
+  }
+
+  private function parseDestructorDeclaration(
+    Vector<Token> $modifiers,
+    NameToken $name): ParseTree
+  {
+    $start = $modifiers[0]->start();
+
+    $this->eat(TokenKind::OPEN_PAREN);
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $body = $this->parseCompoundStatement();
+
+    return new DestructorDeclarationTree(
+      $this->getRange($start),
+      $modifiers,
+      $body);
+  }
+
+  private function parseMethodDeclaration(
+    Vector<Token> $modifiers,
+    NameToken $name): ParseTree
+  {
+    $start = $modifiers[0]->start();
+
+    // TODO: type parameters
+    $parameters = $this->parseParameterList();
+    $this->eat(TokenKind::COLON);
+    $returnType = $this->parseReturnType();
+    $body = $this->parseCompoundStatement();
+
+    return new MethodDefinitionTree(
+      $this->getRange($start),
+      $modifiers,
+      $name,
+      $parameters,
+      $returnType,
+      $body);
+  }
+
+  private function parseMethodLikeDeclaration(Vector<Token> $modifiers): ParseTree
+  {
+    $this->eat(TokenKind::KW_FUNCTION);
+    $name = $this->eatName();
+    if ($name === PredefinedName::__construct) {
+      return $this->parseConstructorDeclaration(
+        $modifiers,
+        $name);
+    } else if ($name === PredefinedName::__destruct) {
+      return $this->parseDestructorDeclaration(
+        $modifiers,
+        $name);
+    } else {
+      return $this->parseMethodDeclaration(
+        $modifiers,
+        $name);
+    }
   }
 
   private function parsePropertyDeclaration(Vector<Token> $modifiers): ParseTree
   {
     $start = $modifiers[0]->start();
+
     $type = $this->parseTypeSpecifier();
     $declarators = $this->parseCommaSeparatedList(
       () ==> $this->parsePropertyDeclarator());
@@ -375,6 +468,15 @@ class Parser extends ParserBase
       $this->getRange($start),
       $name,
       $initializer);
+  }
+
+  private function parseInitializerOpt(): ?ParseTree
+  {
+    if ($this->eatOpt(TokenKind::EQUAL)) {
+      return $this->parseExpression();
+    } else {
+      return null;
+    }
   }
 
   private function parseConstDeclaration(): ParseTree

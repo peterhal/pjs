@@ -299,6 +299,56 @@ class PropertyDeclaratorTree extends ParseTree
   }
 }
 
+class MethodDefinitionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<Token> $modifiers,
+    public NameToken $name,
+    public ParseTree $parameters,
+    public ParseTree $returnType,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::METHOD_DEFINITION);
+  }
+}
+
+class DestructorDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<Token> $modifiers,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::DESTRUCTOR_DECLARATION);
+  }
+}
+
+class ConstructorDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<Token> $modifiers,
+    public ?Vector<ParseTree> $parameters,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::CONSTRUCTOR_DECLARATION);
+  }
+}
+
+class ConstructorParameterTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<Token> $modifiers,
+    public ParseTree $type,
+    public VariableNameToken $name,
+    public ?ParseTree $defaultValue)
+  {
+    parent::__construct($range, ParseTreeKind::CONSTRUCTOR_PARAMETER);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(
