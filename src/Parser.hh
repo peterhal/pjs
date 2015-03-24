@@ -255,8 +255,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $name = $this->eatName();
-    $this->eat(TokenKind::EQUAL);
-    $value = $this->parseExpression();
+    $value = $this->parseInitializer();
     $this->eat(TokenKind::SEMI_COLON);
 
     return new EnumeratorTree(
@@ -458,16 +457,18 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $name = $this->eatVariableName();
-    if ($this->eatOpt(TokenKind::EQUAL)) {
-      $initializer = $this->parseExpression();
-    } else {
-      $initializer = null;
-    }
+    $initializer = $this->parseInitializerOpt();
 
     return new PropertyDeclaratorTree(
       $this->getRange($start),
       $name,
       $initializer);
+  }
+
+  private function parseInitializer(): ParseTree
+  {
+    $this->eat(TokenKind::EQUAL);
+    return $this->parseExpression();
   }
 
   private function parseInitializerOpt(): ?ParseTree
@@ -504,8 +505,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $name = $this->eatName();
-    $this->eat(TokenKind::EQUAL);
-    $value = $this->parseExpression();
+    $value = $this->parseInitializer();
 
     return new ConstDeclaratorTree(
       $this->getRange($start),
