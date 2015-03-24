@@ -137,4 +137,39 @@ class ParseTree
     invariant($this instanceof TypeArgumentsTree, "Wrong type.");
     return $this;
   }
+  public function isNamespaceUseDeclaration(): bool {
+    return $this->kind === ParseTreeKind::NAMESPACE_USE_DECLARATION;
+  }
+  public function asNamespaceUseDeclaration(): NamespaceUseDeclarationTree {
+    invariant($this instanceof NamespaceUseDeclarationTree, "Wrong type.");
+    return $this;
+  }
+  public function isNamespaceUseClause(): bool {
+    return $this->kind === ParseTreeKind::NAMESPACE_USE_CLAUSE;
+  }
+  public function asNamespaceUseClause(): NamespaceUseClauseTree {
+    invariant($this instanceof NamespaceUseClauseTree, "Wrong type.");
+    return $this;
+  }
+  public function isNamespaceDefinition(): bool {
+    return $this->kind === ParseTreeKind::NAMESPACE_DEFINITION;
+  }
+  public function asNamespaceDefinition(): NamespaceDefinitionTree {
+    invariant($this instanceof NamespaceDefinitionTree, "Wrong type.");
+    return $this;
+  }
+  public function isGenericTypeParameter(): bool {
+    return $this->kind === ParseTreeKind::GENERIC_TYPE_PARAMETER;
+  }
+  public function asGenericTypeParameter(): GenericTypeParameterTree {
+    invariant($this instanceof GenericTypeParameterTree, "Wrong type.");
+    return $this;
+  }
+  public function isClassDeclaration(): bool {
+    return $this->kind === ParseTreeKind::CLASS_DECLARATION;
+  }
+  public function asClassDeclaration(): ClassDeclarationTree {
+    invariant($this instanceof ClassDeclarationTree, "Wrong type.");
+    return $this;
+  }
 }

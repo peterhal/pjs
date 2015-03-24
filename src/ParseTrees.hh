@@ -194,3 +194,64 @@ class TypeArgumentsTree extends ParseTree
     parent::__construct($range, ParseTreeKind::TYPE_ARGUMENTS);
   }
 }
+
+class NamespaceUseDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $useClauses)
+  {
+    parent::__construct($range, ParseTreeKind::NAMESPACE_USE_DECLARATION);
+  }
+}
+
+class NamespaceUseClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $name,
+    public ?NameToken $alias)
+  {
+    parent::__construct($range, ParseTreeKind::NAMESPACE_USE_CLAUSE);
+  }
+}
+
+class NamespaceDefinitionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?NameToken $name,
+    public ?Vector<ParseTree> $declarations)
+  {
+    parent::__construct($range, ParseTreeKind::NAMESPACE_DEFINITION);
+  }
+}
+
+class GenericTypeParameterTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?Token $variance,
+    public NameToken $name,
+    public ?ParseTree $constraint)
+  {
+    parent::__construct($range, ParseTreeKind::GENERIC_TYPE_PARAMETER);
+  }
+}
+
+class ClassDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public bool $isAbstract,
+    public bool $isFinal,
+    public NameToken $name,
+    public ?Vector<ParseTree> $typeParameters,
+    public ?ParseTree $extendsClause,
+    public ?Vector<ParseTree> $implementsClause,
+    public ?Vector<ParseTree> $traits,
+    public Vector<ParseTree> $members)
+  {
+    parent::__construct($range, ParseTreeKind::CLASS_DECLARATION);
+  }
+}

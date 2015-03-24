@@ -242,7 +242,38 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("TypeArguments",
           Vector {
             Pair { "types", "Vector<ParseTree>" }
-          })
+          }),
+      new ParseTreeSpecification("NamespaceUseDeclaration",
+          Vector {
+            Pair { "useClauses", "Vector<ParseTree>" }
+          }),
+      new ParseTreeSpecification("NamespaceUseClause",
+          Vector {
+            Pair { "name", "ParseTree" },
+            Pair { "alias", "?NameToken" }
+          }),
+      new ParseTreeSpecification("NamespaceDefinition",
+          Vector {
+            Pair { "name", "?NameToken" },
+            Pair { "declarations", "?Vector<ParseTree>" }
+          }),
+      new ParseTreeSpecification("GenericTypeParameter",
+          Vector {
+            Pair { "variance", "?Token" },
+            Pair { "name", "NameToken" },
+            Pair { "constraint", "?ParseTree" }
+          }),
+      new ParseTreeSpecification("ClassDeclaration",
+          Vector {
+            Pair { "isAbstract", "bool" },
+            Pair { "isFinal", "bool" },
+            Pair { "name", "NameToken" },
+            Pair { "typeParameters", "?Vector<ParseTree>" },
+            Pair { "extendsClause", "?ParseTree" },
+            Pair { "implementsClause", "?Vector<ParseTree>" },
+            Pair { "traits", "?Vector<ParseTree>" },
+            Pair { "members", "Vector<ParseTree>" }
+          }),
     };
   }
 

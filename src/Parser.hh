@@ -67,6 +67,11 @@ class Parser extends ParserBase
     case TokenKind::KW_ASYNC:
     case TokenKind::LEFT_SHIFT: // attributes
     case TokenKind::KW_ENUM:
+    case TokenKind::KW_NAMESPACE:
+    case TokenKind::KW_USE:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+    case TokenKind::KW_CLASS:
       return true;
     default:
       // TODO
@@ -89,6 +94,14 @@ class Parser extends ParserBase
       throw new Exception();
     case TokenKind::KW_ENUM:
       return $this->parseEnum();
+    case TokenKind::KW_NAMESPACE:
+      return $this->parseNamespace();
+    case TokenKind::KW_USE:
+      return $this->parseNamespaceUseDeclaration();
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+    case TokenKind::KW_CLASS:
+      return $this->parseClassDeclaration();
     default:
       // TODO
       throw new Exception();
@@ -121,6 +134,81 @@ class Parser extends ParserBase
     return new RequireMultipleDirectiveTree(
       $this->getRange($start),
       $includeFilename);
+  }
+  public function parseNamespaceUseDeclaration(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_USE);
+    $useClauses = $this->parseNamespaceUseClauses();
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new NamespaceUseDeclarationTree(
+      $this->getRange($start),
+      $useClauses);
+  }
+
+  private function parseNamespaceUseClauses(): Vector<ParseTree>
+  {
+    $useClauses = Vector {};
+    $useClauses[] = $this->parseNamespaceUseClause();
+    while ($this->eatOpt(TokenKind::COMMA)) {
+      $useClauses[] = $this->parseNamespaceUseClause();
+    }
+    return $useClauses;
+  }
+
+  private function parseNamespaceUseClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $name = $this->parseQualifiedName();
+    if ($this->eatOpt(TokenKind::KW_AS)) {
+      $alias = $this->eatName();
+      return new NamespaceUseClauseTree(
+        $this->getRange($start),
+        $name,
+        $alias);
+    } else {
+      return new NamespaceUseClauseTree(
+        $this->getRange($start),
+        $name,
+        null);
+    }
+  }
+
+  public function parseNamespace(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_NAMESPACE);
+    if ($this->peekKind(TokenKind::NAME)) {
+      $name = $this->eatName();
+      if ($this->eatOpt(TokenKind::SEMI_COLON)) {
+        return new NamespaceDefinitionTree(
+          $this->getRange($start),
+          $name,
+          null);
+      } else {
+        $this->eat(TokenKind::OPEN_CURLY);
+        $declarations = $this->parseDeclarationList();
+        $this->eat(TokenKind::CLOSE_CURLY);
+
+        return new NamespaceDefinitionTree(
+          $this->getRange($start),
+          $name,
+          $declarations);
+      }
+    } else {
+        $this->eat(TokenKind::OPEN_CURLY);
+        $declarations = $this->parseDeclarationList();
+        $this->eat(TokenKind::CLOSE_CURLY);
+
+        return new NamespaceDefinitionTree(
+          $this->getRange($start),
+          null,
+          $declarations);
+    }
   }
 
   public function parseEnum(): ParseTree
@@ -189,7 +277,99 @@ class Parser extends ParserBase
       $value);
   }
 
-  public function parseExpression(): ParseTree
+  private function parseClassDeclaration(): ParseTree
+  {
+    $start = $this->position();
+
+    $isAbstract = $this->eatOpt(TokenKind::KW_ABSTRACT);
+    $isFinal = $this->eatOpt(TokenKind::KW_FINAL);
+    if ($isAbstract && $isFinal) {
+      $this->error("Class cannot be both 'abstract' and 'final'.");
+    }
+
+    $this->eat(TokenKind::KW_CLASS);
+    $name = $this->eatName();
+    $typeParameters = $this->parseTypeParametersOpt();
+    if ($this->eatOpt(TokenKind::KW_EXTENDS)) {
+      $extendsClause = $this->parseQualifiedNameType();
+    } else {
+      $extendsClause = null;
+    }
+    if ($this->eatOpt(TokenKind::KW_IMPLEMENTS)) {
+      $implementsClause = Vector {};
+      $implementsClause[] = $this->parseQualifiedNameType();
+      while ($this->eatOpt(TokenKind::COMMA)) {
+        $implementsClause[] = $this->parseQualifiedNameType();
+      }
+    } else {
+      $implementsClause = null;
+    }
+    // TODO:
+    $traits = null;
+    $members = Vector {};
+
+    return new ClassDeclarationTree(
+      $this->getRange($start),
+      $isAbstract,
+      $isFinal,
+      $name,
+      $typeParameters,
+      $extendsClause,
+      $implementsClause,
+      $traits,
+      $members);
+  }
+
+  private function parseTypeParametersOpt(): ?Vector<ParseTree>
+  {
+    if (!$this->peekKind(TokenKind::OPEN_ANGLE)) {
+      return null;
+    } else {
+      $start = $this->position();
+
+      $this->eat(TokenKind::OPEN_ANGLE);
+      $result = Vector {};
+      $result[] = $this->parseTypeParameter();
+      while ($this->eatOpt(TokenKind::COMMA)) {
+        $result[] = $this->parseTypeParameter();
+      }
+      $this->eat(TokenKind::CLOSE_ANGLE);
+
+      return $result;
+    }
+  }
+
+  private function parseTypeParameter(): ParseTree
+  {
+    $start = $this->position();
+
+    $variance = $this->parseVarianceOpt();
+    $name = $this->eatName();
+    if ($this->eatOpt(TokenKind::KW_AS)) {
+      $constraint = $this->parseTypeSpecifier();
+    } else {
+      $constraint = null;
+    }
+
+    return new GenericTypeParameterTree(
+      $this->getRange($start),
+      $variance,
+      $name,
+      $constraint);
+  }
+
+  private function parseVarianceOpt(): ?Token
+  {
+    switch ($this->peek()) {
+    case TokenKind::PLUS:
+    case TokenKind::MINUS:
+      return $this->next();
+    default:
+      return null;
+    }
+  }
+
+  private function parseExpression(): ParseTree
   {
     $start = $this->position();
 
@@ -357,9 +537,9 @@ class Parser extends ParserBase
 
   private function parseNamedType(): ParseTree
   {
-    $start = $this->position();
-
     if ($this->peekKind(TokenKind::NAME)) {
+      $start = $this->position();
+
       $value = $this->peekToken()->asName()->value();
 
       switch ($value) {
@@ -377,6 +557,13 @@ class Parser extends ParserBase
         break;
       }
     }
+
+    return $this->parseQualifiedNameType();
+  }
+
+  private function parseQualifiedNameType(): ParseTree
+  {
+    $start = $this->position();
 
     $name = $this->parseQualifiedName();
     $typeArguments = $this->parseTypeArgumentsOpt();
