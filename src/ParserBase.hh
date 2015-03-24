@@ -91,6 +91,11 @@ class ParserBase
     return $this->peek() === $kind;
   }
 
+  protected function peekIndexKind(int $index, TokenKind $kind): bool
+  {
+    return $this->peekIndex($index) === $kind;
+  }
+
   protected function peekIndex(int $index): TokenKind
   {
     return $this->peekTokenIndex($index)->kind();

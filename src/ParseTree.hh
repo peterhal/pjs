@@ -179,4 +179,25 @@ class ParseTree
     invariant($this instanceof TraitUseClauseTree, "Wrong type.");
     return $this;
   }
+  public function isConstDeclaration(): bool {
+    return $this->kind === ParseTreeKind::CONST_DECLARATION;
+  }
+  public function asConstDeclaration(): ConstDeclarationTree {
+    invariant($this instanceof ConstDeclarationTree, "Wrong type.");
+    return $this;
+  }
+  public function isConstDeclarator(): bool {
+    return $this->kind === ParseTreeKind::CONST_DECLARATOR;
+  }
+  public function asConstDeclarator(): ConstDeclaratorTree {
+    invariant($this instanceof ConstDeclaratorTree, "Wrong type.");
+    return $this;
+  }
+  public function isParseError(): bool {
+    return $this->kind === ParseTreeKind::PARSE_ERROR;
+  }
+  public function asParseError(): ParseErrorTree {
+    invariant($this instanceof ParseErrorTree, "Wrong type.");
+    return $this;
+  }
 }

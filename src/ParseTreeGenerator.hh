@@ -278,6 +278,17 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "traits", "Vector<ParseTree>" },
           }),
+      new ParseTreeSpecification("ConstDeclaration",
+          Vector {
+            Pair { "type", "?ParseTree" },
+            Pair { "declarators", "Vector<ParseTree>" }
+          }),
+      new ParseTreeSpecification("ConstDeclarator",
+          Vector {
+            Pair { "name", "NameToken" },
+            Pair { "value", "ParseTree" }
+          }),
+      new ParseTreeSpecification("ParseError", Vector {}),
     };
   }
 

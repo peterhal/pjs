@@ -265,3 +265,34 @@ class TraitUseClauseTree extends ParseTree
     parent::__construct($range, ParseTreeKind::TRAIT_USE_CLAUSE);
   }
 }
+
+class ConstDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?ParseTree $type,
+    public Vector<ParseTree> $declarators)
+  {
+    parent::__construct($range, ParseTreeKind::CONST_DECLARATION);
+  }
+}
+
+class ConstDeclaratorTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public NameToken $name,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::CONST_DECLARATOR);
+  }
+}
+
+class ParseErrorTree extends ParseTree
+{
+  public function __construct(
+    Range $range)
+  {
+    parent::__construct($range, ParseTreeKind::PARSE_ERROR);
+  }
+}

@@ -289,12 +289,12 @@ class Parser extends ParserBase
     } else {
       $implementsClause = null;
     }
-    $traits =
-      $this->parseList(
+    $traits = $this->parseList(
         () ==> $this->peekKind(TokenKind::KW_USE),
         () ==> $this->parseTraitUseClause());
-    // TODO:
-    $members = Vector {};
+    $members = $this->parseList(
+        () ==> $this->peekClassMember(),
+        () ==> $this->parseClassMember());
 
     return new ClassDeclarationTree(
       $this->getRange($start),
@@ -306,6 +306,111 @@ class Parser extends ParserBase
       $implementsClause,
       $traits,
       $members);
+  }
+
+  private function peekClassMember(): bool
+  {
+    // TODO:
+    return false;
+  }
+
+  private function parseClassMember(): ParseTree
+  {
+    switch ($this->peek()) {
+    case TokenKind::KW_CONST:
+      return $this->parseConstDeclaration();
+    case TokenKind::LEFT_SHIFT:
+      // TODO: attributes
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+      $modifiers = $this->parseModifiers();
+      switch ($this->peek()) {
+      case TokenKind::KW_FUNCTION:
+        return $this->parseMethodDeclaration($modifiers);
+      case TokenKind::VARIABLE_NAME:
+        return $this->parsePropertyDeclaration($modifiers);
+      default:
+        $this->error("Class member expected");
+        return new ParseErrorTree($this->getRange($this->position()));
+      }
+
+    default:
+      throw new Exception("");
+    }
+  }
+
+  private function parseMethodDeclaration(Vector<Token> $tokens): ParseTree
+  {
+    // TODO
+    return new ParseErrorTree($this->getRange($this->position()));
+  }
+
+  private function parsePropertyDeclaration(Vector<Token> $modifiers): ParseTree
+  {
+    // TODO
+    return new ParseErrorTree($this->getRange($this->position()));
+  }
+
+  private function parseConstDeclaration(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_CONST);
+    if (!$this->peekKind(TokenKind::NAME) 
+        || !$this->peekIndexKind(1, TokenKind::EQUAL)) {
+      $type = $this->parseTypeSpecifier();
+    } else {
+      $type = null;
+    }
+    $declarators = $this->parseCommaSeparatedList(
+      () ==> $this->parseConstDeclarator());
+
+    return new ConstDeclarationTree(
+      $this->getRange($start),
+      $type,
+      $declarators);
+  }
+
+  private function parseConstDeclarator(): ParseTree
+  {
+    $start = $this->position();
+
+    $name = $this->eatName();
+    $this->eat(TokenKind::EQUAL);
+    $value = $this->parseExpression();
+
+    return new ConstDeclaratorTree(
+      $this->getRange($start),
+      $name,
+      $value);
+  }
+
+  private function parseModifiers(): Vector<Token>
+  {
+    $result = Vector {};
+    while (Parser::isModifier($this->peek())) {
+      $result[] = $this->next();
+    }
+    return $result;
+  }
+
+  private static function isModifier(TokenKind $kind): bool
+  {
+    switch ($kind) {
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+      return true;
+    default:
+      return false;
+    }
   }
 
   private function parseTraitUseClause(): ParseTree
