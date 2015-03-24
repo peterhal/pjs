@@ -351,8 +351,30 @@ class Parser extends ParserBase
 
   private function parsePropertyDeclaration(Vector<Token> $modifiers): ParseTree
   {
-    // TODO
+    $start = $modifiers[0]->start();
+    $type = $this->parseTypeSpecifier();
+    $declarators = $this->parseCommaSeparatedList(
+      () ==> $this->parsePropertyDeclarator());
+    $this->eat(TokenKind::SEMI_COLON);
+
     return new ParseErrorTree($this->getRange($this->position()));
+  }
+
+  private function parsePropertyDeclarator(): ParseTree
+  {
+    $start = $this->position();
+
+    $name = $this->eatVariableName();
+    if ($this->eatOpt(TokenKind::EQUAL)) {
+      $initializer = $this->parseExpression();
+    } else {
+      $initializer = null;
+    }
+
+    return new PropertyDeclaratorTree(
+      $this->getRange($start),
+      $name,
+      $initializer);
   }
 
   private function parseConstDeclaration(): ParseTree

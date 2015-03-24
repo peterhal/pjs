@@ -193,6 +193,13 @@ class ParseTree
     invariant($this instanceof ConstDeclaratorTree, "Wrong type.");
     return $this;
   }
+  public function isPropertyDeclarator(): bool {
+    return $this->kind === ParseTreeKind::PROPERTY_DECLARATOR;
+  }
+  public function asPropertyDeclarator(): PropertyDeclaratorTree {
+    invariant($this instanceof PropertyDeclaratorTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

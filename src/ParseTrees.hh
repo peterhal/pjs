@@ -288,6 +288,17 @@ class ConstDeclaratorTree extends ParseTree
   }
 }
 
+class PropertyDeclaratorTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public VariableNameToken $name,
+    public ?ParseTree $initializer)
+  {
+    parent::__construct($range, ParseTreeKind::PROPERTY_DECLARATOR);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

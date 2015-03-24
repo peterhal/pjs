@@ -288,6 +288,11 @@ CONSTRUCTOR_BODY
             Pair { "name", "NameToken" },
             Pair { "value", "ParseTree" }
           }),
+      new ParseTreeSpecification("PropertyDeclarator",
+          Vector {
+            Pair { "name", "VariableNameToken" },
+            Pair { "initializer", "?ParseTree" }
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }
