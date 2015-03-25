@@ -349,6 +349,29 @@ class ConstructorParameterTree extends ParseTree
   }
 }
 
+class InterfaceDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public NameToken $name,
+    public ?Vector<ParseTree> $typeParameters,
+    public ?Vector<ParseTree> $extendsClause,
+    public Vector<ParseTree> $members)
+  {
+    parent::__construct($range, ParseTreeKind::INTERFACE_DECLARATION);
+  }
+}
+
+class RequiresExtendsClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $name)
+  {
+    parent::__construct($range, ParseTreeKind::REQUIRES_EXTENDS_CLAUSE);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

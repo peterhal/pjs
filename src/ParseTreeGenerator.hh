@@ -319,6 +319,17 @@ CONSTRUCTOR_BODY
             Pair { "name", "VariableNameToken" },
             Pair { "defaultValue", "?ParseTree" }
           }),
+      new ParseTreeSpecification("InterfaceDeclaration",
+          Vector {
+            Pair { "name", "NameToken" },
+            Pair { "typeParameters", "?Vector<ParseTree>" },
+            Pair { "extendsClause", "?Vector<ParseTree>" },
+            Pair { "members", "Vector<ParseTree>" }
+          }),
+      new ParseTreeSpecification("RequiresExtendsClause",
+          Vector {
+            Pair { "name", "ParseTree" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

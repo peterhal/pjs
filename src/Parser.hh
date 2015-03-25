@@ -63,6 +63,7 @@ class Parser extends ParserBase
     case TokenKind::KW_ABSTRACT:
     case TokenKind::KW_FINAL:
     case TokenKind::KW_CLASS:
+    case TokenKind::KW_INTERFACE:
       return true;
     default:
       // TODO
@@ -93,10 +94,97 @@ class Parser extends ParserBase
     case TokenKind::KW_FINAL:
     case TokenKind::KW_CLASS:
       return $this->parseClassDeclaration();
+    case TokenKind::KW_INTERFACE:
+      return $this->parseInterfaceDeclaration();
     default:
       // TODO
       throw new Exception();
     }
+  }
+
+  private function parseInterfaceDeclaration(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_INTERFACE);
+    $name = $this->eatName();
+    $typeParameters = $this->parseTypeParametersOpt();
+    $extendsClause = $this->parseExtendsClause();
+    $members = $this->parseDelimitedList(
+      TokenKind::OPEN_CURLY,
+      TokenKind::CLOSE_CURLY,
+      () ==> $this->peekInterfaceMember(),
+      () ==> $this->parseInterfaceMember());
+
+    return new InterfaceDeclarationTree(
+      $this->getRange($start),
+      $name,
+      $typeParameters,
+      $extendsClause,
+      $members);
+  }
+
+  private function parseExtendsClause(): ?Vector<ParseTree>
+  {
+    if ($this->eatOpt(TokenKind::KW_EXTENDS)) {
+      return 
+        $this->parseCommaSeparatedList(() ==> $this->parseQualifiedNameType());
+    } else {
+      return null;
+    }
+  }
+
+  private function peekInterfaceMember(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::KW_CONST:
+    case TokenKind::LEFT_SHIFT:
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+    case TokenKind::KW_REQUIRE:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  private function parseInterfaceMember(): ParseTree
+  {
+    switch ($this->peek()) {
+    case TokenKind::KW_CONST:
+      return $this->parseConstDeclaration();
+    case TokenKind::KW_REQUIRE:
+      return $this->parseRequiresExtendsClause();
+    case TokenKind::LEFT_SHIFT:
+      // TODO: attributes
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+      $modifiers = $this->parseModifiers();
+      // TODO: no constructors or destructors
+      return $this->parseMethodLikeDeclaration($modifiers);
+
+    default:
+      throw new Exception("");
+    }
+  }
+
+  private function parseRequiresExtendsClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_REQUIRE);
+    $this->eat(TokenKind::KW_EXTENDS);
+    $name = $this->parseQualifiedName();
+
+    return new RequiresExtendsClauseTree($this->getRange($start), $name);
   }
 
   public function parseRequireOnceDirective(): ParseTree
@@ -309,8 +397,19 @@ class Parser extends ParserBase
 
   private function peekClassMember(): bool
   {
-    // TODO:
-    return false;
+    switch ($this->peek()) {
+    case TokenKind::KW_CONST:
+    case TokenKind::LEFT_SHIFT:
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+      return true;
+    default:
+      return false;
+    }
   }
 
   private function parseClassMember(): ParseTree

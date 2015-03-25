@@ -228,6 +228,20 @@ class ParseTree
     invariant($this instanceof ConstructorParameterTree, "Wrong type.");
     return $this;
   }
+  public function isInterfaceDeclaration(): bool {
+    return $this->kind === ParseTreeKind::INTERFACE_DECLARATION;
+  }
+  public function asInterfaceDeclaration(): InterfaceDeclarationTree {
+    invariant($this instanceof InterfaceDeclarationTree, "Wrong type.");
+    return $this;
+  }
+  public function isRequiresExtendsClause(): bool {
+    return $this->kind === ParseTreeKind::REQUIRES_EXTENDS_CLAUSE;
+  }
+  public function asRequiresExtendsClause(): RequiresExtendsClauseTree {
+    invariant($this instanceof RequiresExtendsClauseTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }
