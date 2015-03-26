@@ -341,6 +341,42 @@ CONSTRUCTOR_BODY
             Pair { "traitUseClauses", "Vector<ParseTree>" },
             Pair { "members", "Vector<ParseTree>" },
           }),
+      new ParseTreeSpecification("EmptyStatement", Vector {}),
+      new ParseTreeSpecification("ExpressionStatement",
+          Vector {
+            Pair { "expression", "ParseTree" },
+          }),
+      new ParseTreeSpecification("IfStatement",
+          Vector {
+            Pair { "condition", "ParseTree" },
+            Pair { "thenClause", "ParseTree" },
+            Pair { "elseifClauses", "?Vector<ParseTree>" },
+            Pair { "elseClause", "?ParseTree" },
+          }),
+      new ParseTreeSpecification("ElseifClause",
+          Vector {
+            Pair { "condition", "ParseTree" },
+            Pair { "elseClause", "ParseTree" },
+          }),
+      new ParseTreeSpecification("ElseClause",
+          Vector {
+            Pair { "elseClause", "ParseTree" },
+          }),
+      new ParseTreeSpecification("DefaultLabel", Vector {}),
+      new ParseTreeSpecification("CaseLabel",
+          Vector {
+            Pair { "condition", "ParseTree" },
+          }),
+      new ParseTreeSpecification("CaseClause",
+          Vector {
+            Pair { "labels", "Vector<ParseTree>" },
+            Pair { "statement", "ParseTree" },
+          }),
+      new ParseTreeSpecification("SwitchStatement",
+          Vector {
+            Pair { "condition", "ParseTree" },
+            Pair { "caseClauses", "Vector<ParseTree>" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

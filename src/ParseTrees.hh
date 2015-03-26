@@ -395,6 +395,100 @@ class TraitDeclarationTree extends ParseTree
   }
 }
 
+class EmptyStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range)
+  {
+    parent::__construct($range, ParseTreeKind::EMPTY_STATEMENT);
+  }
+}
+
+class ExpressionStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $expression)
+  {
+    parent::__construct($range, ParseTreeKind::EXPRESSION_STATEMENT);
+  }
+}
+
+class IfStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $condition,
+    public ParseTree $thenClause,
+    public ?Vector<ParseTree> $elseifClauses,
+    public ?ParseTree $elseClause)
+  {
+    parent::__construct($range, ParseTreeKind::IF_STATEMENT);
+  }
+}
+
+class ElseifClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $condition,
+    public ParseTree $elseClause)
+  {
+    parent::__construct($range, ParseTreeKind::ELSEIF_CLAUSE);
+  }
+}
+
+class ElseClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $elseClause)
+  {
+    parent::__construct($range, ParseTreeKind::ELSE_CLAUSE);
+  }
+}
+
+class DefaultLabelTree extends ParseTree
+{
+  public function __construct(
+    Range $range)
+  {
+    parent::__construct($range, ParseTreeKind::DEFAULT_LABEL);
+  }
+}
+
+class CaseLabelTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $condition)
+  {
+    parent::__construct($range, ParseTreeKind::CASE_LABEL);
+  }
+}
+
+class CaseClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $labels,
+    public ParseTree $statement)
+  {
+    parent::__construct($range, ParseTreeKind::CASE_CLAUSE);
+  }
+}
+
+class SwitchStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $condition,
+    public Vector<ParseTree> $caseClauses)
+  {
+    parent::__construct($range, ParseTreeKind::SWITCH_STATEMENT);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

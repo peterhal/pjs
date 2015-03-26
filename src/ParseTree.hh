@@ -256,6 +256,69 @@ class ParseTree
     invariant($this instanceof TraitDeclarationTree, "Wrong type.");
     return $this;
   }
+  public function isEmptyStatement(): bool {
+    return $this->kind === ParseTreeKind::EMPTY_STATEMENT;
+  }
+  public function asEmptyStatement(): EmptyStatementTree {
+    invariant($this instanceof EmptyStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isExpressionStatement(): bool {
+    return $this->kind === ParseTreeKind::EXPRESSION_STATEMENT;
+  }
+  public function asExpressionStatement(): ExpressionStatementTree {
+    invariant($this instanceof ExpressionStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isIfStatement(): bool {
+    return $this->kind === ParseTreeKind::IF_STATEMENT;
+  }
+  public function asIfStatement(): IfStatementTree {
+    invariant($this instanceof IfStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isElseifClause(): bool {
+    return $this->kind === ParseTreeKind::ELSEIF_CLAUSE;
+  }
+  public function asElseifClause(): ElseifClauseTree {
+    invariant($this instanceof ElseifClauseTree, "Wrong type.");
+    return $this;
+  }
+  public function isElseClause(): bool {
+    return $this->kind === ParseTreeKind::ELSE_CLAUSE;
+  }
+  public function asElseClause(): ElseClauseTree {
+    invariant($this instanceof ElseClauseTree, "Wrong type.");
+    return $this;
+  }
+  public function isDefaultLabel(): bool {
+    return $this->kind === ParseTreeKind::DEFAULT_LABEL;
+  }
+  public function asDefaultLabel(): DefaultLabelTree {
+    invariant($this instanceof DefaultLabelTree, "Wrong type.");
+    return $this;
+  }
+  public function isCaseLabel(): bool {
+    return $this->kind === ParseTreeKind::CASE_LABEL;
+  }
+  public function asCaseLabel(): CaseLabelTree {
+    invariant($this instanceof CaseLabelTree, "Wrong type.");
+    return $this;
+  }
+  public function isCaseClause(): bool {
+    return $this->kind === ParseTreeKind::CASE_CLAUSE;
+  }
+  public function asCaseClause(): CaseClauseTree {
+    invariant($this instanceof CaseClauseTree, "Wrong type.");
+    return $this;
+  }
+  public function isSwitchStatement(): bool {
+    return $this->kind === ParseTreeKind::SWITCH_STATEMENT;
+  }
+  public function asSwitchStatement(): SwitchStatementTree {
+    invariant($this instanceof SwitchStatementTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

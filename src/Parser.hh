@@ -862,27 +862,6 @@ class Parser extends ParserBase
       $name);
   }
 
-  public function parseCompoundStatement(): ParseTree
-  {
-    $start = $this->position();
-
-    $statements = $this->parseDelimitedList(
-      TokenKind::OPEN_CURLY,
-      TokenKind::CLOSE_CURLY,
-      () ==> $this->peekStatement(),
-      () ==> $this->parseStatement());
-
-    return new CompoundStatementTree(
-      $this->getRange($start),
-      $statements);
-  }
-
-  private function peekStatement(): bool
-  {
-    // TODO
-    return false;
-  }
-
   private function parseStatement(): ParseTree
   {
     $start = $this->position();
@@ -1078,6 +1057,170 @@ class Parser extends ParserBase
     return new TypeArgumentsTree($this->getRange($start), $types);
   }
 
+  // Statements
+  private function peekStatement(): bool
+  {
+    // TODO
+    return false;
+  }
+
+  public function parseCompoundStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $statements = $this->parseDelimitedList(
+      TokenKind::OPEN_CURLY,
+      TokenKind::CLOSE_CURLY,
+      () ==> $this->peekStatement(),
+      () ==> $this->parseStatement());
+
+    return new CompoundStatementTree(
+      $this->getRange($start),
+      $statements);
+  }
+
+  private function parseEmptyStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new EmptyStatementTree($this->getRange($start));
+  }
+
+  private function parseExpressionStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $expression = $this->parseExpression();
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new ExpressionStatementTree(
+      $this->getRange($start),
+      $expression);
+  }
+
+  private function parseIfStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_IF);
+    $condition = $this->parseParenExpression();
+    $thenClause = $this->parseStatement();
+    $elseifClauses = $this->parseList(
+      () ==> $this->peekKind(TokenKind::KW_ELSEIF),
+      () ==> $this->parseElseifClause());
+    $elseClause = $this->parseElseClauseOpt();
+
+    return new IfStatementTree(
+      $this->getRange($start),
+      $condition,
+      $thenClause,
+      $elseifClauses,
+      $elseClause);
+  }
+
+  private function parseParenExpression(): ParseTree
+  {
+    $this->eat(TokenKind::OPEN_PAREN);
+    $result = $this->parseExpression();
+    $this->eat(TokenKind::CLOSE_PAREN);
+
+    return $result;
+  }
+
+  private function parseElseifClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_ELSEIF);
+    $condition = $this->parseParenExpression();
+    $thenClause = $this->parseStatement();
+
+    return new ElseifClauseTree(
+      $this->getRange($start),
+      $condition,
+      $thenClause);
+  }
+
+  private function parseElseClauseOpt(): ?ParseTree
+  {
+    if ($this->peekKind(TokenKind::KW_ELSE)) {
+      $start = $this->position();
+
+      $this->eat(TokenKind::KW_ELSE);
+      $elseClause = $this->parseStatement();
+
+      return new ElseClauseTree(
+        $this->getRange($start),
+        $elseClause);
+    } else {
+      return null;
+    }
+  }
+
+  private function parseSwitchStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_SWITCH);
+    $condition = $this->parseParenExpression();
+    $this->eat(TokenKind::OPEN_CURLY);
+    $caseClauses = $this->parseList(
+      () ==> $this->peekCaseClause(),
+      () ==> $this->parseCaseClause());
+    $this->eat(TokenKind::CLOSE_CURLY);
+
+    return new SwitchStatementTree(
+      $this->getRange($start),
+      $condition,
+      $caseClauses);
+  }
+
+  private function peekCaseClause(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::KW_CASE:
+    case TokenKind::KW_DEFAULT:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  private function parseCaseClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $labels = $this->parseList(
+      () ==> $this->peekCaseClause(),
+      () ==> $this->parseCaseLabel());
+    $statement = $this->parseStatement();
+
+    return new CaseClauseTree(
+      $this->getRange($start),
+      $labels,
+      $statement);
+  }
+
+  private function parseCaseLabel(): ParseTree
+  {
+    $start = $this->position();
+
+    if ($this->eatOpt(TokenKind::KW_DEFAULT)) {
+      $this->eat(TokenKind::COLON);
+      return new DefaultLabelTree(
+        $this->getRange($start));
+    } else {
+      $this->eat(TokenKind::KW_CASE);
+      $condition = $this->parseExpression();
+      return new CaseLabelTree(
+        $this->getRange($start),
+        $condition);
+    }
+  }
+
+  // List helpers
   private function parseCommaSeparatedListOpt(
     (function (): bool) $peek,
     (function (): ParseTree) $element): ?Vector<ParseTree>
