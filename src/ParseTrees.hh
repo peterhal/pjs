@@ -489,6 +489,64 @@ class SwitchStatementTree extends ParseTree
   }
 }
 
+class WhileStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $condition,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::WHILE_STATEMENT);
+  }
+}
+
+class DoStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $body,
+    public ParseTree $condition)
+  {
+    parent::__construct($range, ParseTreeKind::DO_STATEMENT);
+  }
+}
+
+class ForStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?Vector<ParseTree> $initializer,
+    public Vector<ParseTree> $condition,
+    public ?Vector<ParseTree> $increment,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::FOR_STATEMENT);
+  }
+}
+
+class AliasExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $expression)
+  {
+    parent::__construct($range, ParseTreeKind::ALIAS_EXPRESSION);
+  }
+}
+
+class ForEachStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $collection,
+    public ?ParseTree $key,
+    public ParseTree $value,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::FOR_EACH_STATEMENT);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

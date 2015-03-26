@@ -319,6 +319,41 @@ class ParseTree
     invariant($this instanceof SwitchStatementTree, "Wrong type.");
     return $this;
   }
+  public function isWhileStatement(): bool {
+    return $this->kind === ParseTreeKind::WHILE_STATEMENT;
+  }
+  public function asWhileStatement(): WhileStatementTree {
+    invariant($this instanceof WhileStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isDoStatement(): bool {
+    return $this->kind === ParseTreeKind::DO_STATEMENT;
+  }
+  public function asDoStatement(): DoStatementTree {
+    invariant($this instanceof DoStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isForStatement(): bool {
+    return $this->kind === ParseTreeKind::FOR_STATEMENT;
+  }
+  public function asForStatement(): ForStatementTree {
+    invariant($this instanceof ForStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isAliasExpression(): bool {
+    return $this->kind === ParseTreeKind::ALIAS_EXPRESSION;
+  }
+  public function asAliasExpression(): AliasExpressionTree {
+    invariant($this instanceof AliasExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isForEachStatement(): bool {
+    return $this->kind === ParseTreeKind::FOR_EACH_STATEMENT;
+  }
+  public function asForEachStatement(): ForEachStatementTree {
+    invariant($this instanceof ForEachStatementTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

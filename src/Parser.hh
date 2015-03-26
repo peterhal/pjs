@@ -792,6 +792,12 @@ class Parser extends ParserBase
     }
   }
 
+  private function peekExpression(): bool
+  {
+    // TODO
+    return false;
+  }
+
   private function parseExpression(): ParseTree
   {
     $start = $this->position();
@@ -1201,6 +1207,116 @@ class Parser extends ParserBase
       $this->getRange($start),
       $labels,
       $statement);
+  }
+
+  private function parseWhileStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_WHILE);
+    $condition = $this->parseParenExpression();
+    $body = $this->parseStatement();
+
+    return new WhileStatementTree(
+      $this->getRange($start),
+      $condition,
+      $body);
+  }
+
+  private function parseDoStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_DO);
+    $body = $this->parseStatement();
+    $this->eat(TokenKind::KW_WHILE);
+    $condition = $this->parseParenExpression();
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new WhileStatementTree(
+      $this->getRange($start),
+      $condition,
+      $body);
+  }
+
+  private function parseForStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_FOR);
+    $this->eat(TokenKind::OPEN_PAREN);
+    $initializer = $this->parseForExpressionGroup();
+    $this->eat(TokenKind::SEMI_COLON);
+    $condition = $this->parseForExpressionGroup();
+    if ($condition === null) {
+      $this->error("Expected expression.");
+      $condition = Vector {};
+    }
+    $this->eat(TokenKind::SEMI_COLON);
+    $increment = $this->parseForExpressionGroup();
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $body = $this->parseStatement();
+
+    return new ForStatementTree(
+      $this->getRange($start),
+      $initializer,
+      $condition,
+      $increment,
+      $body);
+  }
+
+  private function parseForEachStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_FOREACH);
+    $this->eat(TokenKind::OPEN_PAREN);
+    $collection = $this->parseExpression();
+    $this->eat(TokenKind::KW_AS);
+    if ($this->peekKind(TokenKind::AMPERSAND)) {
+      $key = null;
+      $value = $this->parseAliasExpression();
+    } else {
+      $expression = $this->parseExpression();
+      if ($this->eatOpt(TokenKind::EQUAL)) {
+        $this->eat(TokenKind::CLOSE_ANGLE);
+        $key = $expression;
+        $value = $this->parseAliasExpression();
+      } else {
+        $key = null;
+        $value = $expression;
+      }
+    }
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $body = $this->parseStatement();
+
+    return new ForEachStatementTree(
+      $this->getRange($start),
+      $collection,
+      $key,
+      $value,
+      $body);
+  }
+
+  private function parseAliasExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    if ($this->eatOpt(TokenKind::AMPERSAND)) {
+      $expression = $this->parseExpression();
+      return new AliasExpressionTree(
+        $this->getRange($start),
+        $expression);
+    }
+
+    return $this->parseExpression();
+  }
+
+  private function parseForExpressionGroup(): ?Vector<ParseTree>
+  {
+    return $this->parseCommaSeparatedListOpt(
+      () ==> $this->peekExpression(),
+      () ==> $this->parseExpression());
   }
 
   private function parseCaseLabel(): ParseTree

@@ -377,6 +377,34 @@ CONSTRUCTOR_BODY
             Pair { "condition", "ParseTree" },
             Pair { "caseClauses", "Vector<ParseTree>" },
           }),
+      new ParseTreeSpecification("WhileStatement",
+          Vector {
+            Pair { "condition", "ParseTree" },
+            Pair { "body", "ParseTree" },
+          }),
+      new ParseTreeSpecification("DoStatement",
+          Vector {
+            Pair { "body", "ParseTree" },
+            Pair { "condition", "ParseTree" },
+          }),
+      new ParseTreeSpecification("ForStatement",
+          Vector {
+            Pair { "initializer", "?Vector<ParseTree>" },
+            Pair { "condition", "Vector<ParseTree>" },
+            Pair { "increment", "?Vector<ParseTree>" },
+            Pair { "body", "ParseTree" },
+          }),
+      new ParseTreeSpecification("AliasExpression",
+          Vector {
+            Pair { "expression", "ParseTree" },
+          }),
+      new ParseTreeSpecification("ForEachStatement",
+          Vector {
+            Pair { "collection", "ParseTree" },
+            Pair { "key", "?ParseTree" },
+            Pair { "value", "ParseTree" },
+            Pair { "body", "ParseTree" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }
