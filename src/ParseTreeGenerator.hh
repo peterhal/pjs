@@ -415,6 +415,22 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "value", "ParseTree" },
           }),
+      new ParseTreeSpecification("TryStatement",
+          Vector {
+            Pair { "body", "ParseTree" },
+            Pair { "catchClauses", "Vector<ParseTree>" },
+            Pair { "finallyClause", "?ParseTree" },
+          }),
+      new ParseTreeSpecification("CatchClause",
+          Vector {
+            Pair { "type", "ParseTree" },
+            Pair { "name", "VariableNameToken" },
+            Pair { "body", "ParseTree" },
+          }),
+      new ParseTreeSpecification("FinallyClause",
+          Vector {
+            Pair { "body", "ParseTree" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

@@ -382,6 +382,27 @@ class ParseTree
     invariant($this instanceof ThrowStatementTree, "Wrong type.");
     return $this;
   }
+  public function isTryStatement(): bool {
+    return $this->kind === ParseTreeKind::TRY_STATEMENT;
+  }
+  public function asTryStatement(): TryStatementTree {
+    invariant($this instanceof TryStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isCatchClause(): bool {
+    return $this->kind === ParseTreeKind::CATCH_CLAUSE;
+  }
+  public function asCatchClause(): CatchClauseTree {
+    invariant($this instanceof CatchClauseTree, "Wrong type.");
+    return $this;
+  }
+  public function isFinallyClause(): bool {
+    return $this->kind === ParseTreeKind::FINALLY_CLAUSE;
+  }
+  public function asFinallyClause(): FinallyClauseTree {
+    invariant($this instanceof FinallyClauseTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

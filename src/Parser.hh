@@ -1349,6 +1349,59 @@ class Parser extends ParserBase
     return new ThrowStatementTree($this->getRange($start), $value);
   }
 
+  private function parseTryStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_TRY);
+    $body = $this->parseCompoundStatement();
+    $catchClauses = $this->parseList(
+      () ==> $this->peekKind(TokenKind::KW_CATCH),
+      () ==> $this->parseCatchClause());
+    $finallyClause = $this->parseFinallyClauseOpt();
+    if ($catchClauses->count() === 0 && $finallyClause === null) {
+      $this->error("Expected 'catch' or 'finally' clause.");
+    }
+
+    return new TryStatementTree(
+      $this->getRange($start), 
+      $body,
+      $catchClauses,
+      $finallyClause);
+  }
+
+  private function parseCatchClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_CATCH);
+    $this->eat(TokenKind::OPEN_PAREN);
+    $type = $this->parseTypeSpecifier();
+    $name = $this->eatVariableName();
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $body = $this->parseCompoundStatement();
+
+    return new CatchClauseTree(
+      $this->getRange($start),
+      $type,
+      $name,
+      $body);
+  }
+
+  private function parseFinallyClauseOpt(): ?ParseTree
+  {
+    $start = $this->position();
+
+    if ($this->eatOpt(TokenKind::KW_FINALLY)) {
+      $body = $this->parseCompoundStatement();
+      return new FinallyClauseTree(
+        $this->getRange($start),
+        $body);
+    } else {
+      return null;
+    }
+  }
+
   private function parseAliasExpression(): ParseTree
   {
     $start = $this->position();

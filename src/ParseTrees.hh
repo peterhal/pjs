@@ -585,6 +585,40 @@ class ThrowStatementTree extends ParseTree
   }
 }
 
+class TryStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $body,
+    public Vector<ParseTree> $catchClauses,
+    public ?ParseTree $finallyClause)
+  {
+    parent::__construct($range, ParseTreeKind::TRY_STATEMENT);
+  }
+}
+
+class CatchClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $type,
+    public VariableNameToken $name,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::CATCH_CLAUSE);
+  }
+}
+
+class FinallyClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::FINALLY_CLAUSE);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(
