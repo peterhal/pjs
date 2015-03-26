@@ -547,6 +547,44 @@ class ForEachStatementTree extends ParseTree
   }
 }
 
+class ContinueStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range)
+  {
+    parent::__construct($range, ParseTreeKind::CONTINUE_STATEMENT);
+  }
+}
+
+class BreakStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range)
+  {
+    parent::__construct($range, ParseTreeKind::BREAK_STATEMENT);
+  }
+}
+
+class ReturnStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::RETURN_STATEMENT);
+  }
+}
+
+class ThrowStatementTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::THROW_STATEMENT);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

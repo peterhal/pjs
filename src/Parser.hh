@@ -798,6 +798,15 @@ class Parser extends ParserBase
     return false;
   }
 
+  private function parseExpressionOpt(): ?ParseTree
+  {
+    if ($this->peekExpression()) {
+      return $this->parseExpression();
+    } else {
+      return null;
+    }
+  }
+
   private function parseExpression(): ParseTree
   {
     $start = $this->position();
@@ -1296,6 +1305,48 @@ class Parser extends ParserBase
       $key,
       $value,
       $body);
+  }
+
+  private function parseContinueStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_CONTINUE);
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new ContinueStatementTree($this->getRange($start));
+  }
+
+  private function parseBreakStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_BREAK);
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new BreakStatementTree($this->getRange($start));
+  }
+
+  private function parseReturnStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_RETURN);
+    $value = $this->parseExpressionOpt();
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new ReturnStatementTree($this->getRange($start), $value);
+  }
+
+  private function parseThrowStatement(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_THROW);
+    $value = $this->parseExpression();
+    $this->eat(TokenKind::SEMI_COLON);
+
+    return new ThrowStatementTree($this->getRange($start), $value);
   }
 
   private function parseAliasExpression(): ParseTree

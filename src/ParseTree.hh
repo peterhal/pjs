@@ -354,6 +354,34 @@ class ParseTree
     invariant($this instanceof ForEachStatementTree, "Wrong type.");
     return $this;
   }
+  public function isContinueStatement(): bool {
+    return $this->kind === ParseTreeKind::CONTINUE_STATEMENT;
+  }
+  public function asContinueStatement(): ContinueStatementTree {
+    invariant($this instanceof ContinueStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isBreakStatement(): bool {
+    return $this->kind === ParseTreeKind::BREAK_STATEMENT;
+  }
+  public function asBreakStatement(): BreakStatementTree {
+    invariant($this instanceof BreakStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isReturnStatement(): bool {
+    return $this->kind === ParseTreeKind::RETURN_STATEMENT;
+  }
+  public function asReturnStatement(): ReturnStatementTree {
+    invariant($this instanceof ReturnStatementTree, "Wrong type.");
+    return $this;
+  }
+  public function isThrowStatement(): bool {
+    return $this->kind === ParseTreeKind::THROW_STATEMENT;
+  }
+  public function asThrowStatement(): ThrowStatementTree {
+    invariant($this instanceof ThrowStatementTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

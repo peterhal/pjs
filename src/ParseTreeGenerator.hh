@@ -405,6 +405,16 @@ CONSTRUCTOR_BODY
             Pair { "value", "ParseTree" },
             Pair { "body", "ParseTree" },
           }),
+      new ParseTreeSpecification("ContinueStatement", Vector {}),
+      new ParseTreeSpecification("BreakStatement", Vector {}),
+      new ParseTreeSpecification("ReturnStatement",
+          Vector {
+            Pair { "value", "?ParseTree" },
+          }),
+      new ParseTreeSpecification("ThrowStatement",
+          Vector {
+            Pair { "value", "ParseTree" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }
