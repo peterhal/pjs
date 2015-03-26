@@ -431,6 +431,24 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "body", "ParseTree" },
           }),
+      new ParseTreeSpecification("YieldExpression",
+          Vector {
+            Pair { "value", "ParseTree" },
+          }),
+      new ParseTreeSpecification("ArrayElementInitializer",
+          Vector {
+            Pair { "key", "ParseTree" },
+            Pair { "value", "ParseTree" },
+          }),
+      new ParseTreeSpecification("CollectionLiteral",
+          Vector {
+            Pair { "name", "ParseTree" },
+            Pair { "elements", "Vector<ParseTree>" },
+          }),
+      new ParseTreeSpecification("VariableName",
+          Vector {
+            Pair { "name", "VariableNameToken" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

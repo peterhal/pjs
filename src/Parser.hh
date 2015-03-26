@@ -25,7 +25,7 @@ class Parser extends ParserBase
     return $parser->parseScript();
   }
 
-  public function parseScript(): ParseTree
+  private function parseScript(): ParseTree
   {
     $start = $this->position();
 
@@ -49,7 +49,7 @@ class Parser extends ParserBase
         $declarations);
   }
 
-  public function peekDeclaration(): bool
+  private function peekDeclaration(): bool
   {
     switch ($this->peek()) {
     case TokenKind::KW_REQUIRE:
@@ -72,7 +72,7 @@ class Parser extends ParserBase
     }
   }
 
-  public function parseDeclaration(): ParseTree
+  private function parseDeclaration(): ParseTree
   {
     switch ($this->peek()) {
     case TokenKind::KW_REQUIRE:
@@ -278,7 +278,7 @@ class Parser extends ParserBase
     return new RequiresExtendsClauseTree($this->getRange($start), $name);
   }
 
-  public function parseRequireOnceDirective(): ParseTree
+  private function parseRequireOnceDirective(): ParseTree
   {
     $start = $this->position();
 
@@ -292,7 +292,7 @@ class Parser extends ParserBase
       $includeFilename);
   }
 
-  public function parseRequireMultipleDirective(): ParseTree
+  private function parseRequireMultipleDirective(): ParseTree
   {
     $start = $this->position();
 
@@ -305,7 +305,7 @@ class Parser extends ParserBase
       $this->getRange($start),
       $includeFilename);
   }
-  public function parseNamespaceUseDeclaration(): ParseTree
+  private function parseNamespaceUseDeclaration(): ParseTree
   {
     $start = $this->position();
 
@@ -339,7 +339,7 @@ class Parser extends ParserBase
     }
   }
 
-  public function parseNamespace(): ParseTree
+  private function parseNamespace(): ParseTree
   {
     $start = $this->position();
 
@@ -377,7 +377,7 @@ class Parser extends ParserBase
     }
   }
 
-  public function parseEnum(): ParseTree
+  private function parseEnum(): ParseTree
   {
     $start = $this->position();
 
@@ -809,15 +809,114 @@ class Parser extends ParserBase
 
   private function parseExpression(): ParseTree
   {
+    if ($this->peekKind(TokenKind::KW_YIELD)) {
+      return $this->parseYieldExpression();
+    } else {
+      return $this->parseAssignmentExpression();
+    }
+  }
+
+  private function parseYieldExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_YIELD);
+    $value = $this->parseArrayElementInitializer();
+
+    return new YieldExpressionTree(
+      $this->getRange($start),
+      $value);
+  }
+
+  private function parseArrayElementInitializer(): ParseTree
+  {
+    $start = $this->position();
+
+    $key = $this->parseExpression();
+    if ($this->eatOpt(TokenKind::FAT_ARROW)) {
+      $value = $this->parseExpression();
+      return new ArrayElementInitializerTree(
+        $this->getRange($start),
+        $key,
+        $value);
+    } else {
+      return $key;
+    }
+  }
+
+  private function parseAssignmentExpression(): ParseTree
+  {
     $start = $this->position();
 
     // TODO
-    $value = $this->eat(TokenKind::SINGLE_QUOTED_STRING);
-
-    return new LiteralTree($this->getRange($start) , $value);
+    throw new Exception();
   }
 
-  public function parseFunctionDefinition(): ParseTree
+  private function parsePrimaryExpression(): ParseTree
+  {
+    switch ($this->peek()) {
+    case TokenKind::VARIABLE_NAME:
+      return $this->parseVariableName();
+    case TokenKind::NAME:
+    case TokenKind::BACK_SLASH:
+      $name = $this->parseQualifiedName();
+      if ($this->peekKind(TokenKind::OPEN_CURLY)) {
+        return $this->parseCollectionLiteralSuffix($name);
+      } else {
+        return $name;
+      }
+    case TokenKind::KW_TRUE:
+    case TokenKind::KW_FALSE:
+    case TokenKind::KW_NULL:
+    case TokenKind::NUMBER:
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::DOUBLE_QUOTED_STRING:
+      return $this->parseLiteral();
+    case TokenKind::OPEN_PAREN:
+      return $this->parseParenExpression();
+    default:
+      throw new Exception();
+    }
+  }
+
+  private function parseVariableName(): ParseTree
+  {
+    $start = $this->position();
+
+    $name = $this->eatVariableName();
+
+    return new VariableNameTree(
+      $this->getRange($start),
+      $name);
+  }
+
+  private function parseLiteral(): ParseTree
+  {
+    $start = $this->position();
+
+    $value = $this->next();
+
+    return new LiteralTree(
+      $this->getRange($start),
+      $value);
+  }
+
+  private function parseCollectionLiteralSuffix(ParseTree $name): ParseTree
+  {
+    $start = $name->start();
+
+    $this->eat(TokenKind::OPEN_CURLY);
+    $elements = $this->parseCommaSeparatedList(
+      () ==> $this->parseArrayElementInitializer());
+    $this->eat(TokenKind::CLOSE_CURLY);
+
+    return new CollectionLiteralTree(
+      $this->getRange($start),
+      $name,
+      $elements);
+  }
+
+  private function parseFunctionDefinition(): ParseTree
   {
     $start = $this->position();
 
@@ -839,7 +938,7 @@ class Parser extends ParserBase
       $body);
   }
 
-  public function parseParameterList(): ParseTree
+  private function parseParameterList(): ParseTree
   {
     $start = $this->position();
 
@@ -1075,11 +1174,27 @@ class Parser extends ParserBase
   // Statements
   private function peekStatement(): bool
   {
-    // TODO
-    return false;
+    switch ($this->peek()) {
+      // TODO: Expression
+    case TokenKind::OPEN_CURLY:
+    case TokenKind::KW_IF:
+    case TokenKind::KW_SWITCH:
+    case TokenKind::KW_WHILE:
+    case TokenKind::KW_DO:
+    case TokenKind::KW_FOR:
+    case TokenKind::KW_FOREACH:
+    case TokenKind::KW_CONTINUE:
+    case TokenKind::KW_BREAK:
+    case TokenKind::KW_RETURN:
+    case TokenKind::KW_THROW:
+    case TokenKind::KW_TRY:
+      return true;
+    default:
+      return false;
+    }
   }
 
-  public function parseCompoundStatement(): ParseTree
+  private function parseCompoundStatement(): ParseTree
   {
     $start = $this->position();
 

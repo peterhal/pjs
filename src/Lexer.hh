@@ -147,15 +147,20 @@ class Lexer extends LexerBase
       default: return $create(TokenKind::CLOSE_ANGLE);
       }
     case Char::EQUAL:
-      if ($peekChar(Char::EQUAL)) {
+      switch ($peek()) {
+      case Char::CLOSE_ANGLE:
+        $next();
+        return $create(TokenKind::FAT_ARROW);
+      case $peekChar(Char::EQUAL):
         $next();
         if ($peekChar(Char::EQUAL)) {
           $next();
           return $create(TokenKind::EQUAL_EQUAL_EQUAL);
         }
         return $create(TokenKind::EQUAL_EQUAL);
+      default:
+        return $create(TokenKind::EQUAL);
       }
-      return $create(TokenKind::EQUAL);
     case Char::HAT:
       if ($peekChar(Char::EQUAL)) {
         $next();

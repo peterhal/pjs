@@ -619,6 +619,48 @@ class FinallyClauseTree extends ParseTree
   }
 }
 
+class YieldExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::YIELD_EXPRESSION);
+  }
+}
+
+class ArrayElementInitializerTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $key,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::ARRAY_ELEMENT_INITIALIZER);
+  }
+}
+
+class CollectionLiteralTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $name,
+    public Vector<ParseTree> $elements)
+  {
+    parent::__construct($range, ParseTreeKind::COLLECTION_LITERAL);
+  }
+}
+
+class VariableNameTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public VariableNameToken $name)
+  {
+    parent::__construct($range, ParseTreeKind::VARIABLE_NAME);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

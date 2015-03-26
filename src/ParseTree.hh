@@ -403,6 +403,34 @@ class ParseTree
     invariant($this instanceof FinallyClauseTree, "Wrong type.");
     return $this;
   }
+  public function isYieldExpression(): bool {
+    return $this->kind === ParseTreeKind::YIELD_EXPRESSION;
+  }
+  public function asYieldExpression(): YieldExpressionTree {
+    invariant($this instanceof YieldExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isArrayElementInitializer(): bool {
+    return $this->kind === ParseTreeKind::ARRAY_ELEMENT_INITIALIZER;
+  }
+  public function asArrayElementInitializer(): ArrayElementInitializerTree {
+    invariant($this instanceof ArrayElementInitializerTree, "Wrong type.");
+    return $this;
+  }
+  public function isCollectionLiteral(): bool {
+    return $this->kind === ParseTreeKind::COLLECTION_LITERAL;
+  }
+  public function asCollectionLiteral(): CollectionLiteralTree {
+    invariant($this instanceof CollectionLiteralTree, "Wrong type.");
+    return $this;
+  }
+  public function isVariableName(): bool {
+    return $this->kind === ParseTreeKind::VARIABLE_NAME;
+  }
+  public function asVariableName(): VariableNameTree {
+    invariant($this instanceof VariableNameTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }
