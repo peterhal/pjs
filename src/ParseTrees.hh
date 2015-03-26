@@ -372,6 +372,29 @@ class RequiresExtendsClauseTree extends ParseTree
   }
 }
 
+class RequiresImplementsClauseTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $name)
+  {
+    parent::__construct($range, ParseTreeKind::REQUIRES_IMPLEMENTS_CLAUSE);
+  }
+}
+
+class TraitDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public NameToken $name,
+    public ?Vector<ParseTree> $typeParameters,
+    public Vector<ParseTree> $traitUseClauses,
+    public Vector<ParseTree> $members)
+  {
+    parent::__construct($range, ParseTreeKind::TRAIT_DECLARATION);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(

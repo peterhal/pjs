@@ -242,6 +242,20 @@ class ParseTree
     invariant($this instanceof RequiresExtendsClauseTree, "Wrong type.");
     return $this;
   }
+  public function isRequiresImplementsClause(): bool {
+    return $this->kind === ParseTreeKind::REQUIRES_IMPLEMENTS_CLAUSE;
+  }
+  public function asRequiresImplementsClause(): RequiresImplementsClauseTree {
+    invariant($this instanceof RequiresImplementsClauseTree, "Wrong type.");
+    return $this;
+  }
+  public function isTraitDeclaration(): bool {
+    return $this->kind === ParseTreeKind::TRAIT_DECLARATION;
+  }
+  public function asTraitDeclaration(): TraitDeclarationTree {
+    invariant($this instanceof TraitDeclarationTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

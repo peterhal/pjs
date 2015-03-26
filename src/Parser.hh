@@ -64,6 +64,7 @@ class Parser extends ParserBase
     case TokenKind::KW_FINAL:
     case TokenKind::KW_CLASS:
     case TokenKind::KW_INTERFACE:
+    case TokenKind::KW_TRAIT:
       return true;
     default:
       // TODO
@@ -96,8 +97,87 @@ class Parser extends ParserBase
       return $this->parseClassDeclaration();
     case TokenKind::KW_INTERFACE:
       return $this->parseInterfaceDeclaration();
+    case TokenKind::KW_TRAIT:
+      return $this->parseTraitDeclaration();
     default:
       // TODO
+      throw new Exception();
+    }
+  }
+
+  private function parseTraitDeclaration(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_TRAIT);
+    $name = $this->eatName();
+    $typeParameters = $this->parseTypeParametersOpt();
+    $this->eat(TokenKind::OPEN_CURLY);
+    $traitUseClauses = $this->parseList(
+      () ==> $this->peekTraitUseClause(),
+      () ==> $this->parseTraitUseClause());
+    $members = $this->parseList(
+      () ==> $this->peekTraitMember(),
+      () ==> $this->parseTraitMember());
+    $this->eat(TokenKind::CLOSE_CURLY);
+
+    return new TraitDeclarationTree(
+      $this->getRange($start),
+      $name,
+      $typeParameters,
+      $traitUseClauses,
+      $members);
+  }
+
+  private function peekTraitMember(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::KW_REQUIRE:
+    case TokenKind::LEFT_SHIFT:
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  private function parseTraitMember(): ParseTree
+  {
+    switch ($this->peek()) {
+    case TokenKind::KW_REQUIRE:
+      switch ($this->peek()) {
+      case TokenKind::KW_EXTENDS:
+        return $this->parseRequireExtendsClause();
+      case TokenKind::KW_IMPLEMENTS:
+        return $this->parseRequireImplementsClause();
+      default:
+        $this->error("'extends' or 'implements' expected.");
+        return new ParseErrorTree($this->getRange($this->position()));
+      }
+    case TokenKind::LEFT_SHIFT:
+      // TODO: attributes
+    case TokenKind::KW_PUBLIC:
+    case TokenKind::KW_PROTECTED:
+    case TokenKind::KW_PRIVATE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_ABSTRACT:
+    case TokenKind::KW_FINAL:
+      $modifiers = $this->parseModifiers();
+      switch ($this->peek()) {
+      case TokenKind::KW_FUNCTION:
+        return $this->parseMethodLikeDeclaration($modifiers);
+      case TokenKind::VARIABLE_NAME:
+        return $this->parsePropertyDeclaration($modifiers);
+      default:
+        $this->error("Class member expected");
+        return new ParseErrorTree($this->getRange($this->position()));
+      }
+    default:
       throw new Exception();
     }
   }
@@ -158,7 +238,7 @@ class Parser extends ParserBase
     case TokenKind::KW_CONST:
       return $this->parseConstDeclaration();
     case TokenKind::KW_REQUIRE:
-      return $this->parseRequiresExtendsClause();
+      return $this->parseRequireExtendsClause();
     case TokenKind::LEFT_SHIFT:
       // TODO: attributes
     case TokenKind::KW_PUBLIC:
@@ -176,7 +256,18 @@ class Parser extends ParserBase
     }
   }
 
-  private function parseRequiresExtendsClause(): ParseTree
+  private function parseRequireImplementsClause(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_REQUIRE);
+    $this->eat(TokenKind::KW_IMPLEMENTS);
+    $name = $this->parseQualifiedName();
+
+    return new RequiresImplementsClauseTree($this->getRange($start), $name);
+  }
+
+  private function parseRequireExtendsClause(): ParseTree
   {
     $start = $this->position();
 
@@ -377,7 +468,7 @@ class Parser extends ParserBase
       $implementsClause = null;
     }
     $traits = $this->parseList(
-        () ==> $this->peekKind(TokenKind::KW_USE),
+        () ==> $this->peekTraitUseClause(),
         () ==> $this->parseTraitUseClause());
     $members = $this->parseList(
         () ==> $this->peekClassMember(),
@@ -634,6 +725,11 @@ class Parser extends ParserBase
     default:
       return false;
     }
+  }
+
+  private function peekTraitUseClause(): bool
+  {
+    return $this->peekKind(TokenKind::KW_USE);
   }
 
   private function parseTraitUseClause(): ParseTree

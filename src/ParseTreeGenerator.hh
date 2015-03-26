@@ -330,6 +330,17 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "name", "ParseTree" },
           }),
+      new ParseTreeSpecification("RequiresImplementsClause",
+          Vector {
+            Pair { "name", "ParseTree" },
+          }),
+      new ParseTreeSpecification("TraitDeclaration",
+          Vector {
+            Pair { "name", "NameToken" },
+            Pair { "typeParameters", "?Vector<ParseTree>" },
+            Pair { "traitUseClauses", "Vector<ParseTree>" },
+            Pair { "members", "Vector<ParseTree>" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }
