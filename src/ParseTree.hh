@@ -550,6 +550,27 @@ class ParseTree
     invariant($this instanceof CastExpressionTree, "Wrong type.");
     return $this;
   }
+  public function isConditionalExpression(): bool {
+    return $this->kind === ParseTreeKind::CONDITIONAL_EXPRESSION;
+  }
+  public function asConditionalExpression(): ConditionalExpressionTree {
+    invariant($this instanceof ConditionalExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isLambdaExpression(): bool {
+    return $this->kind === ParseTreeKind::LAMBDA_EXPRESSION;
+  }
+  public function asLambdaExpression(): LambdaExpressionTree {
+    invariant($this instanceof LambdaExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isLambdaSignature(): bool {
+    return $this->kind === ParseTreeKind::LAMBDA_SIGNATURE;
+  }
+  public function asLambdaSignature(): LambdaSignatureTree {
+    invariant($this instanceof LambdaSignatureTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

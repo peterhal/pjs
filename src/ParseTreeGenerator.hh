@@ -536,6 +536,23 @@ CONSTRUCTOR_BODY
             Pair { "type", "ParseTree" },
             Pair { "value", "ParseTree" },
           }),
+      new ParseTreeSpecification("ConditionalExpression",
+          Vector {
+            Pair { "condition", "ParseTree" },
+            Pair { "trueVaule", "?ParseTree" },
+            Pair { "falseValue", "ParseTree" },
+          }),
+      new ParseTreeSpecification("LambdaExpression",
+          Vector {
+            Pair { "isAsync", "bool" },
+            Pair { "signature", "ParseTree" },
+            Pair { "body", "ParseTree" },
+          }),
+      new ParseTreeSpecification("LambdaSignature",
+          Vector {
+            Pair { "parameters", "?Vector<ParseTree>" },
+            Pair { "returnType", "?ParseTree" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

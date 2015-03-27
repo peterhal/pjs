@@ -844,19 +844,15 @@ class Parser extends ParserBase
     }
   }
 
-  private function parseAssignmentExpression(): ParseTree
-  {
-    $start = $this->position();
-
-    // TODO
-    throw new Exception();
-  }
-
   private function parsePrimaryExpression(): ParseTree
   {
     switch ($this->peek()) {
     case TokenKind::VARIABLE_NAME:
-      return $this->parseVariableName();
+      if ($this->peekKind(TokenKind::FATTER_ARROW)) {
+        return $this->parseLambdaExpression();
+      } else {
+        return $this->parseVariableName();
+      }
     case TokenKind::NAME:
     case TokenKind::BACK_SLASH:
       $name = $this->parseQualifiedName();
@@ -884,6 +880,11 @@ class Parser extends ParserBase
     case TokenKind::KW_TUPLE:
       return $this->parseTupleLiteral();
     case TokenKind::KW_ASYNC:
+      if ($this->peekKind(TokenKind::KW_FUNCTION)) {
+        return $this->parseAnonymousFunction();
+      } else {
+        return $this->parseLambdaExpression();
+      }
     case TokenKind::KW_FUNCTION:
       return $this->parseAnonymousFunction();
     case TokenKind::KW_NEW:
@@ -895,6 +896,40 @@ class Parser extends ParserBase
     default:
       throw new Exception();
     }
+  }
+  private function parseLambdaExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $isAsync = $this->eatOpt(TokenKind::KW_ASYNC);
+    if ($this->peekKind(TokenKind::VARIABLE_NAME)) {
+      $signature = $this->parseVariableName();
+    } else {
+      $signature = $this->parseLambdaSignature();
+    }
+    $this->eat(TokenKind::FATTER_ARROW);
+    $body = $this->peekKind(TokenKind::OPEN_CURLY)
+      ? $this->parseCompoundStatement()
+      : $this->parseExpression();
+
+    return new LambdaExpressionTree(
+      $this->getRange($start),
+      $isAsync,
+      $signature,
+      $body);
+  }
+
+  private function parseLambdaSignature(): ParseTree
+  {
+      $start = $this->position();
+
+      $parameters = $this->parseAnonymousFunctionParameterDeclarationList();
+      $returnType = $this->parseAnonymousFunctionReturn();
+
+      return new LambdaSignatureTree(
+        $this->getRange($start),
+        $parameters,
+        $returnType);
   }
 
   private function parseStaticScopeName(): ParseTree
@@ -974,14 +1009,8 @@ class Parser extends ParserBase
 
     $isAsync = $this->eatOpt(TokenKind::KW_ASYNC);
     $this->eat(TokenKind::KW_FUNCTION);
-    $parameters = $this->parseDelimitedCommaSeparatedListOpt(
-      TokenKind::OPEN_PAREN,
-      TokenKind::CLOSE_PAREN,
-      () ==> $this->peekAnonymousFunctionParameter(),
-      () ==> $this->parseAnonymousFunctionParameter());
-    $returnType = $this->eatOpt(TokenKind::COLON)
-      ? $this->parseTypeSpecifier()
-      : null;
+    $parameters = $this->parseAnonymousFunctionParameterDeclarationList();
+    $returnType = $this->parseAnonymousFunctionReturn();
     $useClause = $this->eatOpt(TokenKind::KW_USE)
       ? $this->parseDelimitedCommaSeparatedList(
         TokenKind::OPEN_PAREN,
@@ -997,6 +1026,22 @@ class Parser extends ParserBase
       $returnType,
       $useClause,
       $body);
+  }
+
+  private function parseAnonymousFunctionParameterDeclarationList(): ?Vector<ParseTree>
+  {
+    return $this->parseDelimitedCommaSeparatedListOpt(
+      TokenKind::OPEN_PAREN,
+      TokenKind::CLOSE_PAREN,
+      () ==> $this->peekAnonymousFunctionParameter(),
+      () ==> $this->parseAnonymousFunctionParameter());
+  }
+
+  private function parseAnonymousFunctionReturn(): ?ParseTree
+  {
+    return $this->eatOpt(TokenKind::COLON)
+      ? $this->parseTypeSpecifier()
+      : null;
   }
 
   private function peekAnonymousFunctionParameter(): bool
@@ -1290,16 +1335,8 @@ class Parser extends ParserBase
     case TokenKind::AT:
       return $this->parseErrorControlExpression();
     case TokenKind::OPEN_PAREN:
-      if ($this->peekIndexKind(1, TokenKind::NAME)
-          && $this->peekIndexKind(2, TokenKind::CLOSE_PAREN)) {
-        $name = $this->peekTokenIndex(1)->asName()->value();
-        switch ($name) {
-        case PredefinedName::bool:
-        case PredefinedName::int:
-        case PredefinedName::float:
-        case PredefinedName::string:
-          return $this->parseCastExpression();
-        }
+      if ($this->peekCastExpression()) {
+        return $this->parseCastExpression();
       }
       return $this->parsePostfixExpression();
     case TokenKind::NAME:
@@ -1311,6 +1348,29 @@ class Parser extends ParserBase
     default:
       return $this->parsePostfixExpression();
     }
+  }
+
+  private function peekParenLambda(): bool
+  {
+    // TODO: must disambiguate with paren expression and cast expression...
+    return false;
+  }
+
+  private function peekCastExpression(): bool
+  {
+    if ($this->peekKind(TokenKind::OPEN_PAREN)
+          && $this->peekIndexKind(1, TokenKind::NAME)
+          && $this->peekIndexKind(2, TokenKind::CLOSE_PAREN)) {
+      $name = $this->peekTokenIndex(1)->asName()->value();
+      switch ($name) {
+      case PredefinedName::bool:
+      case PredefinedName::int:
+      case PredefinedName::float:
+      case PredefinedName::string:
+        return true;
+      }
+    }
+    return false;
   }
 
   private function parseInstanceofExpression() : ParseTree
@@ -1471,6 +1531,76 @@ class Parser extends ParserBase
     return $this->parseBinaryExpression(
       () ==> $this->parseLogicalAndExpression(),
       self::$LOGICAL_OR_OPERATORS);
+  }
+
+  private function parseConditionalExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $condition = $this->parseLogicalOrExpression();
+    if ($this->eatOpt(TokenKind::QUESTION)) {
+      $trueValue = $this->parseExpressionOpt();
+      $this->eat(TokenKind::COLON);
+      $falseValue = $this->parseConditionalExpression();
+
+      return new ConditionalExpressionTree(
+        $this->getRange($start),
+        $condition,
+        $trueValue,
+        $falseValue);
+    } else {
+      return $condition;
+    }
+  }
+
+  private static Vector<TokenKind> $ASSIGNMENT_OPERATORS = Vector {
+    TokenKind::EQUAL,
+      TokenKind::STAR_STAR_EQUAL,
+      TokenKind::STAR_EQUAL,
+      TokenKind::SLASH_EQUAL,
+      TokenKind::PERCENT_EQUAL,
+      TokenKind::PLUS_EQUAL,
+      TokenKind::MINUS_EQUAL,
+      TokenKind::PERIOD_EQUAL,
+      TokenKind::LEFT_SHIFT_EQUAL,
+      TokenKind::RIGHT_SHIFT_EQUAL,
+      TokenKind::AMPERSAND_EQUAL,
+      TokenKind::HAT_EQUAL,
+      TokenKind::BAR_EQUAL,
+  };
+
+  private static function isUnaryExpression(ParseTree $tree): bool
+  {
+    switch ($tree->kind()) {
+      // TODO:
+    default:
+      return false;
+    }
+  }
+
+  private function parseAssignmentExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    // TODO: Spec says lambda...
+    $left = $this->parseConditionalExpression();
+    if (self::isUnaryExpression($left)
+        && $this->peekAny(self::$ASSIGNMENT_OPERATORS)) {
+      $operator = $this->next();
+      if ($this->peekKind(TokenKind::EQUAL)) {
+        $right = $this->parseAliasAssignmentExpression();
+      } else {
+        $right = $this->parseAssignmentExpression();
+      }
+
+      return new BinaryExpressionTree(
+        $this->getRange($start),
+        $left,
+        $operator,
+        $right);
+    } else {
+      return $left;
+    }
   }
 
   private function parseAwaitExpression(): ParseTree
@@ -2159,6 +2289,20 @@ class Parser extends ParserBase
     }
 
     return $this->parseExpression();
+  }
+
+  private function parseAliasAssignmentExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    if ($this->eatOpt(TokenKind::AMPERSAND)) {
+      $expression = $this->parseAssignmentExpression();
+      return new AliasExpressionTree(
+        $this->getRange($start),
+        $expression);
+    }
+
+    return $this->parseAssignmentExpression();
   }
 
   private function parseForExpressionGroup(): ?Vector<ParseTree>

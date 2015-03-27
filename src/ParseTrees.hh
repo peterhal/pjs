@@ -850,6 +850,41 @@ class CastExpressionTree extends ParseTree
   }
 }
 
+class ConditionalExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $condition,
+    public ?ParseTree $trueVaule,
+    public ParseTree $falseValue)
+  {
+    parent::__construct($range, ParseTreeKind::CONDITIONAL_EXPRESSION);
+  }
+}
+
+class LambdaExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public bool $isAsync,
+    public ParseTree $signature,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::LAMBDA_EXPRESSION);
+  }
+}
+
+class LambdaSignatureTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?Vector<ParseTree> $parameters,
+    public ?ParseTree $returnType)
+  {
+    parent::__construct($range, ParseTreeKind::LAMBDA_SIGNATURE);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(
