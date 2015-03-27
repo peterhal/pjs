@@ -477,6 +477,55 @@ CONSTRUCTOR_BODY
             Pair { "name", "VariableNameToken" },
             Pair { "defaultValue", "?ParseTree" },
           }),
+      new ParseTreeSpecification("ObjectCreationExpression",
+          Vector {
+            Pair { "type", "?ParseTree" },
+            Pair { "arguments", "?Vector<ParseTree>" },
+          }),
+      new ParseTreeSpecification("ArrayLiteral",
+          Vector {
+            Pair { "elements", "?Vector<ParseTree>" },
+          }),
+      new ParseTreeSpecification("SubscriptOperator",
+          Vector {
+            Pair { "collection", "ParseTree" },
+            Pair { "index", "?ParseTree" },
+          }),
+      new ParseTreeSpecification("FunctionCall",
+          Vector {
+            Pair { "function", "ParseTree" },
+            Pair { "arguments", "?Vector<ParseTree>" },
+          }),
+      new ParseTreeSpecification("MemberSelection",
+          Vector {
+            Pair { "object", "ParseTree" },
+            Pair { "name", "NameToken" },
+          }),
+      new ParseTreeSpecification("NullSafeMemberSelection",
+          Vector {
+            Pair { "object", "ParseTree" },
+            Pair { "name", "NameToken" },
+          }),
+      new ParseTreeSpecification("PostfixOperator",
+          Vector {
+            Pair { "value", "ParseTree" },
+            Pair { "operator", "Token" },
+          }),
+      new ParseTreeSpecification("ScopeResolution",
+          Vector {
+            Pair { "baseName", "ParseTree" },
+            Pair { "memberName", "NameToken" },
+          }),
+      new ParseTreeSpecification("StaticName",
+          Vector {
+            Pair { "static", "Token" },
+          }),
+      new ParseTreeSpecification("BinaryOperator",
+          Vector {
+            Pair { "left", "ParseTree" },
+            Pair { "operator", "Token" },
+            Pair { "right", "ParseTree" },
+          }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };
   }

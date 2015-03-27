@@ -466,6 +466,76 @@ class ParseTree
     invariant($this instanceof AnonymousFunctionParameterTree, "Wrong type.");
     return $this;
   }
+  public function isObjectCreationExpression(): bool {
+    return $this->kind === ParseTreeKind::OBJECT_CREATION_EXPRESSION;
+  }
+  public function asObjectCreationExpression(): ObjectCreationExpressionTree {
+    invariant($this instanceof ObjectCreationExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isArrayLiteral(): bool {
+    return $this->kind === ParseTreeKind::ARRAY_LITERAL;
+  }
+  public function asArrayLiteral(): ArrayLiteralTree {
+    invariant($this instanceof ArrayLiteralTree, "Wrong type.");
+    return $this;
+  }
+  public function isSubscriptOperator(): bool {
+    return $this->kind === ParseTreeKind::SUBSCRIPT_OPERATOR;
+  }
+  public function asSubscriptOperator(): SubscriptOperatorTree {
+    invariant($this instanceof SubscriptOperatorTree, "Wrong type.");
+    return $this;
+  }
+  public function isFunctionCall(): bool {
+    return $this->kind === ParseTreeKind::FUNCTION_CALL;
+  }
+  public function asFunctionCall(): FunctionCallTree {
+    invariant($this instanceof FunctionCallTree, "Wrong type.");
+    return $this;
+  }
+  public function isMemberSelection(): bool {
+    return $this->kind === ParseTreeKind::MEMBER_SELECTION;
+  }
+  public function asMemberSelection(): MemberSelectionTree {
+    invariant($this instanceof MemberSelectionTree, "Wrong type.");
+    return $this;
+  }
+  public function isNullSafeMemberSelection(): bool {
+    return $this->kind === ParseTreeKind::NULL_SAFE_MEMBER_SELECTION;
+  }
+  public function asNullSafeMemberSelection(): NullSafeMemberSelectionTree {
+    invariant($this instanceof NullSafeMemberSelectionTree, "Wrong type.");
+    return $this;
+  }
+  public function isPostfixOperator(): bool {
+    return $this->kind === ParseTreeKind::POSTFIX_OPERATOR;
+  }
+  public function asPostfixOperator(): PostfixOperatorTree {
+    invariant($this instanceof PostfixOperatorTree, "Wrong type.");
+    return $this;
+  }
+  public function isScopeResolution(): bool {
+    return $this->kind === ParseTreeKind::SCOPE_RESOLUTION;
+  }
+  public function asScopeResolution(): ScopeResolutionTree {
+    invariant($this instanceof ScopeResolutionTree, "Wrong type.");
+    return $this;
+  }
+  public function isStaticName(): bool {
+    return $this->kind === ParseTreeKind::STATIC_NAME;
+  }
+  public function asStaticName(): StaticNameTree {
+    invariant($this instanceof StaticNameTree, "Wrong type.");
+    return $this;
+  }
+  public function isBinaryOperator(): bool {
+    return $this->kind === ParseTreeKind::BINARY_OPERATOR;
+  }
+  public function asBinaryOperator(): BinaryOperatorTree {
+    invariant($this instanceof BinaryOperatorTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

@@ -860,9 +860,13 @@ class Parser extends ParserBase
     case TokenKind::NAME:
     case TokenKind::BACK_SLASH:
       $name = $this->parseQualifiedName();
-      // TODO: Intrinsics: echo, exit, invariant
+      // TODO: Intrinsics: echo, exit, invariant, clone, array
       if ($this->peekKind(TokenKind::OPEN_CURLY)) {
         return $this->parseCollectionLiteralSuffix($name);
+      } elseif ($this->peekKind(TokenKind::COLON)
+        && $this->peekIndexKind(1, TokenKind::COLON)) {
+        // NOTE: self and parent parse as qualified names.
+        return $this->parseScopeResolutionSuffix($name);
       } else {
         return $name;
       }
@@ -882,10 +886,87 @@ class Parser extends ParserBase
     case TokenKind::KW_ASYNC:
     case TokenKind::KW_FUNCTION:
       return $this->parseAnonymousFunction();
+    case TokenKind::KW_NEW:
+      return $this->parseObjectCreationExpression();
+    case TokenKind::OPEN_SQUARE:
+      return $this->parseArrayLiteral();
+    case TokenKind::KW_STATIC:
+      return $this->parseStaticScopeName();
     default:
       throw new Exception();
     }
   }
+
+  private function parseStaticScopeName(): ParseTree
+  {
+    $start = $this->position();
+
+    $static = $this->eat(TokenKind::KW_STATIC);
+    $baseName = new StaticNameTree(
+      $this->getRange($start),
+      $static);
+
+    return $this->parseScopeResolutionSuffix($baseName);
+  }
+
+  private function parseScopeResolutionSuffix(ParseTree $baseName): ParseTree
+  {
+    $start = $baseName->start();
+
+    $this->eat(TokenKind::COLON);
+    // TODO: allow whitespace
+    $this->eat(TokenKind::COLON);
+    // TODO: class??
+    $memberName = $this->eatName();
+
+    return new ScopeResolutionTree(
+      $this->getRange($start),
+      $baseName,
+      $memberName);
+  }
+
+  private function parseArrayLiteral(): ParseTree
+  {
+    $start = $this->position();
+
+    $elements = $this->parseDelimitedCommaSeparatedListOpt(
+      TokenKind::OPEN_SQUARE,
+      TokenKind::CLOSE_SQUARE,
+      () ==> $this->peekExpression(),
+      () ==> $this->parseArrayElementInitializer());
+
+    return new ArrayLiteralTree(
+      $this->getRange($start),
+      $elements);
+  }
+
+  private function parseObjectCreationExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_NEW);
+    $type = $this->eatOpt(TokenKind::KW_STATIC)
+      ? null
+      : $this->parseQualifiedName();
+    $arguments = $this->parseArgumentList();
+
+    return new ObjectCreationExpressionTree(
+      $this->getRange($start),
+      $type,
+      $arguments);
+  }
+
+  private function parseArgumentList(): ?Vector<ParseTree>
+  {
+    return $this->parseDelimitedCommaSeparatedListOpt(
+      TokenKind::OPEN_PAREN,
+      TokenKind::CLOSE_PAREN,
+      // TODO: AssignmentExpression??
+      () ==> $this->peekExpression(),
+      () ==> $this->parseExpression());
+  }
+
+
 
   private function parseAnonymousFunction(): ParseTree
   {
@@ -1055,6 +1136,147 @@ class Parser extends ParserBase
       $elements);
   }
 
+  private function parsePostfixExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $value = $this->parsePrimaryExpression();
+    while ($this->peekPostfixOperator()) {
+      $value = $this->parsePostfixOperator($value);
+    }
+
+    return $value;
+  }
+
+  private function peekPostfixOperator(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::OPEN_SQUARE:
+    case TokenKind::OPEN_CURLY:
+    case TokenKind::OPEN_PAREN:
+    case TokenKind::ARROW:
+    case TokenKind::PLUS_PLUS:
+    case TokenKind::MINUS_MINUS:
+    case TokenKind::STAR_STAR:
+      return true;
+    case TokenKind::QUESTION:
+      // TODO: is whitespace allowed?
+      return $this->peekIndexKind(1, TokenKind::ARROW);
+    default:
+      return false;
+    }
+  }
+
+  private function parsePostfixOperator(ParseTree $value): ParseTree
+  {
+    switch ($this->peek()) {
+    case TokenKind::OPEN_SQUARE:
+    case TokenKind::OPEN_CURLY:
+      return $this->parseSubscriptOperator($value);
+    case TokenKind::OPEN_PAREN:
+      return $this->parseFunctionCall($value);
+    case TokenKind::ARROW:
+      return $this->parseMemberSelection($value);
+    case TokenKind::QUESTION: //?->
+      return $this->parseNullSafeMemberSelection($value);
+    case TokenKind::PLUS_PLUS:
+    case TokenKind::MINUS_MINUS:
+      return $this->parsePostfixIncDec($value);
+    case TokenKind::STAR_STAR:
+      return $this->parseExponentiationOperator($value);
+    default:
+      throw new Exception("Expecting postfix operator.");
+    }
+  }
+
+  private function parseExponentiationOperator(ParseTree $value): ParseTree
+  {
+    $start = $value->start();
+
+    $operator = $this->eat(TokenKind::STAR_STAR);
+    // TODO: This can't be the correct precedence...
+    $exponent = $this->parseExpression();
+
+    return new BinaryOperatorTree(
+      $this->getRange($start),
+      $value,
+      $operator,
+      $exponent);
+  }
+
+  private function parsePostfixIncDec(ParseTree $value): ParseTree
+  {
+    $start = $value->start();
+
+    $operator = $this->next();
+
+    return new PostfixOperatorTree(
+      $this->getRange($start),
+      $value,
+      $operator);
+  }
+
+  private function parseNullSafeMemberSelection(ParseTree $object): ParseTree
+  {
+    $start = $object->start();
+
+    $this->eat(TokenKind::QUESTION);
+    // TODO: Allow whitespace?
+    $this->eat(TokenKind::ARROW);
+    $name = $this->eatName();
+
+    return new NullSafeMemberSelectionTree(
+      $this->getRange($start),
+      $object,
+      $name);
+  }
+
+  private function parseMemberSelection(ParseTree $object): ParseTree
+  {
+    $start = $object->start();
+
+    $this->eat(TokenKind::ARROW);
+    $name = $this->eatName();
+
+    return new MemberSelectionTree(
+      $this->getRange($start),
+      $object,
+      $name);
+  }
+
+  private function parseFunctionCall(ParseTree $function): ParseTree
+  {
+    $start = $function->start();
+
+    $arguments = $this->parseArgumentList();
+
+    return new FunctionCallTree(
+      $this->getRange($start),
+      $function,
+      $arguments);
+  }
+
+  private function parseSubscriptOperator(ParseTree $collection): ParseTree
+  {
+    $start = $collection->start();
+
+    if ($this->eatOpt(TokenKind::OPEN_SQUARE)) {
+      $index = $this->parseExpressionOpt();
+      $this->eat(TokenKind::CLOSE_SQUARE);
+    } else {
+      $this->eat(TokenKind::OPEN_CURLY);
+      $index = $this->parseExpressionOpt();
+      $this->eat(TokenKind::CLOSE_CURLY);
+    }
+
+    return new SubscriptOperatorTree(
+      $this->getRange($start),
+      $collection,
+      $index);
+  }
+
+
+  // Declarations
   private function parseFunctionDefinition(): ParseTree
   {
     $start = $this->position();

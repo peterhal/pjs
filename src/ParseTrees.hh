@@ -719,6 +719,115 @@ class AnonymousFunctionParameterTree extends ParseTree
   }
 }
 
+class ObjectCreationExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?ParseTree $type,
+    public ?Vector<ParseTree> $arguments)
+  {
+    parent::__construct($range, ParseTreeKind::OBJECT_CREATION_EXPRESSION);
+  }
+}
+
+class ArrayLiteralTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?Vector<ParseTree> $elements)
+  {
+    parent::__construct($range, ParseTreeKind::ARRAY_LITERAL);
+  }
+}
+
+class SubscriptOperatorTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $collection,
+    public ?ParseTree $index)
+  {
+    parent::__construct($range, ParseTreeKind::SUBSCRIPT_OPERATOR);
+  }
+}
+
+class FunctionCallTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $function,
+    public ?Vector<ParseTree> $arguments)
+  {
+    parent::__construct($range, ParseTreeKind::FUNCTION_CALL);
+  }
+}
+
+class MemberSelectionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $object,
+    public NameToken $name)
+  {
+    parent::__construct($range, ParseTreeKind::MEMBER_SELECTION);
+  }
+}
+
+class NullSafeMemberSelectionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $object,
+    public NameToken $name)
+  {
+    parent::__construct($range, ParseTreeKind::NULL_SAFE_MEMBER_SELECTION);
+  }
+}
+
+class PostfixOperatorTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $value,
+    public Token $operator)
+  {
+    parent::__construct($range, ParseTreeKind::POSTFIX_OPERATOR);
+  }
+}
+
+class ScopeResolutionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $baseName,
+    public NameToken $memberName)
+  {
+    parent::__construct($range, ParseTreeKind::SCOPE_RESOLUTION);
+  }
+}
+
+class StaticNameTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Token $static)
+  {
+    parent::__construct($range, ParseTreeKind::STATIC_NAME);
+  }
+}
+
+class BinaryOperatorTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $left,
+    public Token $operator,
+    public ParseTree $right)
+  {
+    parent::__construct($range, ParseTreeKind::BINARY_OPERATOR);
+  }
+}
+
 class ParseErrorTree extends ParseTree
 {
   public function __construct(
