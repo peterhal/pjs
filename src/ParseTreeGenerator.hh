@@ -520,11 +520,21 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "static", "Token" },
           }),
-      new ParseTreeSpecification("BinaryOperator",
+      new ParseTreeSpecification("BinaryExpression",
           Vector {
             Pair { "left", "ParseTree" },
             Pair { "operator", "Token" },
             Pair { "right", "ParseTree" },
+          }),
+      new ParseTreeSpecification("UnaryExpression",
+          Vector {
+            Pair { "operator", "Token" },
+            Pair { "value", "ParseTree" },
+          }),
+      new ParseTreeSpecification("CastExpression",
+          Vector {
+            Pair { "type", "ParseTree" },
+            Pair { "value", "ParseTree" },
           }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };

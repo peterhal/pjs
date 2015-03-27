@@ -58,6 +58,7 @@ enum TokenKind : int
   COMMA = 51;
   BACK_SLASH = 52;
   FAT_ARROW = 53;
+  AT = 54;
 
   NAME = 70;
   VARIABLE_NAME = 71;

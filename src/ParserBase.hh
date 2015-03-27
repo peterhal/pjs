@@ -3,6 +3,7 @@
 require_once 'ParseTreeKind.hh';
 require_once 'Token.hh';
 require_once 'TokenKind.hh';
+require_once 'utils.hh';
 
 class ParserBase
 {
@@ -104,6 +105,11 @@ class ParserBase
   protected function peek(): TokenKind
   {
     return $this->peekIndex(0);
+  }
+
+  protected function peekAny(Vector<TokenKind> $kinds): bool
+  {
+    return contains($kinds, $this->peek());
   }
 
   protected function next(): Token

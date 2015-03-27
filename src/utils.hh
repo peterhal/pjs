@@ -7,3 +7,9 @@ function nullthrows<T>(?T $value, ?string $message = null): T {
 
   return $value;
 }
+
+function contains<T>(Vector<T> $values, T $value): bool
+{
+  return -1 !== $values->linearSearch($value);
+}
+

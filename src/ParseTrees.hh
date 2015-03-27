@@ -816,7 +816,7 @@ class StaticNameTree extends ParseTree
   }
 }
 
-class BinaryOperatorTree extends ParseTree
+class BinaryExpressionTree extends ParseTree
 {
   public function __construct(
     Range $range,
@@ -824,7 +824,29 @@ class BinaryOperatorTree extends ParseTree
     public Token $operator,
     public ParseTree $right)
   {
-    parent::__construct($range, ParseTreeKind::BINARY_OPERATOR);
+    parent::__construct($range, ParseTreeKind::BINARY_EXPRESSION);
+  }
+}
+
+class UnaryExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Token $operator,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::UNARY_EXPRESSION);
+  }
+}
+
+class CastExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $type,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::CAST_EXPRESSION);
   }
 }
 

@@ -48,6 +48,7 @@ class Lexer extends LexerBase
     {
     case Char::EOF: return $create(TokenKind::EOF);
 
+    case Char::AT: return $create(TokenKind::AT); // TODO: Spec - missing.
     case Char::OPEN_SQUARE: return $create(TokenKind::OPEN_SQUARE);
     case Char::CLOSE_SQUARE: return $create(TokenKind::CLOSE_SQUARE);
     case Char::OPEN_PAREN: return $create(TokenKind::OPEN_PAREN);

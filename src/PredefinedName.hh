@@ -4,6 +4,7 @@ abstract class PredefinedName
 {
   const string hh = 'hh';
 
+  const string pn_await = 'await'; // TODO: SPEC: is await a keyword?
   const string this = 'this';
   const string bool = 'bool';
   const string int = 'int';

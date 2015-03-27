@@ -1197,7 +1197,7 @@ class Parser extends ParserBase
     // TODO: This can't be the correct precedence...
     $exponent = $this->parseExpression();
 
-    return new BinaryOperatorTree(
+    return new BinaryExpressionTree(
       $this->getRange($start),
       $value,
       $operator,
@@ -1275,6 +1275,260 @@ class Parser extends ParserBase
       $index);
   }
 
+  private function parseUnaryExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    switch ($this->peek()) {
+    case TokenKind::PLUS_PLUS:
+    case TokenKind::MINUS_MINUS:
+    case TokenKind::PLUS:
+    case TokenKind::MINUS:
+    case TokenKind::BANG:
+    case TokenKind::TILDE: // TODO: Spec bug: \
+      return $this->parsePrefixOperator();
+    case TokenKind::AT:
+      return $this->parseErrorControlExpression();
+    case TokenKind::OPEN_PAREN:
+      if ($this->peekIndexKind(1, TokenKind::NAME)
+          && $this->peekIndexKind(2, TokenKind::CLOSE_PAREN)) {
+        $name = $this->peekTokenIndex(1)->asName()->value();
+        switch ($name) {
+        case PredefinedName::bool:
+        case PredefinedName::int:
+        case PredefinedName::float:
+        case PredefinedName::string:
+          return $this->parseCastExpression();
+        }
+      }
+      return $this->parsePostfixExpression();
+    case TokenKind::NAME:
+      if ($this->peekToken()->asName()->value() === PredefinedName::pn_await) {
+        return $this->parseAwaitExpression();
+      } else {
+        return $this->parsePostfixExpression();
+      }
+    default:
+      return $this->parsePostfixExpression();
+    }
+  }
+
+  private function parseInstanceofExpression() : ParseTree
+  {
+    $start = $this->position();
+
+    // TODO: Spec says any expression here.
+    $value = $this->parseUnaryExpression();
+    while ($this->peekKind(TokenKind::KW_INSTANCEOF)) {
+      $operator = $this->eat(TokenKind::KW_INSTANCEOF);
+      $type = $this->parseQualifiedName();
+      $value = new BinaryExpressionTree(
+        $this->getRange($start),
+        $type,
+        $operator,
+        $value);
+    }
+
+    return $value;
+  }
+
+  private function parseBinaryExpression(
+    (function (): ParseTree) $children,
+    Vector<TokenKind> $operators): ParseTree
+  {
+    $start = $this->position();
+
+    $left = $children();
+    while ($this->peekAny($operators)) {
+      $operator = $this->next();
+      $right = $children();
+      $left = new BinaryExpressionTree(
+        $this->getRange($start),
+        $left,
+        $operator,
+        $right);
+    }
+
+    return $left;
+  }
+
+  private static Vector<TokenKind> $MULTIPLICATIVE_OPERATORS = Vector {
+    TokenKind::STAR,
+    TokenKind::FORWARD_SLASH,
+    TokenKind::PERCENT 
+  };
+
+  private function parseMultiplicativeExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseInstanceofExpression(),
+      self::$MULTIPLICATIVE_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $ADDITIVE_OPERATORS = Vector {
+    TokenKind::PLUS,
+    TokenKind::MINUS,
+    TokenKind::PERIOD 
+  };
+
+  private function parseAdditiveExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseMultiplicativeExpression(),
+      self::$ADDITIVE_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $BITWISE_SHIFT_OPERATORS = Vector {
+    TokenKind::LEFT_SHIFT,
+    TokenKind::RIGHT_SHIFT,
+  };
+
+  private function parseBitwiseShiftExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseAdditiveExpression(),
+      self::$BITWISE_SHIFT_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $RELATIONAL_OPERATORS = Vector {
+    TokenKind::OPEN_ANGLE,
+    TokenKind::CLOSE_ANGLE,
+    TokenKind::LESS_EQUAL,
+    TokenKind::GREATER_EQUAL
+  };
+
+  private function parseRelationalExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseBitwiseShiftExpression(),
+      self::$RELATIONAL_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $EQUALITY_OPERATORS = Vector {
+    TokenKind::EQUAL_EQUAL,
+    TokenKind::BANG_EQUAL,
+    TokenKind::EQUAL_EQUAL_EQUAL,
+    TokenKind::BANG_EQUAL_EQUAL,
+  };
+
+  private function parseEqualityExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseRelationalExpression(),
+      self::$EQUALITY_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $BITWISE_AND_OPERATORS = Vector {
+    TokenKind::AMPERSAND,
+  };
+
+  private function parseBitwiseAndExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseEqualityExpression(),
+      self::$BITWISE_AND_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $BITWISE_XOR_OPERATORS = Vector {
+    TokenKind::HAT,
+  };
+
+  private function parseBitwiseXorExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseBitwiseAndExpression(),
+      self::$BITWISE_XOR_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $BITWISE_OR_OPERATORS = Vector {
+    TokenKind::BAR,
+  };
+
+  private function parseBitwiseOrExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseBitwiseXorExpression(),
+      self::$BITWISE_OR_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $LOGICAL_AND_OPERATORS = Vector {
+    TokenKind::AMPERSAND_AMPERSAND,
+  };
+
+  private function parseLogicalAndExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseBitwiseOrExpression(),
+      self::$BITWISE_OR_OPERATORS);
+  }
+
+  private static Vector<TokenKind> $LOGICAL_OR_OPERATORS = Vector {
+    TokenKind::BAR_BAR,
+  };
+
+  private function parseLogicalOrExpression(): ParseTree
+  {
+    return $this->parseBinaryExpression(
+      () ==> $this->parseLogicalAndExpression(),
+      self::$LOGICAL_OR_OPERATORS);
+  }
+
+  private function parseAwaitExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $operator = $this->eatName();
+    invariant($operator->value() === PredefinedName::pn_await, "Expected await");
+    // TODO: This can;t be the correct precedence.
+    $value = $this->parseExpression();
+
+    return new UnaryExpressionTree(
+      $this->getRange($start),
+      $operator,
+      $value);
+  }
+
+  private function parseCastExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::OPEN_PAREN);
+    $type = $this->parseTypeSpecifier();
+    $this->eat(TokenKind::CLOSE_PAREN);
+    $value = $this->parseUnaryExpression();
+
+    return new CastExpressionTree(
+      $this->getRange($start),
+      $type,
+      $value);
+  }
+
+  private function parseErrorControlExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $operator = $this->eat(TokenKind::AT);
+    // TODO: This can;t be the correct precedence.
+    $value = $this->parseExpression();
+
+    return new UnaryExpressionTree(
+      $this->getRange($start),
+      $operator,
+      $value);
+  }
+
+  private function parsePrefixOperator(): ParseTree
+  {
+    $start = $this->position();
+
+    $operator = $this->next();
+    $value = $this->parseUnaryExpression();
+
+    return new UnaryExpressionTree(
+      $this->getRange($start),
+      $operator,
+      $value);
+  }
 
   // Declarations
   private function parseFunctionDefinition(): ParseTree

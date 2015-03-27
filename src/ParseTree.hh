@@ -529,11 +529,25 @@ class ParseTree
     invariant($this instanceof StaticNameTree, "Wrong type.");
     return $this;
   }
-  public function isBinaryOperator(): bool {
-    return $this->kind === ParseTreeKind::BINARY_OPERATOR;
+  public function isBinaryExpression(): bool {
+    return $this->kind === ParseTreeKind::BINARY_EXPRESSION;
   }
-  public function asBinaryOperator(): BinaryOperatorTree {
-    invariant($this instanceof BinaryOperatorTree, "Wrong type.");
+  public function asBinaryExpression(): BinaryExpressionTree {
+    invariant($this instanceof BinaryExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isUnaryExpression(): bool {
+    return $this->kind === ParseTreeKind::UNARY_EXPRESSION;
+  }
+  public function asUnaryExpression(): UnaryExpressionTree {
+    invariant($this instanceof UnaryExpressionTree, "Wrong type.");
+    return $this;
+  }
+  public function isCastExpression(): bool {
+    return $this->kind === ParseTreeKind::CAST_EXPRESSION;
+  }
+  public function asCastExpression(): CastExpressionTree {
+    invariant($this instanceof CastExpressionTree, "Wrong type.");
     return $this;
   }
   public function isParseError(): bool {
