@@ -107,7 +107,8 @@ class ParameterDeclarationTree extends ParseTree
   public function __construct(
     Range $range,
     public ParseTree $type,
-    public VariableNameToken $name)
+    public VariableNameToken $name,
+    public ?ParseTree $defaultValue)
   {
     parent::__construct($range, ParseTreeKind::PARAMETER_DECLARATION);
   }
@@ -658,6 +659,63 @@ class VariableNameTree extends ParseTree
     public VariableNameToken $name)
   {
     parent::__construct($range, ParseTreeKind::VARIABLE_NAME);
+  }
+}
+
+class ShapeLiteralTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?Vector<ParseTree> $initializers)
+  {
+    parent::__construct($range, ParseTreeKind::SHAPE_LITERAL);
+  }
+}
+
+class TupleLiteralTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $values)
+  {
+    parent::__construct($range, ParseTreeKind::TUPLE_LITERAL);
+  }
+}
+
+class FieldInitializerTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $name,
+    public ParseTree $value)
+  {
+    parent::__construct($range, ParseTreeKind::FIELD_INITIALIZER);
+  }
+}
+
+class AnonymousFunctionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public bool $isAsync,
+    public ?Vector<ParseTree> $parameters,
+    public ?ParseTree $returnType,
+    public ?Vector<ParseTree> $useClause,
+    public ParseTree $body)
+  {
+    parent::__construct($range, ParseTreeKind::ANONYMOUS_FUNCTION);
+  }
+}
+
+class AnonymousFunctionParameterTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ?ParseTree $type,
+    public VariableNameToken $name,
+    public ?ParseTree $defaultValue)
+  {
+    parent::__construct($range, ParseTreeKind::ANONYMOUS_FUNCTION_PARAMETER);
   }
 }
 

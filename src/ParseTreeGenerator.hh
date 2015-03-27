@@ -207,7 +207,8 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("ParameterDeclaration",
           Vector {
             Pair { "type", "ParseTree" },
-            Pair { "name", "VariableNameToken" }
+            Pair { "name", "VariableNameToken" },
+            Pair { "defaultValue", "?ParseTree" }
           }),
       new ParseTreeSpecification("CompoundStatement",
           Vector {
@@ -448,6 +449,33 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("VariableName",
           Vector {
             Pair { "name", "VariableNameToken" },
+          }),
+      new ParseTreeSpecification("ShapeLiteral",
+          Vector {
+            Pair { "initializers", "?Vector<ParseTree>" },
+          }),
+      new ParseTreeSpecification("TupleLiteral",
+          Vector {
+            Pair { "values", "Vector<ParseTree>" },
+          }),
+      new ParseTreeSpecification("FieldInitializer",
+          Vector {
+            Pair { "name", "ParseTree" },
+            Pair { "value", "ParseTree" },
+          }),
+      new ParseTreeSpecification("AnonymousFunction",
+          Vector {
+            Pair { "isAsync", "bool" },
+            Pair { "parameters", "?Vector<ParseTree>" },
+            Pair { "returnType", "?ParseTree" },
+            Pair { "useClause", "?Vector<ParseTree>" },
+            Pair { "body", "ParseTree" },
+          }),
+      new ParseTreeSpecification("AnonymousFunctionParameter",
+          Vector {
+            Pair { "type", "?ParseTree" },
+            Pair { "name", "VariableNameToken" },
+            Pair { "defaultValue", "?ParseTree" },
           }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };

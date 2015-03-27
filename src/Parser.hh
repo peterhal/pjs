@@ -157,7 +157,7 @@ class Parser extends ParserBase
         return $this->parseRequireImplementsClause();
       default:
         $this->error("'extends' or 'implements' expected.");
-        return new ParseErrorTree($this->getRange($this->position()));
+        return $this->createErrorTree();
       }
     case TokenKind::LEFT_SHIFT:
       // TODO: attributes
@@ -175,7 +175,7 @@ class Parser extends ParserBase
         return $this->parsePropertyDeclaration($modifiers);
       default:
         $this->error("Class member expected");
-        return new ParseErrorTree($this->getRange($this->position()));
+        return $this->createErrorTree();
       }
     default:
       throw new Exception();
@@ -524,7 +524,7 @@ class Parser extends ParserBase
         return $this->parsePropertyDeclaration($modifiers);
       default:
         $this->error("Class member expected");
-        return new ParseErrorTree($this->getRange($this->position()));
+        return $this->createErrorTree();
       }
 
     default:
@@ -639,7 +639,7 @@ class Parser extends ParserBase
       () ==> $this->parsePropertyDeclarator());
     $this->eat(TokenKind::SEMI_COLON);
 
-    return new ParseErrorTree($this->getRange($this->position()));
+    return $this->createErrorTree();
   }
 
   private function parsePropertyDeclarator(): ParseTree
@@ -860,6 +860,7 @@ class Parser extends ParserBase
     case TokenKind::NAME:
     case TokenKind::BACK_SLASH:
       $name = $this->parseQualifiedName();
+      // TODO: Intrinsics: echo, exit, invariant
       if ($this->peekKind(TokenKind::OPEN_CURLY)) {
         return $this->parseCollectionLiteralSuffix($name);
       } else {
@@ -874,9 +875,147 @@ class Parser extends ParserBase
       return $this->parseLiteral();
     case TokenKind::OPEN_PAREN:
       return $this->parseParenExpression();
+    case TokenKind::KW_SHAPE:
+      return $this->parseShapeLiteral();
+    case TokenKind::KW_TUPLE:
+      return $this->parseTupleLiteral();
+    case TokenKind::KW_ASYNC:
+    case TokenKind::KW_FUNCTION:
+      return $this->parseAnonymousFunction();
     default:
       throw new Exception();
     }
+  }
+
+  private function parseAnonymousFunction(): ParseTree
+  {
+    $start = $this->position();
+
+    $isAsync = $this->eatOpt(TokenKind::KW_ASYNC);
+    $this->eat(TokenKind::KW_FUNCTION);
+    $parameters = $this->parseDelimitedCommaSeparatedListOpt(
+      TokenKind::OPEN_PAREN,
+      TokenKind::CLOSE_PAREN,
+      () ==> $this->peekAnonymousFunctionParameter(),
+      () ==> $this->parseAnonymousFunctionParameter());
+    $returnType = $this->eatOpt(TokenKind::COLON)
+      ? $this->parseTypeSpecifier()
+      : null;
+    $useClause = $this->eatOpt(TokenKind::KW_USE)
+      ? $this->parseDelimitedCommaSeparatedList(
+        TokenKind::OPEN_PAREN,
+        TokenKind::CLOSE_PAREN,
+        () ==> $this->parseVariableName())
+      : null;
+    $body = $this->parseCompoundStatement();
+
+    return new AnonymousFunctionTree(
+      $this->getRange($start),
+      $isAsync,
+      $parameters,
+      $returnType,
+      $useClause,
+      $body);
+  }
+
+  private function peekAnonymousFunctionParameter(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::LEFT_SHIFT:
+    case TokenKind::VARIABLE_NAME:
+      return true;
+    default:
+      return $this->peekTypeSpecifier();
+    }
+  }
+
+  private function parseAnonymousFunctionParameter(): ParseTree
+  {
+    $start = $this->position();
+
+    // TODO: attributes
+    $type = $this->parseTypeSpecifierOpt();
+    $name = $this->eatVariableName();
+    $defaultValue = $this->parseDefaultArgumentSpecifier();
+
+    return new AnonymousFunctionParameterTree(
+      $this->getRange($start),
+        $type,
+        $name,
+        $defaultValue);
+  }
+
+  private function parseShapeLiteral(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_SHAPE);
+    $initializers = $this->parseDelimitedCommaSeparatedListOpt(
+      TokenKind::OPEN_PAREN,
+      TokenKind::CLOSE_PAREN,
+      () ==>$this->peekFieldName(),
+      () ==> $this->parseFieldInitializer());
+
+    return new ShapeLiteralTree(
+      $this->getRange($start),
+      $initializers);
+  }
+
+  private function parseFieldInitializer(): ParseTree
+  {
+    $start = $this->position();
+
+    $fieldName = $this->parseFieldName();
+    $this->eat(TokenKind::FAT_ARROW);
+    $value = $this->parseExpression();
+
+    return new FieldInitializerTree(
+      $this->getRange($start),
+      $fieldName,
+      $value);
+  }
+
+  private function peekFieldName(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::NUMBER:
+    case TokenKind::NAME:
+    case TokenKind::BACK_SLASH:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  private function parseFieldName(): ParseTree
+  {
+    switch ($this->peek()) {
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::NUMBER:
+      return $this->parseLiteral();
+    case TokenKind::NAME:
+    case TokenKind::BACK_SLASH:
+      return $this->parseQualifiedName();
+    default:
+      $this->error("Expected field initializer: single quoted string, integer, or qualified name");
+      return $this->createErrorTree();
+    }
+  }
+
+  private function parseTupleLiteral(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_TUPLE);
+    $values = $this->parseDelimitedCommaSeparatedList(
+      TokenKind::OPEN_PAREN,
+      TokenKind::CLOSE_PAREN,
+      () ==> $this->parseExpression());
+
+    return new TupleLiteralTree(
+      $this->getRange($start),
+      $values);
   }
 
   private function parseVariableName(): ParseTree
@@ -961,6 +1100,13 @@ class Parser extends ParserBase
     return $this->peekTypeSpecifier();
   }
 
+  private function parseDefaultArgumentSpecifier(): ?ParseTree
+  {
+    return $this->eatOpt(TokenKind::EQUAL)
+      ? $this->parseExpression()
+      : null;
+  }
+
   private function parseParameterDeclaration(): ParseTree
   {
     $start = $this->position();
@@ -968,12 +1114,13 @@ class Parser extends ParserBase
     // TODO: Attribute
     $type = $this->parseTypeSpecifier();
     $name = $this->eatVariableName();
-    // TODO: default argument specifier
+    $defaultValue = $this->parseDefaultArgumentSpecifier();
 
     return new ParameterDeclarationTree(
       $this->getRange($start),
       $type,
-      $name);
+      $name,
+      $defaultValue);
   }
 
   private function parseStatement(): ParseTree
@@ -1022,6 +1169,13 @@ class Parser extends ParserBase
     } while ($this->eatOpt(TokenKind::BACK_SLASH));
 
     return new QualifiedNameTree($this->getRange($start), $fullyQualified, $names);
+  }
+
+  private function parseTypeSpecifierOpt(): ?ParseTree
+  {
+    return $this->peekTypeSpecifier()
+      ? $this->parseTypeSpecifier()
+      : null;
   }
 
   private function parseTypeSpecifier(): ParseTree
@@ -1567,6 +1721,18 @@ class Parser extends ParserBase
     }
   }
 
+  private function parseDelimitedCommaSeparatedListOpt(
+    TokenKind $first,
+    TokenKind $end,
+    (function (): bool) $peek,
+    (function (): ParseTree) $element): ?Vector<ParseTree>
+  {
+    $this->eat($first);
+    $result = $this->parseCommaSeparatedListOpt($peek, $element);
+    $this->eat($end);
+    return $result;
+  }
+
   private function parseDelimitedCommaSeparatedList(
     TokenKind $first,
     TokenKind $end,
@@ -1617,6 +1783,11 @@ class Parser extends ParserBase
       $result[] = $element();
     }
     return $result;
+  }
+
+  private function createErrorTree(): ParseTree
+  {
+    return new ParseErrorTree($this->getRange($this->position()));
   }
 }
 

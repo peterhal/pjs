@@ -431,6 +431,41 @@ class ParseTree
     invariant($this instanceof VariableNameTree, "Wrong type.");
     return $this;
   }
+  public function isShapeLiteral(): bool {
+    return $this->kind === ParseTreeKind::SHAPE_LITERAL;
+  }
+  public function asShapeLiteral(): ShapeLiteralTree {
+    invariant($this instanceof ShapeLiteralTree, "Wrong type.");
+    return $this;
+  }
+  public function isTupleLiteral(): bool {
+    return $this->kind === ParseTreeKind::TUPLE_LITERAL;
+  }
+  public function asTupleLiteral(): TupleLiteralTree {
+    invariant($this instanceof TupleLiteralTree, "Wrong type.");
+    return $this;
+  }
+  public function isFieldInitializer(): bool {
+    return $this->kind === ParseTreeKind::FIELD_INITIALIZER;
+  }
+  public function asFieldInitializer(): FieldInitializerTree {
+    invariant($this instanceof FieldInitializerTree, "Wrong type.");
+    return $this;
+  }
+  public function isAnonymousFunction(): bool {
+    return $this->kind === ParseTreeKind::ANONYMOUS_FUNCTION;
+  }
+  public function asAnonymousFunction(): AnonymousFunctionTree {
+    invariant($this instanceof AnonymousFunctionTree, "Wrong type.");
+    return $this;
+  }
+  public function isAnonymousFunctionParameter(): bool {
+    return $this->kind === ParseTreeKind::ANONYMOUS_FUNCTION_PARAMETER;
+  }
+  public function asAnonymousFunctionParameter(): AnonymousFunctionParameterTree {
+    invariant($this instanceof AnonymousFunctionParameterTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }
