@@ -25,7 +25,7 @@ enum TokenKind : int
   FORWARD_SLASH = 18;
   PERCENT = 19;
   LEFT_SHIFT = 20;
-  RIGHT_SHIFT = 21;
+  RIGHT_SHIFT = 21; // Produced by the parser, not the lexer.
   OPEN_ANGLE = 22;
   CLOSE_ANGLE = 23;
   LESS_EQUAL = 24;
@@ -51,7 +51,7 @@ enum TokenKind : int
   MINUS_EQUAL = 44;
   PERIOD_EQUAL = 45;
   LEFT_SHIFT_EQUAL = 46;
-  RIGHT_SHIFT_EQUAL = 47;
+  RIGHT_SHIFT_EQUAL = 47; // Produced by the parser, not the lexer.
   AMPERSAND_EQUAL = 48;
   HAT_EQUAL = 49;
   BAR_EQUAL = 50;
@@ -60,6 +60,12 @@ enum TokenKind : int
   FAT_ARROW = 53;
   AT = 54;
   FATTER_ARROW = 55;
+  COLON_COLON = 56;
+  NULL_SAFE_ARROW = 57;
+
+  // TODO: Legacy punctuation
+  // ...
+  // <>
 
   NAME = 70;
   VARIABLE_NAME = 71;
@@ -123,4 +129,10 @@ enum TokenKind : int
   KW_FALSE = 150;
   KW_NULL = 151;
   KW_TRUE = 152;
+
+  KW_ARRAY = 153;
+  KW_AWAIT = 154;
+  KW_DIE = 155;
+  KW_EXIT = 156;
+  KW_LIST = 157;
 }

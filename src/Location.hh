@@ -18,4 +18,11 @@ class Location
   {
     return "{$this->file()->name()}({$this->line()}, {$this->column()})";
   }
+
+  public function isEqual(Location $other): bool
+  {
+    return $this->file === $other->file
+      && $this->line === $other->line
+      && $this->column === $other->column;
+  }
 }

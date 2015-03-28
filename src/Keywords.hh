@@ -6,9 +6,11 @@ require_once 'utils.hh';
 class Keywords
 {
   const string KW_ABSTRACT = 'abstract';
+  const string KW_ARRAY = 'array';
   const string KW_ARRAYKEY = 'arraykey';
   const string KW_AS = 'as';
   const string KW_ASYNC = 'async';
+  const string KW_AWAIT = 'await';
   const string KW_BREAK = 'break';
   const string KW_CASE = 'case';
   const string KW_CATCH = 'catch';
@@ -17,11 +19,13 @@ class Keywords
   const string KW_CONST = 'const';
   const string KW_CONTINUE = 'continue';
   const string KW_DEFAULT = 'default';
+  const string KW_DIE = 'die';
   const string KW_DO = 'do';
   const string KW_ECHO = 'echo';
   const string KW_ELSE = 'else';
   const string KW_ELSEIF = 'elseif';
   const string KW_ENUM = 'enum';
+  const string KW_EXIT = 'exit';
   const string KW_EXTENDS = 'extends';
   const string KW_FINAL = 'final';
   const string KW_FINALLY = 'finally';
@@ -33,7 +37,7 @@ class Keywords
   const string KW_INSTANCEOF = 'instanceof';
   const string KW_INSTEADOF = 'insteadof';
   const string KW_INTERFACE = 'interface';
-  const string KW_MIXED = 'mixed';
+  const string KW_LIST = 'list';
   const string KW_NAMESPACE = 'namespace';
   const string KW_NEW = 'new';
   const string KW_NEWTYPE = 'newtype';
@@ -56,15 +60,68 @@ class Keywords
   const string KW_WHILE = 'while';
   const string KW_YIELD = 'yield';
 
+  // TODO: legacy keywords:
+  // endif
+  // endwhile
+  // endfor
+  // endforeach
+  // declare
+  // enddeclare
+  // endswitch
+  // goto
+  // print
+  // callable
+  // eval
+  // include
+  // include_once
+  // global
+  // isset
+  // empty
+  // __halt_compiler
+  // __copmiler_halt_offset__
+  // unset
+  // OR
+  // AND
+  // XOR
+  // var
+
+  // TODO: query operators
+  // from
+  // where
+  // join
+  // in
+  // on
+  // equals
+  // into
+  // let
+  // orderby
+  // ascending
+  // descending
+  // select
+  // group
+  // by
+
+  // TODO: Macro like
+  // __CLASS__
+  // __TRAIT__
+  // __FUNCTION__
+  // __METHOD__
+  // __LINE__
+  // __FILE__
+  // __DIR__
+  // __NAMESPACE__
+
   const string KW_FALSE = 'false';
   const string KW_NULL = 'null';
   const string KW_TRUE = 'true';
 
   private static Map<string, TokenKind> $all = Map {
     Keywords::KW_ABSTRACT => TokenKind::KW_ABSTRACT,
+    Keywords::KW_ARRAY => TokenKind::KW_ARRAY,
     Keywords::KW_ARRAYKEY => TokenKind::KW_ARRAYKEY,
     Keywords::KW_AS => TokenKind::KW_AS,
     Keywords::KW_ASYNC => TokenKind::KW_ASYNC,
+    Keywords::KW_AWAIT => TokenKind::KW_AWAIT,
     Keywords::KW_BREAK => TokenKind::KW_BREAK,
     Keywords::KW_CASE => TokenKind::KW_CASE,
     Keywords::KW_CATCH => TokenKind::KW_CATCH,
@@ -73,12 +130,14 @@ class Keywords
     Keywords::KW_CONST => TokenKind::KW_CONST,
     Keywords::KW_CONTINUE => TokenKind::KW_CONTINUE,
     Keywords::KW_DEFAULT => TokenKind::KW_DEFAULT,
+    Keywords::KW_DIE => TokenKind::KW_DIE,
     Keywords::KW_DO => TokenKind::KW_DO,
     Keywords::KW_ECHO => TokenKind::KW_ECHO,
     Keywords::KW_ELSE => TokenKind::KW_ELSE,
     Keywords::KW_ELSEIF => TokenKind::KW_ELSEIF,
     Keywords::KW_ENUM => TokenKind::KW_ENUM,
     Keywords::KW_EXTENDS => TokenKind::KW_EXTENDS,
+    Keywords::KW_EXIT => TokenKind::KW_EXIT,
     Keywords::KW_FINAL => TokenKind::KW_FINAL,
     Keywords::KW_FINALLY => TokenKind::KW_FINALLY,
     Keywords::KW_FOR => TokenKind::KW_FOR,
@@ -89,7 +148,7 @@ class Keywords
     Keywords::KW_INSTANCEOF => TokenKind::KW_INSTANCEOF,
     Keywords::KW_INSTEADOF => TokenKind::KW_INSTEADOF,
     Keywords::KW_INTERFACE => TokenKind::KW_INTERFACE,
-    Keywords::KW_MIXED => TokenKind::KW_MIXED,
+    Keywords::KW_LIST => TokenKind::KW_LIST,
     Keywords::KW_NAMESPACE => TokenKind::KW_NAMESPACE,
     Keywords::KW_NEW => TokenKind::KW_NEW,
     Keywords::KW_NEWTYPE => TokenKind::KW_NEWTYPE,

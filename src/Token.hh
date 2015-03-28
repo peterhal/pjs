@@ -9,6 +9,7 @@ class Token
   public function range(): Range { return $this->range; }
   public function kind(): TokenKind { return $this->kind; }
   public function start(): Location { return $this->range->start(); }
+  public function end(): Location { return $this->range->end(); }
 
   public function isName(): bool
   {
@@ -19,6 +20,12 @@ class Token
   {
     invariant($this instanceof NameToken, "Must be a name.");
     return $this;
+  }
+
+  // Precedes immediately with no characters separating.
+  public function precedes(Token $other): bool
+  {
+    return $this->end()->isEqual($other->start());
   }
 }
 

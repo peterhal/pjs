@@ -99,6 +99,7 @@ class Parser extends ParserBase
       return $this->parseInterfaceDeclaration();
     case TokenKind::KW_TRAIT:
       return $this->parseTraitDeclaration();
+    // TODO: type aliases.
     default:
       // TODO
       throw new Exception();
@@ -1438,16 +1439,52 @@ class Parser extends ParserBase
       self::$ADDITIVE_OPERATORS);
   }
 
-  private static Vector<TokenKind> $BITWISE_SHIFT_OPERATORS = Vector {
-    TokenKind::LEFT_SHIFT,
-    TokenKind::RIGHT_SHIFT,
-  };
+  private function peekBitwiseShiftOperator(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::LEFT_SHIFT:
+      return true;
+    case TokenKind::CLOSE_ANGLE:
+      if ($this->peekIndexKind(1, TokenKind::CLOSE_ANGLE)) {
+        return $this->peekToken()->precedes($this->peekTokenIndex(1));
+      } else {
+        return false;
+      }
+    default:
+      return false;
+    }
+  }
+
+  private function eatBitwiseShiftOperator(): Token
+  {
+    switch ($this->peek()) {
+    case TokenKind::LEFT_SHIFT:
+      return $this->next();
+    default:
+      $first = $this->eat(TokenKind::CLOSE_ANGLE);
+      $second = $this->eat(TokenKind::CLOSE_ANGLE);
+      return new Token(
+        new Range($first->start(), $second->end()),
+        TokenKind::RIGHT_SHIFT);
+    }
+  }
 
   private function parseBitwiseShiftExpression(): ParseTree
   {
-    return $this->parseBinaryExpression(
-      () ==> $this->parseAdditiveExpression(),
-      self::$BITWISE_SHIFT_OPERATORS);
+    $start = $this->position();
+
+    $left = $this->parseAdditiveExpression();
+    while ($this->peekBitwiseShiftOperator()) {
+      $operator = $this->eatBitwiseShiftOperator();
+      $right = $this->parseAdditiveExpression();
+      $left = new BinaryExpressionTree(
+        $this->getRange($start),
+        $left,
+        $operator,
+        $right);
+    }
+
+    return $left;
   }
 
   private static Vector<TokenKind> $RELATIONAL_OPERATORS = Vector {
@@ -1553,22 +1590,6 @@ class Parser extends ParserBase
     }
   }
 
-  private static Vector<TokenKind> $ASSIGNMENT_OPERATORS = Vector {
-    TokenKind::EQUAL,
-      TokenKind::STAR_STAR_EQUAL,
-      TokenKind::STAR_EQUAL,
-      TokenKind::SLASH_EQUAL,
-      TokenKind::PERCENT_EQUAL,
-      TokenKind::PLUS_EQUAL,
-      TokenKind::MINUS_EQUAL,
-      TokenKind::PERIOD_EQUAL,
-      TokenKind::LEFT_SHIFT_EQUAL,
-      TokenKind::RIGHT_SHIFT_EQUAL,
-      TokenKind::AMPERSAND_EQUAL,
-      TokenKind::HAT_EQUAL,
-      TokenKind::BAR_EQUAL,
-  };
-
   private function peekLambdaExpression(): bool
   {
     if ($this->peekKind(TokenKind::KW_ASYNC)) {
@@ -1616,6 +1637,56 @@ class Parser extends ParserBase
     }
   }
 
+  private function peekAssignmentOperator(): bool
+  {
+    switch ($this->peek()) {
+    case TokenKind::STAR_STAR_EQUAL:
+    case TokenKind::STAR_EQUAL:
+    case TokenKind::SLASH_EQUAL:
+    case TokenKind::PERCENT_EQUAL:
+    case TokenKind::PLUS_EQUAL:
+    case TokenKind::MINUS_EQUAL:
+    case TokenKind::PERIOD_EQUAL:
+    case TokenKind::LEFT_SHIFT_EQUAL:
+    case TokenKind::AMPERSAND_EQUAL:
+    case TokenKind::HAT_EQUAL:
+    case TokenKind::BAR_EQUAL:
+      return true;
+    case TokenKind::CLOSE_ANGLE:
+      if ($this->peekIndexKind(1, TokenKind::GREATER_EQUAL)) {
+        return $this->peekToken()->precedes($this->peekTokenIndex(1));
+      } else {
+        return false;
+      }
+    default:
+      return false;
+    }
+  }
+
+  private function eatAssignmentOperator(): Token
+  {
+    switch ($this->peek()) {
+    case TokenKind::STAR_STAR_EQUAL:
+    case TokenKind::STAR_EQUAL:
+    case TokenKind::SLASH_EQUAL:
+    case TokenKind::PERCENT_EQUAL:
+    case TokenKind::PLUS_EQUAL:
+    case TokenKind::MINUS_EQUAL:
+    case TokenKind::PERIOD_EQUAL:
+    case TokenKind::LEFT_SHIFT_EQUAL:
+    case TokenKind::AMPERSAND_EQUAL:
+    case TokenKind::HAT_EQUAL:
+    case TokenKind::BAR_EQUAL:
+      return $this->next();
+    default:
+      $first = $this->eat(TokenKind::CLOSE_ANGLE);
+      $second = $this->eat(TokenKind::GREATER_EQUAL);
+      return new Token(
+        new Range($first->start(), $second->end()),
+        TokenKind::RIGHT_SHIFT_EQUAL);
+    }
+  }
+
   private function parseAssignmentExpression(): ParseTree
   {
     if ($this->peekLambdaExpression()) {
@@ -1625,10 +1696,9 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $left = $this->parseConditionalExpression();
-    if (self::isUnaryExpression($left)
-        && $this->peekAny(self::$ASSIGNMENT_OPERATORS)) {
-      $operator = $this->next();
-      if ($this->peekKind(TokenKind::EQUAL)) {
+    if (self::isUnaryExpression($left) && $this->peekAssignmentOperator()) {
+      $operator = $this->eatAssignmentOperator();
+      if ($operator->kind() === TokenKind::EQUAL) {
         $right = $this->parseAliasAssignmentExpression();
       } else {
         $right = $this->parseAssignmentExpression();

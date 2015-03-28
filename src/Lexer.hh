@@ -135,18 +135,13 @@ class Lexer extends LexerBase
       default: return $create(TokenKind::OPEN_ANGLE);
       }
     case Char::CLOSE_ANGLE:
-      switch ($peek())
-      {
-      case Char::EQUAL: $next(); return $create(TokenKind::GREATER_EQUAL);
-      case Char::CLOSE_ANGLE:
-        $next();
-        if ($peekChar(Char::EQUAL)) {
-          $next();
-          return $create(TokenKind::RIGHT_SHIFT_EQUAL);
-        }
-        return $create(TokenKind::RIGHT_SHIFT);
-      default: return $create(TokenKind::CLOSE_ANGLE);
+      // >> and >>= are handled specially in the parser
+      // to avoid ambiguity with generic types
+      if ($peekChar(Char::EQUAL)) {
+        $next(); 
+        return $create(TokenKind::GREATER_EQUAL);
       }
+      return $create(TokenKind::CLOSE_ANGLE);
     case Char::EQUAL:
       switch ($peek()) {
       case Char::CLOSE_ANGLE:
