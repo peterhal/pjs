@@ -147,13 +147,18 @@ class Lexer extends LexerBase
       case Char::CLOSE_ANGLE:
         $next();
         return $create(TokenKind::FAT_ARROW);
-      case $peekChar(Char::EQUAL):
+      case Char::EQUAL:
         $next();
-        if ($peekChar(Char::EQUAL)) {
+        switch ($peek()) {
+        case Char::CLOSE_ANGLE:
+          $next();
+          return $create(TokenKind::FATTER_ARROW);
+        case Char::EQUAL:
           $next();
           return $create(TokenKind::EQUAL_EQUAL_EQUAL);
+        default:
+          return $create(TokenKind::EQUAL_EQUAL);
         }
-        return $create(TokenKind::EQUAL_EQUAL);
       default:
         return $create(TokenKind::EQUAL);
       }
@@ -177,20 +182,32 @@ class Lexer extends LexerBase
       case Char::EQUAL: $next(); return $create(TokenKind::AMPERSAND_EQUAL);
       default: return $create(TokenKind::AMPERSAND);
       }
-      case Char::QUESTION: return $create(TokenKind::QUESTION);
-      case Char::COLON: return $create(TokenKind::COLON);
-      case Char::SEMI_COLON: return $create(TokenKind::SEMI_COLON);
-      case Char::COMMA: return $create(TokenKind::COMMA);
-      case Char::SINGLE_QUOTE:
-        return $this->lexSingleQuotedString($start);
-      case Char::DOUBLE_QUOTE:
-        return $this->lexDoubleQuotedString($start);
-      default:
-        if (Char::isNameNonDigit($ch)) {
-          return $this->lexName($start, $ch);
-        } elseif (Char::isDigit($ch)) {
-          return $this->lexNumber($start, $ch);
-        }
+    case Char::QUESTION: 
+      if ($peekChar(Char::MINUS) 
+          && $this->peekCharOffset(Char::CLOSE_ANGLE, 1)) {
+        $next();
+        $next();
+        return $create(TokenKind::NULL_SAFE_ARROW);
+      }
+      return $create(TokenKind::QUESTION);
+    case Char::COLON: 
+      if ($peekChar(Char::COLON)) {
+        $next();
+        return $create(TokenKind::COLON_COLON);
+      }
+      return $create(TokenKind::COLON);
+    case Char::SEMI_COLON: return $create(TokenKind::SEMI_COLON);
+    case Char::COMMA: return $create(TokenKind::COMMA);
+    case Char::SINGLE_QUOTE:
+      return $this->lexSingleQuotedString($start);
+    case Char::DOUBLE_QUOTE:
+      return $this->lexDoubleQuotedString($start);
+    default:
+      if (Char::isNameNonDigit($ch)) {
+        return $this->lexName($start, $ch);
+      } elseif (Char::isDigit($ch)) {
+        return $this->lexNumber($start, $ch);
+      }
     }
 
     return new Token($this->currentRange($start), TokenKind::EOF);
