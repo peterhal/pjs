@@ -1569,6 +1569,44 @@ class Parser extends ParserBase
       TokenKind::BAR_EQUAL,
   };
 
+  private function peekLambdaExpression(): bool
+  {
+    if ($this->peekKind(TokenKind::KW_ASYNC)) {
+      return !$this->peekIndexKind(1, TokenKind::KW_FUNCTION);
+    }
+
+    if ($this->peekKind(TokenKind::VARIABLE_NAME)) {
+      return $this->peekIndexKind(1, TokenKind::FATTER_ARROW);
+    } else if ($this->peekKind(TokenKind::OPEN_PAREN)) {
+      $index = 1;
+      $parenDepth = 1;
+      while ($parenDepth > 0) {
+        switch ($this->peekIndex($index)) {
+        case TokenKind::OPEN_PAREN:
+          $parenDepth++;
+          break;
+        case TokenKind::CLOSE_PAREN:
+          $parenDepth--;
+          break;
+        case TokenKind::EOF:
+          return false;
+        default:
+          break;
+        }
+        $index++;
+      }
+      switch ($this->peekIndex($index)) {
+      case TokenKind::COLON:
+      case TokenKind::FATTER_ARROW:
+        return true;
+      default:
+        return false;
+      }
+    }
+
+    return false;
+  }
+
   private static function isUnaryExpression(ParseTree $tree): bool
   {
     switch ($tree->kind()) {
@@ -1580,9 +1618,12 @@ class Parser extends ParserBase
 
   private function parseAssignmentExpression(): ParseTree
   {
+    if ($this->peekLambdaExpression()) {
+      return $this->parseLambdaExpression();
+    }
+
     $start = $this->position();
 
-    // TODO: Spec says lambda...
     $left = $this->parseConditionalExpression();
     if (self::isUnaryExpression($left)
         && $this->peekAny(self::$ASSIGNMENT_OPERATORS)) {
