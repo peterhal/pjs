@@ -597,7 +597,7 @@ class Parser extends ParserBase
   {
     $start = $modifiers[0]->start();
 
-    // TODO: type parameters
+    $typeParameters = $this->parseTypeParametersOpt();
     $parameters = $this->parseParameterList();
     $this->eat(TokenKind::COLON);
     $returnType = $this->parseReturnType();
@@ -607,6 +607,7 @@ class Parser extends ParserBase
       $this->getRange($start),
       $modifiers,
       $name,
+      $typeParameters,
       $parameters,
       $returnType,
       $body);
@@ -795,8 +796,90 @@ class Parser extends ParserBase
 
   private function peekExpression(): bool
   {
-    // TODO
-    return false;
+    // Primary expression, unary expression, lambda, yield
+    switch ($this->peek()) {
+    // primary
+    case TokenKind::VARIABLE_NAME:
+    case TokenKind::NAME:
+    case TokenKind::BACK_SLASH:
+    case TokenKind::KW_TRUE:
+    case TokenKind::KW_FALSE:
+    case TokenKind::KW_NULL:
+    case TokenKind::NUMBER:
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::DOUBLE_QUOTED_STRING:
+    case TokenKind::OPEN_PAREN:
+    case TokenKind::KW_SHAPE:
+    case TokenKind::KW_TUPLE:
+    case TokenKind::KW_ASYNC:
+    case TokenKind::KW_FUNCTION:
+    // postfix
+    case TokenKind::KW_NEW:
+    case TokenKind::OPEN_SQUARE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_CLONE:
+    case TokenKind::KW_ARRAY:
+    case TokenKind::KW_ECHO:
+    case TokenKind::KW_EXIT:
+    case TokenKind::KW_DIE:
+    case TokenKind::KW_LIST:
+    // unary
+    case TokenKind::PLUS_PLUS:
+    case TokenKind::MINUS_MINUS:
+    case TokenKind::PLUS:
+    case TokenKind::MINUS:
+    case TokenKind::BANG:
+    case TokenKind::TILDE:
+    case TokenKind::AT:
+    // yield
+    case TokenKind::KW_YIELD:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  private function peekAssignmentExpression(): bool
+  {
+    // Primary expression, unary expression, lambda, yield
+    switch ($this->peek()) {
+    // primary
+    case TokenKind::VARIABLE_NAME:
+    case TokenKind::NAME:
+    case TokenKind::BACK_SLASH:
+    case TokenKind::KW_TRUE:
+    case TokenKind::KW_FALSE:
+    case TokenKind::KW_NULL:
+    case TokenKind::NUMBER:
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::DOUBLE_QUOTED_STRING:
+    case TokenKind::OPEN_PAREN:
+    case TokenKind::KW_SHAPE:
+    case TokenKind::KW_TUPLE:
+    case TokenKind::KW_ASYNC:
+    case TokenKind::KW_FUNCTION:
+    // postfix
+    case TokenKind::KW_NEW:
+    case TokenKind::OPEN_SQUARE:
+    case TokenKind::KW_STATIC:
+    case TokenKind::KW_CLONE:
+    case TokenKind::KW_ARRAY:
+    case TokenKind::KW_ECHO:
+    case TokenKind::KW_EXIT:
+    case TokenKind::KW_DIE:
+    case TokenKind::KW_LIST:
+    // unary
+    case TokenKind::PLUS_PLUS:
+    case TokenKind::MINUS_MINUS:
+    case TokenKind::PLUS:
+    case TokenKind::MINUS:
+    case TokenKind::BANG:
+    case TokenKind::TILDE:
+    case TokenKind::AT:
+      return true;
+    default:
+      return false;
+    }
   }
 
   private function parseExpressionOpt(): ?ParseTree
@@ -849,20 +932,14 @@ class Parser extends ParserBase
   {
     switch ($this->peek()) {
     case TokenKind::VARIABLE_NAME:
-      if ($this->peekKind(TokenKind::FATTER_ARROW)) {
-        return $this->parseLambdaExpression();
-      } else {
-        return $this->parseVariableName();
-      }
+      return $this->parseVariableName();
     case TokenKind::NAME:
     case TokenKind::BACK_SLASH:
       $name = $this->parseQualifiedName();
-      // TODO: Intrinsics: echo, exit, invariant, clone, array
       if ($this->peekKind(TokenKind::OPEN_CURLY)) {
         return $this->parseCollectionLiteralSuffix($name);
-      } elseif ($this->peekKind(TokenKind::COLON)
-        && $this->peekIndexKind(1, TokenKind::COLON)) {
-        // NOTE: self and parent parse as qualified names.
+      } elseif ($this->peekKind(TokenKind::COLON_COLON)) {
+        // NOTE: invariant, self and parent parse as qualified names.
         return $this->parseScopeResolutionSuffix($name);
       } else {
         return $name;
@@ -881,11 +958,7 @@ class Parser extends ParserBase
     case TokenKind::KW_TUPLE:
       return $this->parseTupleLiteral();
     case TokenKind::KW_ASYNC:
-      if ($this->peekKind(TokenKind::KW_FUNCTION)) {
-        return $this->parseAnonymousFunction();
-      } else {
-        return $this->parseLambdaExpression();
-      }
+      return $this->parseAnonymousFunction();
     case TokenKind::KW_FUNCTION:
       return $this->parseAnonymousFunction();
     case TokenKind::KW_NEW:
@@ -894,10 +967,30 @@ class Parser extends ParserBase
       return $this->parseArrayLiteral();
     case TokenKind::KW_STATIC:
       return $this->parseStaticScopeName();
+    case TokenKind::KW_ECHO:
+    case TokenKind::KW_EXIT:
+    case TokenKind::KW_CLONE:
+    case TokenKind::KW_ARRAY:
+      // TODO
+      throw new Exception();
     default:
       throw new Exception();
     }
   }
+
+  private function parseParenExpression(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::OPEN_PAREN);
+    $expression = $this->parseExpression();
+    $this->eat(TokenKind::CLOSE_PAREN);
+
+    return new ParenExpressionTree(
+      $this->getRange($start),
+      $expression);
+  }
+
   private function parseLambdaExpression(): ParseTree
   {
     $start = $this->position();
@@ -949,10 +1042,8 @@ class Parser extends ParserBase
   {
     $start = $baseName->start();
 
-    $this->eat(TokenKind::COLON);
-    // TODO: allow whitespace
-    $this->eat(TokenKind::COLON);
-    // TODO: class??
+    $this->eat(TokenKind::COLON_COLON);
+    // TODO: SPEC: class??
     $memberName = $this->eatName();
 
     return new ScopeResolutionTree(
@@ -997,12 +1088,10 @@ class Parser extends ParserBase
     return $this->parseDelimitedCommaSeparatedListOpt(
       TokenKind::OPEN_PAREN,
       TokenKind::CLOSE_PAREN,
-      // TODO: AssignmentExpression??
-      () ==> $this->peekExpression(),
-      () ==> $this->parseExpression());
+      // TODO: Spec: Expression??
+      () ==> $this->peekAssignmentExpression(),
+      () ==> $this->parseAssignmentExpression());
   }
-
-
 
   private function parseAnonymousFunction(): ParseTree
   {
@@ -1204,10 +1293,8 @@ class Parser extends ParserBase
     case TokenKind::PLUS_PLUS:
     case TokenKind::MINUS_MINUS:
     case TokenKind::STAR_STAR:
+    case TokenKind::NULL_SAFE_ARROW:
       return true;
-    case TokenKind::QUESTION:
-      // TODO: is whitespace allowed?
-      return $this->peekIndexKind(1, TokenKind::ARROW);
     default:
       return false;
     }
@@ -1223,7 +1310,7 @@ class Parser extends ParserBase
       return $this->parseFunctionCall($value);
     case TokenKind::ARROW:
       return $this->parseMemberSelection($value);
-    case TokenKind::QUESTION: //?->
+    case TokenKind::NULL_SAFE_ARROW:
       return $this->parseNullSafeMemberSelection($value);
     case TokenKind::PLUS_PLUS:
     case TokenKind::MINUS_MINUS:
@@ -1266,9 +1353,7 @@ class Parser extends ParserBase
   {
     $start = $object->start();
 
-    $this->eat(TokenKind::QUESTION);
-    // TODO: Allow whitespace?
-    $this->eat(TokenKind::ARROW);
+    $this->eat(TokenKind::NULL_SAFE_ARROW);
     $name = $this->eatName();
 
     return new NullSafeMemberSelectionTree(
@@ -1323,8 +1408,6 @@ class Parser extends ParserBase
 
   private function parseUnaryExpression(): ParseTree
   {
-    $start = $this->position();
-
     switch ($this->peek()) {
     case TokenKind::PLUS_PLUS:
     case TokenKind::MINUS_MINUS:
@@ -1340,21 +1423,11 @@ class Parser extends ParserBase
         return $this->parseCastExpression();
       }
       return $this->parsePostfixExpression();
-    case TokenKind::NAME:
-      if ($this->peekToken()->asName()->value() === PredefinedName::pn_await) {
-        return $this->parseAwaitExpression();
-      } else {
-        return $this->parsePostfixExpression();
-      }
+    case TokenKind::KW_AWAIT:
+      return $this->parseAwaitExpression();
     default:
       return $this->parsePostfixExpression();
     }
-  }
-
-  private function peekParenLambda(): bool
-  {
-    // TODO: must disambiguate with paren expression and cast expression...
-    return false;
   }
 
   private function peekCastExpression(): bool
@@ -1631,7 +1704,36 @@ class Parser extends ParserBase
   private static function isUnaryExpression(ParseTree $tree): bool
   {
     switch ($tree->kind()) {
-      // TODO:
+      // TODO: primary, postfix, unary
+    case ParseTreeKind::LITERAL:
+    case ParseTreeKind::VARIABLE_NAME:
+    case ParseTreeKind::QUALIFIED_NAME:
+    case ParseTreeKind::PAREN_EXPRESSION:
+    case ParseTreeKind::SHAPE_LITERAL:
+    case ParseTreeKind::TUPLE_LITERAL:
+    case ParseTreeKind::ANONYMOUS_FUNCTION:
+    case ParseTreeKind::OBJECT_CREATION_EXPRESSION:
+    case ParseTreeKind::ARRAY_LITERAL:
+    case ParseTreeKind::SCOPE_RESOLUTION:
+    case ParseTreeKind::COLLECTION_LITERAL:
+    // postfix
+    case ParseTreeKind::SUBSCRIPT_OPERATOR:
+    case ParseTreeKind::FUNCTION_CALL:
+    case ParseTreeKind::MEMBER_SELECTION:
+    case ParseTreeKind::NULL_SAFE_MEMBER_SELECTION:
+    case ParseTreeKind::POSTFIX_OPERATOR:
+    // unary
+    case ParseTreeKind::UNARY_EXPRESSION:
+    case ParseTreeKind::CAST_EXPRESSION:
+      return true;
+    case ParseTreeKind::BINARY_EXPRESSION:
+      switch ($tree->asBinaryExpression()->operator->kind()) {
+      case TokenKind::STAR_STAR:
+        return true;
+      default:
+        return false;
+      }
+      // TODO: intrinsics
     default:
       return false;
     }
@@ -1718,9 +1820,9 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $operator = $this->eatName();
-    invariant($operator->value() === PredefinedName::pn_await, "Expected await");
-    // TODO: This can;t be the correct precedence.
+    $operator = $this->eat(TokenKind::KW_AWAIT);
+
+    // TODO: SPEC: This can;t be the correct precedence.
     $value = $this->parseExpression();
 
     return new UnaryExpressionTree(
@@ -1777,10 +1879,10 @@ class Parser extends ParserBase
     $start = $this->position();
 
     // TODO: attributes
-    // TODO: async
+    $isAsync = $this->eatOpt(TokenKind::KW_ASYNC);
     $this->eat(TokenKind::KW_FUNCTION);
     $name = $this->eatName();
-    // TODO: type parameters
+    $typeParameters = $this->parseTypeParametersOpt();
     $parameters = $this->parseParameterList();
     $this->eat(TokenKind::COLON);
     $returnType = $this->parseReturnType();
@@ -1788,7 +1890,9 @@ class Parser extends ParserBase
 
     return new FunctionDefinitionTree(
       $this->getRange($start),
+      $isAsync,
       $name,
+      $typeParameters,
       $parameters,
       $returnType,
       $body);
@@ -1842,11 +1946,37 @@ class Parser extends ParserBase
 
   private function parseStatement(): ParseTree
   {
-    $start = $this->position();
-
-    return new CompoundStatementTree(
-      $this->getRange($start),
-      Vector {});
+    // TODO: function-static-declaration
+    switch ($this->peek()) {
+    case TokenKind::OPEN_CURLY:
+      return $this->parseCompoundStatement();
+    case TokenKind::KW_IF:
+      return $this->parseIfStatement();
+    case TokenKind::KW_SWITCH:
+      return $this->parseSwitchStatement();
+    case TokenKind::KW_WHILE:
+      return $this->parseWhileStatement();
+    case TokenKind::KW_DO:
+      return $this->parseDoStatement();
+    case TokenKind::KW_FOR:
+      return $this->parseForStatement();
+    case TokenKind::KW_FOREACH:
+      return $this->parseForEachStatement();
+    case TokenKind::KW_CONTINUE:
+      return $this->parseContinueStatement();
+    case TokenKind::KW_BREAK:
+      return $this->parseBreakStatement();
+    case TokenKind::KW_RETURN:
+      return $this->parseReturnStatement();
+    case TokenKind::KW_THROW:
+      return $this->parseThrowStatement();
+    case TokenKind::KW_TRY:
+      return $this->parseTryStatement();
+    case TokenKind::SEMI_COLON:
+      return $this->parseEmptyStatement();
+    default:
+      return $this->parseExpressionStatement();
+    }
   }
 
   private function peekTypeSpecifier(): bool
@@ -1934,9 +2064,6 @@ class Parser extends ParserBase
       case PredefinedName::void:
         $name = $this->eatName();
         return new PredefinedNameTypeTree($this->getRange($start), $name);
-      case PredefinedName::pn_array:
-        // Parse as regular possibly generic class.
-        break;
       }
     }
 
@@ -2045,8 +2172,8 @@ class Parser extends ParserBase
   // Statements
   private function peekStatement(): bool
   {
+    // TODO: function-static-declaration
     switch ($this->peek()) {
-      // TODO: Expression
     case TokenKind::OPEN_CURLY:
     case TokenKind::KW_IF:
     case TokenKind::KW_SWITCH:
@@ -2059,9 +2186,10 @@ class Parser extends ParserBase
     case TokenKind::KW_RETURN:
     case TokenKind::KW_THROW:
     case TokenKind::KW_TRY:
+    case TokenKind::SEMI_COLON:
       return true;
     default:
-      return false;
+      return $this->peekExpression();
     }
   }
 
@@ -2106,7 +2234,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $this->eat(TokenKind::KW_IF);
-    $condition = $this->parseParenExpression();
+    $condition = $this->parseParenDelimitedExpression();
     $thenClause = $this->parseStatement();
     $elseifClauses = $this->parseList(
       () ==> $this->peekKind(TokenKind::KW_ELSEIF),
@@ -2121,7 +2249,7 @@ class Parser extends ParserBase
       $elseClause);
   }
 
-  private function parseParenExpression(): ParseTree
+  private function parseParenDelimitedExpression(): ParseTree
   {
     $this->eat(TokenKind::OPEN_PAREN);
     $result = $this->parseExpression();
@@ -2135,7 +2263,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $this->eat(TokenKind::KW_ELSEIF);
-    $condition = $this->parseParenExpression();
+    $condition = $this->parseParenDelimitedExpression();
     $thenClause = $this->parseStatement();
 
     return new ElseifClauseTree(
@@ -2165,7 +2293,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $this->eat(TokenKind::KW_SWITCH);
-    $condition = $this->parseParenExpression();
+    $condition = $this->parseParenDelimitedExpression();
     $this->eat(TokenKind::OPEN_CURLY);
     $caseClauses = $this->parseList(
       () ==> $this->peekCaseClause(),
@@ -2209,7 +2337,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $this->eat(TokenKind::KW_WHILE);
-    $condition = $this->parseParenExpression();
+    $condition = $this->parseParenDelimitedExpression();
     $body = $this->parseStatement();
 
     return new WhileStatementTree(
@@ -2225,7 +2353,7 @@ class Parser extends ParserBase
     $this->eat(TokenKind::KW_DO);
     $body = $this->parseStatement();
     $this->eat(TokenKind::KW_WHILE);
-    $condition = $this->parseParenExpression();
+    $condition = $this->parseParenDelimitedExpression();
     $this->eat(TokenKind::SEMI_COLON);
 
     return new WhileStatementTree(

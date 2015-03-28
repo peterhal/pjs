@@ -571,6 +571,13 @@ class ParseTree
     invariant($this instanceof LambdaSignatureTree, "Wrong type.");
     return $this;
   }
+  public function isParenExpression(): bool {
+    return $this->kind === ParseTreeKind::PAREN_EXPRESSION;
+  }
+  public function asParenExpression(): ParenExpressionTree {
+    invariant($this instanceof ParenExpressionTree, "Wrong type.");
+    return $this;
+  }
   public function isParseError(): bool {
     return $this->kind === ParseTreeKind::PARSE_ERROR;
   }

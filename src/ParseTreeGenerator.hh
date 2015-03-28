@@ -195,7 +195,9 @@ CONSTRUCTOR_BODY
           }),
       new ParseTreeSpecification("FunctionDefinition",
           Vector {
+            Pair { "isAsync", "bool" },
             Pair { "name", "NameToken" },
+            Pair { "typeParameters", "?Vector<ParseTree>" },
             Pair { "parameters", "ParseTree" },
             Pair { "returnType", "ParseTree" },
             Pair { "body", "ParseTree" }
@@ -298,6 +300,7 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "modifiers", "Vector<Token>" },
             Pair { "name", "NameToken" },
+            Pair { "typeParameters", "?Vector<ParseTree>" },
             Pair { "parameters", "ParseTree" },
             Pair { "returnType", "ParseTree" },
             Pair { "body", "ParseTree" }
@@ -552,6 +555,10 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "parameters", "?Vector<ParseTree>" },
             Pair { "returnType", "?ParseTree" },
+          }),
+      new ParseTreeSpecification("ParenExpression",
+          Vector {
+            Pair { "expression", "ParseTree" },
           }),
       new ParseTreeSpecification("ParseError", Vector {}),
     };

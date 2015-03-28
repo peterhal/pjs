@@ -83,7 +83,9 @@ class FunctionDefinitionTree extends ParseTree
 {
   public function __construct(
     Range $range,
+    public bool $isAsync,
     public NameToken $name,
+    public ?Vector<ParseTree> $typeParameters,
     public ParseTree $parameters,
     public ParseTree $returnType,
     public ParseTree $body)
@@ -306,6 +308,7 @@ class MethodDefinitionTree extends ParseTree
     Range $range,
     public Vector<Token> $modifiers,
     public NameToken $name,
+    public ?Vector<ParseTree> $typeParameters,
     public ParseTree $parameters,
     public ParseTree $returnType,
     public ParseTree $body)
@@ -882,6 +885,16 @@ class LambdaSignatureTree extends ParseTree
     public ?ParseTree $returnType)
   {
     parent::__construct($range, ParseTreeKind::LAMBDA_SIGNATURE);
+  }
+}
+
+class ParenExpressionTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public ParseTree $expression)
+  {
+    parent::__construct($range, ParseTreeKind::PAREN_EXPRESSION);
   }
 }
 
