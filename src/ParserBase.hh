@@ -21,7 +21,9 @@ class ParserBase
       return $result;
     } else {
       // TODO: Better message.
-      $this->error("Expected " . TokenKind::getNames()[$kind]);
+      $this->errorLocation(
+        $this->position(),
+        "Expected " . TokenKind::getNames()[$kind]);
       return $this->next();
     }
   }
@@ -140,9 +142,14 @@ class ParserBase
     return $this->peekToken()->start();
   }
 
+  protected function lastPosition(): Location
+  {
+    return $this->tokens[$this->index - 1]->end();
+  }
+
   protected function getRange(Location $start): Range
   {
-    return new Range($start, $this->position());
+    return new Range($start, $this->lastPosition());
   }
 
   protected int $index;

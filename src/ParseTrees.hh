@@ -156,6 +156,16 @@ class NullableTypeTree extends ParseTree
   }
 }
 
+class ArrayTypeTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<ParseTree> $typeParameters)
+  {
+    parent::__construct($range, ParseTreeKind::ARRAY_TYPE);
+  }
+}
+
 class NamedTypeTree extends ParseTree
 {
   public function __construct(

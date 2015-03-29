@@ -13,6 +13,7 @@ class SourceFile
   public function name(): string { return $this->name; }
   public function contents(): string { return $this->contents; }
   public function count(): int { return strlen($this->contents()); }
+  public function lineMap(): LineMap { return $this->lineMap; }
 
   public function location(int $offset): Location
   {

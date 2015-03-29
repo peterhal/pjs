@@ -748,19 +748,20 @@ class Parser extends ParserBase
       $traits);
   }
 
+  private function parseTypeParameters(): Vector<ParseTree>
+  {
+    return $this->parseDelimitedCommaSeparatedList(
+      TokenKind::OPEN_ANGLE,
+      TokenKind::CLOSE_ANGLE,
+      () ==> $this->parseTypeParameter());
+  }
+
   private function parseTypeParametersOpt(): ?Vector<ParseTree>
   {
     if (!$this->peekKind(TokenKind::OPEN_ANGLE)) {
       return null;
     } else {
-      $start = $this->position();
-
-      $result = $this->parseDelimitedCommaSeparatedList(
-        TokenKind::OPEN_ANGLE,
-        TokenKind::CLOSE_ANGLE,
-        () ==> $this->parseTypeParameter());
-
-      return $result;
+      return $this->parseTypeParameters();
     }
   }
 
@@ -1753,6 +1754,7 @@ class Parser extends ParserBase
     case TokenKind::AMPERSAND_EQUAL:
     case TokenKind::HAT_EQUAL:
     case TokenKind::BAR_EQUAL:
+    case TokenKind::EQUAL:
       return true;
     case TokenKind::CLOSE_ANGLE:
       if ($this->peekIndexKind(1, TokenKind::GREATER_EQUAL)) {
@@ -1779,6 +1781,7 @@ class Parser extends ParserBase
     case TokenKind::AMPERSAND_EQUAL:
     case TokenKind::HAT_EQUAL:
     case TokenKind::BAR_EQUAL:
+    case TokenKind::EQUAL:
       return $this->next();
     default:
       $first = $this->eat(TokenKind::CLOSE_ANGLE);
@@ -1982,6 +1985,7 @@ class Parser extends ParserBase
   private function peekTypeSpecifier(): bool
   {
     switch ($this->peek()) {
+    case TokenKind::KW_ARRAY:
     case TokenKind::KW_ARRAYKEY:
     case TokenKind::KW_NUM:
     case TokenKind::OPEN_PAREN: // tuple, closure
@@ -1989,7 +1993,6 @@ class Parser extends ParserBase
     case TokenKind::BACK_SLASH: // qualified name
       return true;
     case TokenKind::NAME: // qualified name, type parameter
-      // array
       // bool
       // int`
       // float
@@ -2042,9 +2045,26 @@ class Parser extends ParserBase
     case TokenKind::BACK_SLASH:
     case TokenKind::NAME:
       return $this->parseNamedType();
+    case TokenKind::KW_ARRAY:
+      return $this->parseArrayType();
     default:
       throw new Exception();
     }
+  }
+
+  private function parseArrayType(): ParseTree
+  {
+    $start = $this->position();
+
+    $this->eat(TokenKind::KW_ARRAY);
+    $typeParameters = $this->parseTypeParameters();
+    if ($typeParameters->count() > 2) {
+      $this->error("Array type must have 1 or 2 type parameters.");
+    }
+
+    return new ArrayTypeTree(
+      $this->getRange($start),
+      $typeParameters);
   }
 
   private function parseNamedType(): ParseTree

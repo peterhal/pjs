@@ -109,6 +109,13 @@ class ParseTree
     invariant($this instanceof NullableTypeTree, "Wrong type.");
     return $this;
   }
+  public function isArrayType(): bool {
+    return $this->kind === ParseTreeKind::ARRAY_TYPE;
+  }
+  public function asArrayType(): ArrayTypeTree {
+    invariant($this instanceof ArrayTypeTree, "Wrong type.");
+    return $this;
+  }
   public function isNamedType(): bool {
     return $this->kind === ParseTreeKind::NAMED_TYPE;
   }

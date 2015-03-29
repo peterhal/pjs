@@ -228,6 +228,10 @@ CONSTRUCTOR_BODY
           Vector {
             Pair { "type", "ParseTree" }
           }),
+      new ParseTreeSpecification("ArrayType",
+          Vector {
+            Pair { "typeParameters", "Vector<ParseTree>" }
+          }),
       new ParseTreeSpecification("NamedType",
           Vector {
             Pair { "name", "ParseTree" },

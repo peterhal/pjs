@@ -13,10 +13,17 @@ class Location
   public function file(): SourceFile { return $this->file; }
   public function line(): int { return $this->line; }
   public function column(): int { return$this->column; }
+  public function displayLine(): int { return $this->line + 1; }
+  public function displayColumn(): int { return$this->column + 1; }
+  public function offset(): int
+  {
+    return $this->file->lineMap()->offsetOfLine($this->line)
+      + $this->column;
+  }
 
   public function toString(): string
   {
-    return "{$this->file()->name()}({$this->line()}, {$this->column()})";
+    return "{$this->file()->name()}({$this->displayLine()}, {$this->displayColumn()})";
   }
 
   public function isEqual(Location $other): bool

@@ -10,6 +10,7 @@ class Token
   public function kind(): TokenKind { return $this->kind; }
   public function start(): Location { return $this->range->start(); }
   public function end(): Location { return $this->range->end(); }
+  public function text(): string { return $this->range->text(); }
 
   public function isName(): bool
   {

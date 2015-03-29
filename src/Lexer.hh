@@ -334,7 +334,6 @@ class Lexer extends LexerBase
 
   private function lexOctalLiteral(int $start): Token
   {
-    $this->next(); // 0
     $value = 0;
     while (Char::isOctalDigit($this->peek())) {
       $value <<= 3;
