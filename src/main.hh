@@ -6,6 +6,50 @@ require_once 'Parser.hh';
 require_once 'TokenKind.hh';
 require_once 'SourceFile.hh';
 
+
+class IndentedWriter {
+  public function __construct(
+    private resource $file)
+  {
+    $this->atBeginingOfLine  = true;
+    $this->indent = 0;
+  }
+
+  public function write(string $value): void
+  {
+    if ($this->atBeginingOfLine) {
+      fwrite($this->file, str_repeat(' ', $this->indent));
+    }
+    fwrite($this->file, $value);
+    $this->atBeginingOfLine = false;
+  }
+
+  public function writeLine(): void
+  {
+    fwrite($this->file, "\n");
+    $this->atBeginingOfLine = true;
+  }
+
+  public function indent(): void
+  {
+    $this->indent += self::INDENT;
+  }
+
+  public function outdent(): void
+  {
+    $this->indent -= self::INDENT;
+
+    if ($this->indent < 0) {
+      throw new Exception();
+    }
+  }
+
+  const int INDENT = 2;
+
+  private bool $atBeginingOfLine;
+  private int $indent;
+}
+
 function tokenKindToString(TokenKind $kind): string
 {
   return TokenKind::getNames()[$kind];
@@ -38,61 +82,95 @@ function dumpToken(Token $token): void
     dumpString(tokenKindToString($token->kind()) . "\n");
 }
 
-function dumpValue(mixed $value): void
+class ParseTreeDumper
 {
-  if ($value === null) {
-    dumpString("null\n");
-  } else if ($value === true) {
-    dumpString("true\n");
-  } else if ($value === false) {
-    dumpString("false\n");
-  } else if ($value instanceof ParseTree) {
-    dumpTree($value);
-  } else if ($value instanceof Vector) {
-    dumpVector($value);
-  } else if ($value instanceof Token) {
-    dumpToken($value);
-  } else {
-    var_dump($value);
-    throw new Exception("Unknown value!");
+  public function __construct(resource $file)
+  {
+    $this->writer = new IndentedWriter($file);
   }
-}
 
-function dumpVector(mixed $values): void
-{
-  $values2 = $values;
-  if ($values instanceof Vector) {
-    if ($values->count() === 0) {
-      return;
-    } else if ($values[0] instanceof ParseTree) {
-      dumpVectorTree($values);
-    } else if ($values2 instanceof Vector && $values2[0] instanceof Token) {
-      dumpTokens($values2);
-    } else {
-      var_dump($values[0]);
-      throw new Exception ("Unknown vector!");
+  public function dumpTree(ParseTree $tree): void
+  {
+    $this->writeLine();
+    $this->dumpString("kind: " . parseTreeKindToString($tree->kind()));
+    $properties = (new ReflectionClass($tree))
+      ->getProperties(ReflectionProperty::IS_PUBLIC);
+    foreach ($properties as $property) {
+      $this->writeLine();
+      $this->dumpString($property->getName() . ": ");
+      $this->dumpValue($property->getValue($tree));
     }
-  } else {
-    throw new Exception("Expecting Vector");
   }
-}
 
-function dumpVectorTree(Vector<ParseTree> $trees): void
-{
-  foreach ($trees as $tree) {
-    dumpTree($tree);
+  public function dumpValue(mixed $value): void
+  {
+    if ($value === null) {
+      $this->dumpString("null");
+    } else if ($value === true) {
+      $this->dumpString("true");
+    } else if ($value === false) {
+      $this->dumpString("false");
+    } else if ($value instanceof ParseTree) {
+      $this->indent();
+      $this->dumpTree($value);
+      $this->outdent();
+    } else if ($value instanceof Vector) {
+      if ($value->count() === 0) {
+        $this->dumpString("<empty>");
+      } else {
+        $this->indent();
+        $this->dumpVector($value);
+        $this->outdent();
+      }
+    } else if ($value instanceof Token) {
+      $this->dumpToken($value);
+    } else {
+      var_dump($value);
+      throw new Exception("Unknown value!");
+    }
   }
-}
 
-function dumpTree(ParseTree $tree): void
-{
-  dumpString(parseTreeKindToString($tree->kind()) . "\n");
-  $properties = (new ReflectionClass($tree))
-    ->getProperties(ReflectionProperty::IS_PUBLIC);
-  foreach ($properties as $property) {
-    dumpString($property->getName() . ": ");
-    dumpValue($property->getValue($tree));
+  public function dumpToken(Token $token): void
+  {
+    if ($token->isName() || $token->isVariableName() || $token->isLiteral()) {
+      $this->dumpString(" " . $token->text());
+    } else {
+      $this->dumpString(tokenKindToString($token->kind()));
+    }
   }
+
+  public function dumpVector(Vector<mixed> $values): void
+  {
+    $index = 0;
+    foreach ($values as $value) {
+      $this->writeLine();
+      $this->dumpString($index . ": ");
+      $this->dumpValue($value);
+      $index += 1;
+    }
+  }
+
+  public function dumpString(string $value): void
+  {
+    $this->writer->write($value);
+  }
+
+  private function indent(): void
+  {
+    $this->writer->indent();
+  }
+
+  private function outdent(): void
+  {
+    $this->writer->outdent();
+  }
+
+  private function writeLine(): void
+  {
+    $this->writer->writeLine();
+  }
+
+  private IndentedWriter $writer;
 }
 
 function main(array<string> $argv) : int
@@ -111,7 +189,8 @@ function main(array<string> $argv) : int
   // dumpTokens($tokens);
 
   $tree = Parser::parse($tokens, $reporter);
-  dumpTree($tree);
+  $dumper = new ParseTreeDumper(STDOUT);
+  $dumper->dumpTree($tree);
 
   return 0;
 }

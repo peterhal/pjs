@@ -14,13 +14,36 @@ class Token
 
   public function isName(): bool
   {
-    return $this->kind ===TokenKind::NAME;
+    return $this->kind === TokenKind::NAME;
   }
 
   public function asName(): NameToken
   {
     invariant($this instanceof NameToken, "Must be a name.");
     return $this;
+  }
+
+  public function isVariableName(): bool
+  {
+    return $this->kind === TokenKind::VARIABLE_NAME;
+  }
+
+  public function asVariableName(): VariableNameToken
+  {
+    invariant($this instanceof VariableNameToken, "Must be a variable name.");
+    return $this;
+  }
+
+  public function isLiteral(): bool
+  {
+    switch ($this->kind) {
+    case TokenKind::NUMBER:
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::DOUBLE_QUOTED_STRING:
+      return true;
+    default:
+     return false;
+    }
   }
 
   // Precedes immediately with no characters separating.

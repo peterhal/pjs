@@ -468,12 +468,14 @@ class Parser extends ParserBase
     } else {
       $implementsClause = null;
     }
+    $this->eat(TokenKind::OPEN_CURLY);
     $traits = $this->parseList(
         () ==> $this->peekTraitUseClause(),
         () ==> $this->parseTraitUseClause());
     $members = $this->parseList(
         () ==> $this->peekClassMember(),
         () ==> $this->parseClassMember());
+    $this->eat(TokenKind::CLOSE_CURLY);
 
     return new ClassDeclarationTree(
       $this->getRange($start),
@@ -518,12 +520,11 @@ class Parser extends ParserBase
     case TokenKind::KW_ABSTRACT:
     case TokenKind::KW_FINAL:
       $modifiers = $this->parseModifiers();
-      switch ($this->peek()) {
-      case TokenKind::KW_FUNCTION:
+      if ($this->peekKind(TokenKind::KW_FUNCTION)) {
         return $this->parseMethodLikeDeclaration($modifiers);
-      case TokenKind::VARIABLE_NAME:
+      } else if ($this->peekTypeSpecifier()) {
         return $this->parsePropertyDeclaration($modifiers);
-      default:
+      } else {
         $this->error("Class member expected");
         return $this->createErrorTree();
       }
@@ -617,11 +618,11 @@ class Parser extends ParserBase
   {
     $this->eat(TokenKind::KW_FUNCTION);
     $name = $this->eatName();
-    if ($name === PredefinedName::__construct) {
+    if ($name->value() === PredefinedName::__construct) {
       return $this->parseConstructorDeclaration(
         $modifiers,
         $name);
-    } else if ($name === PredefinedName::__destruct) {
+    } else if ($name->value() === PredefinedName::__destruct) {
       return $this->parseDestructorDeclaration(
         $modifiers,
         $name);
@@ -685,6 +686,7 @@ class Parser extends ParserBase
     }
     $declarators = $this->parseCommaSeparatedList(
       () ==> $this->parseConstDeclarator());
+    $this->eat(TokenKind::SEMI_COLON);
 
     return new ConstDeclarationTree(
       $this->getRange($start),
