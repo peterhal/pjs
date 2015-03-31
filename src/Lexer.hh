@@ -131,8 +131,11 @@ class Lexer extends LexerBase
           return $create(TokenKind::LEFT_SHIFT_EQUAL);
         }
         return $create(TokenKind::LEFT_SHIFT);
-      case Char::EQUAL: return $create(TokenKind::LESS_EQUAL);
-      default: return $create(TokenKind::OPEN_ANGLE);
+        case Char::EQUAL: 
+          $next() ;
+          return $create(TokenKind::LESS_EQUAL);
+        default: 
+          return $create(TokenKind::OPEN_ANGLE);
       }
     case Char::CLOSE_ANGLE:
       // >> and >>= are handled specially in the parser

@@ -57,6 +57,15 @@ class ParserBase
     return $this->next();
   }
 
+  protected function eatAnyName(): Token
+  {
+    if ($this->peekKind(TokenKind::VARIABLE_NAME)) {
+      return $this->eat(TokenKind::VARIABLE_NAME);
+    } else {
+      return $this->eatName();
+    }
+  }
+
   protected function eatName(): NameToken
   {
     $token = $this->eat(TokenKind::NAME);

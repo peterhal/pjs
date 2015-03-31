@@ -180,6 +180,7 @@ function main(array<string> $argv) : int
     return 1;
   }
   $filename = $argv[1];
+  fwrite(STDOUT, $filename . "\n");
 
   $file = SourceFile::read($filename);
   // dumpFile($file);
@@ -191,6 +192,7 @@ function main(array<string> $argv) : int
   $tree = Parser::parse($tokens, $reporter);
   $dumper = new ParseTreeDumper(STDOUT);
   $dumper->dumpTree($tree);
+  fwrite(STDOUT, "\n");
 
   return 0;
 }

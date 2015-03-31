@@ -321,7 +321,7 @@ class MethodDefinitionTree extends ParseTree
     public ?Vector<ParseTree> $typeParameters,
     public ParseTree $parameters,
     public ParseTree $returnType,
-    public ParseTree $body)
+    public ?ParseTree $body)
   {
     parent::__construct($range, ParseTreeKind::METHOD_DEFINITION);
   }
@@ -486,7 +486,7 @@ class CaseClauseTree extends ParseTree
   public function __construct(
     Range $range,
     public Vector<ParseTree> $labels,
-    public ParseTree $statement)
+    public Vector<ParseTree> $statements)
   {
     parent::__construct($range, ParseTreeKind::CASE_CLAUSE);
   }
@@ -659,7 +659,7 @@ class CollectionLiteralTree extends ParseTree
   public function __construct(
     Range $range,
     public ParseTree $name,
-    public Vector<ParseTree> $elements)
+    public ?Vector<ParseTree> $elements)
   {
     parent::__construct($range, ParseTreeKind::COLLECTION_LITERAL);
   }
@@ -813,7 +813,7 @@ class ScopeResolutionTree extends ParseTree
   public function __construct(
     Range $range,
     public ParseTree $baseName,
-    public NameToken $memberName)
+    public Token $memberName)
   {
     parent::__construct($range, ParseTreeKind::SCOPE_RESOLUTION);
   }

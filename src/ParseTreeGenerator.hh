@@ -307,7 +307,7 @@ CONSTRUCTOR_BODY
             Pair { "typeParameters", "?Vector<ParseTree>" },
             Pair { "parameters", "ParseTree" },
             Pair { "returnType", "ParseTree" },
-            Pair { "body", "ParseTree" }
+            Pair { "body", "?ParseTree" }
           }),
       new ParseTreeSpecification("DestructorDeclaration",
           Vector {
@@ -378,7 +378,7 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("CaseClause",
           Vector {
             Pair { "labels", "Vector<ParseTree>" },
-            Pair { "statement", "ParseTree" },
+            Pair { "statements", "Vector<ParseTree>" },
           }),
       new ParseTreeSpecification("SwitchStatement",
           Vector {
@@ -451,7 +451,7 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("CollectionLiteral",
           Vector {
             Pair { "name", "ParseTree" },
-            Pair { "elements", "Vector<ParseTree>" },
+            Pair { "elements", "?Vector<ParseTree>" },
           }),
       new ParseTreeSpecification("VariableName",
           Vector {
@@ -521,7 +521,7 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("ScopeResolution",
           Vector {
             Pair { "baseName", "ParseTree" },
-            Pair { "memberName", "NameToken" },
+            Pair { "memberName", "Token" },
           }),
       new ParseTreeSpecification("StaticName",
           Vector {

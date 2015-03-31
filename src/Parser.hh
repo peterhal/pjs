@@ -602,7 +602,9 @@ class Parser extends ParserBase
     $parameters = $this->parseParameterList();
     $this->eat(TokenKind::COLON);
     $returnType = $this->parseReturnType();
-    $body = $this->parseCompoundStatement();
+    $body = $this->eatOpt(TokenKind::SEMI_COLON)
+      ? null
+      : $this->parseCompoundStatement();
 
     return new MethodDefinitionTree(
       $this->getRange($start),
@@ -975,9 +977,9 @@ class Parser extends ParserBase
     case TokenKind::KW_CLONE:
     case TokenKind::KW_ARRAY:
       // TODO
-      throw new Exception();
+      throw new Exception($this->position()->toString());
     default:
-      throw new Exception();
+      throw new Exception($this->position()->toString());
     }
   }
 
@@ -1047,7 +1049,7 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::COLON_COLON);
     // TODO: SPEC: class??
-    $memberName = $this->eatName();
+    $memberName = $this->eatAnyName();
 
     return new ScopeResolutionTree(
       $this->getRange($start),
@@ -1059,7 +1061,7 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $elements = $this->parseDelimitedCommaSeparatedListOpt(
+    $elements = $this->parseDelimitedCommaSeparatedListOptWithTrailingComma(
       TokenKind::OPEN_SQUARE,
       TokenKind::CLOSE_SQUARE,
       () ==> $this->peekExpression(),
@@ -1263,10 +1265,11 @@ class Parser extends ParserBase
   {
     $start = $name->start();
 
-    $this->eat(TokenKind::OPEN_CURLY);
-    $elements = $this->parseCommaSeparatedList(
+    $elements = $this->parseDelimitedCommaSeparatedListOptWithTrailingComma(
+      TokenKind::OPEN_CURLY,
+      TokenKind::CLOSE_CURLY,
+      () ==> $this->peekExpression(),
       () ==> $this->parseArrayElementInitializer());
-    $this->eat(TokenKind::CLOSE_CURLY);
 
     return new CollectionLiteralTree(
       $this->getRange($start),
@@ -1632,7 +1635,7 @@ class Parser extends ParserBase
   {
     return $this->parseBinaryExpression(
       () ==> $this->parseBitwiseOrExpression(),
-      self::$BITWISE_OR_OPERATORS);
+      self::$LOGICAL_AND_OPERATORS);
   }
 
   private static Vector<TokenKind> $LOGICAL_OR_OPERATORS = Vector {
@@ -2138,6 +2141,7 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
+    $this->eat(TokenKind::QUESTION);
     $type = $this->parseTypeSpecifier();
 
     return new NullableTypeTree($this->getRange($start), $type);
@@ -2346,12 +2350,14 @@ class Parser extends ParserBase
     $labels = $this->parseList(
       () ==> $this->peekCaseClause(),
       () ==> $this->parseCaseLabel());
-    $statement = $this->parseStatement();
+    $statements = $this->parseList(
+      () ==> $this->peekStatement(),
+      () ==> $this->parseStatement());
 
     return new CaseClauseTree(
       $this->getRange($start),
       $labels,
-      $statement);
+      $statements);
   }
 
   private function parseWhileStatement(): ParseTree
@@ -2579,11 +2585,14 @@ class Parser extends ParserBase
 
     if ($this->eatOpt(TokenKind::KW_DEFAULT)) {
       $this->eat(TokenKind::COLON);
+
       return new DefaultLabelTree(
         $this->getRange($start));
     } else {
       $this->eat(TokenKind::KW_CASE);
       $condition = $this->parseExpression();
+      $this->eat(TokenKind::COLON);
+
       return new CaseLabelTree(
         $this->getRange($start),
         $condition);
@@ -2610,6 +2619,26 @@ class Parser extends ParserBase
   {
     $this->eat($first);
     $result = $this->parseCommaSeparatedListOpt($peek, $element);
+    $this->eat($end);
+    return $result;
+  }
+
+  private function parseDelimitedCommaSeparatedListOptWithTrailingComma(
+    TokenKind $first,
+    TokenKind $end,
+    (function (): bool) $peek,
+    (function (): ParseTree) $element): ?Vector<ParseTree>
+  {
+    $this->eat($first);
+    if ($peek()) {
+      $result = Vector {};
+      $result[] = $element();
+      while ($this->eatOpt(TokenKind::COMMA) && $peek()) {
+        $result[] = $element();
+      }
+    } else {
+      $result = null;
+    }
     $this->eat($end);
     return $result;
   }
