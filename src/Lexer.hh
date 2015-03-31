@@ -218,7 +218,44 @@ class Lexer extends LexerBase
 
   private function lexMultiLineString(int $start): Token
   {
-    // TODO
+    $this->skipWhitespace();
+    if ($this->locationOfOffset($start)->line() !== $this->location()->line()) {
+      $this->error("Here doc start identifier expected before new line.");
+      return $this->createToken($start, TokenKind::MULTI_LINE_STRING);
+    }
+
+    $startIdentifier = $this->getLine();
+    if (strlen($startIdentifier) === 0) {
+      $this->error("Here doc start identifier expected before new line.");
+      return $this->createToken($start, TokenKind::MULTI_LINE_STRING);
+    }
+    if (strlen($startIdentifier) > 2 
+        && $startIdentifier[0] === "'"
+        && $startIdentifier[strlen($startIdentifier) - 1] === "'") {
+      $startIdentifier = substr(
+        $startIdentifier, 1, strlen($startIdentifier) - 2);
+      $isNowDoc = true;
+    } else {
+      $isNowDoc = false;
+    }
+
+    // TODO: Validate that startIdentifier is a valid name
+    do {
+      $this->skipNewLine();
+      $line = $this->getLine();
+      $foundEnd = $line === $startIdentifier
+        || $line === ($startIdentifier . ';');
+    } while (!$foundEnd && !$this->eof());
+    if (!$foundEnd) {
+      $this->errorOffset($start, "Missing multi line comment terminator.");
+    }
+    if ($this->eof()) {
+      $this->error("Expected new line after multi line comment.");
+    } else {
+      $this->skipNewLine();
+    }
+
+    // TODO: Extent of token value.
     return $this->createToken($start, TokenKind::MULTI_LINE_STRING);
   }
 
@@ -451,6 +488,25 @@ class Lexer extends LexerBase
       }
       $this->next();
     }
+  }
+
+  private function skipNewLine(): void
+  {
+    if (!Char::isNewLine($this->peek())) {
+      $this->error("New line expected.");
+    }
+    if ($this->next() === Char::CARRIAGE_RETURN 
+      && $this->peek() === Char::LINE_FEED) {
+      $this->next();
+    }
+  }
+
+  private function getLine(): string
+  {
+    $start = $this->offset;
+    $this->skipToEndOfLine();
+    $end = $this->offset;
+    return $this->textOfRange($start, $end);
   }
 }
 

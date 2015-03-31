@@ -136,3 +136,9 @@ enum TokenKind : int
   KW_EXIT = 156;
   KW_LIST = 157;
 }
+
+function tokenKindToString(TokenKind $kind): string
+{
+  return TokenKind::getNames()[$kind];
+}
+

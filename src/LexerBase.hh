@@ -22,6 +22,11 @@ class LexerBase
       $this->locationOfOffset($end));
   }
 
+  protected function textOfRange(int $start, int $end): string
+  {
+    return $this->range($start, $end)->text();
+  }
+
   protected function currentRange(int $start): Range
   {
     return $this->range($start, $this->offset);

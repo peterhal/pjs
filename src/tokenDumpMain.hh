@@ -3,11 +3,26 @@
 require_once 'ConsoleErrorReporter.hh';
 require_once 'SourceFile.hh';
 require_once 'Lexer.hh';
-require_once 'Parser.hh';
-require_once 'ParseTreeDumper.hh';
 
 
-function main(array<string> $argv) : int
+function dumpString(string $value): void
+{
+  fwrite(STDOUT, $value);
+}
+
+function dumpTokens(Vector<Token> $tokens): void
+{
+  for ($i = 0; $i < $tokens->count(); $i++) {
+    dumpToken($tokens[$i]);
+  }
+}
+
+function dumpToken(Token $token): void
+{
+    dumpString(tokenKindToString($token->kind()) . "\n");
+}
+
+function tokenDumpMain(array<string> $argv) : int
 {
   if (count($argv) < 2) {
     fwrite(STDERR, "Error: Missing required option 'filename'.\n");
@@ -20,11 +35,7 @@ function main(array<string> $argv) : int
 
   $reporter = new ConsoleErrorReporter();
   $tokens = Lexer::lexFile($file, $reporter);
-
-  $tree = Parser::parse($tokens, $reporter);
-  $dumper = new ParseTreeDumper(STDOUT);
-  $dumper->dumpTree($tree);
-  fwrite(STDOUT, "\n");
+  dumpTokens($tokens);
 
   return 0;
 }

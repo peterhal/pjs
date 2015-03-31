@@ -813,6 +813,7 @@ class Parser extends ParserBase
     case TokenKind::NUMBER:
     case TokenKind::SINGLE_QUOTED_STRING:
     case TokenKind::DOUBLE_QUOTED_STRING:
+    case TokenKind::MULTI_LINE_STRING:
     case TokenKind::OPEN_PAREN:
     case TokenKind::KW_SHAPE:
     case TokenKind::KW_TUPLE:
@@ -955,6 +956,7 @@ class Parser extends ParserBase
     case TokenKind::NUMBER:
     case TokenKind::SINGLE_QUOTED_STRING:
     case TokenKind::DOUBLE_QUOTED_STRING:
+    case TokenKind::MULTI_LINE_STRING:
       return $this->parseLiteral();
     case TokenKind::OPEN_PAREN:
       return $this->parseParenExpression();
