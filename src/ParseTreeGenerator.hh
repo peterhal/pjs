@@ -51,6 +51,9 @@ class ParseTreeGenerator
     fwrite($file, <<< FILE_HEADER
 <?hh // strict
 
+namespace Syntax
+{
+
 enum ParseTreeKind : int
 {
 
@@ -63,6 +66,7 @@ FILE_HEADER
       $index++;
     }
     fwrite($file, "}\n");
+    fwrite($file, "}\n");
     fclose($file);
   }
 
@@ -73,6 +77,9 @@ FILE_HEADER
 <?hh //strict
 
 require_once 'ParseTreeKind.hh';
+
+namespace Syntax
+{
 
 class ParseTree
 {
@@ -108,6 +115,7 @@ AS
     }
 
     fwrite($file, "}\n");
+    fwrite($file, "}\n");
     fclose($file);
   }
 
@@ -120,6 +128,8 @@ AS
 require_once 'ParseTree.hh';
 require_once 'ParseTreeKind.hh';
 
+namespace Syntax
+{
 
 FILE_HEADER
 );
@@ -153,6 +163,8 @@ CONSTRUCTOR_BODY
       fwrite($file, "}\n");
     }
 
+    // end namespace
+    fwrite($file, "}\n");
     fclose($file);
   }
 
