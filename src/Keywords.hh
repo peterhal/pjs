@@ -3,6 +3,10 @@
 require_once 'TokenKind.hh';
 require_once 'utils.hh';
 
+namespace Syntax {
+
+use Utils\nullthrows;
+
 class Keywords
 {
   const string KW_ABSTRACT = 'abstract';
@@ -185,4 +189,6 @@ class Keywords
   {
     return nullthrows(Keywords::$all->get($value));
   }
+}
+
 }

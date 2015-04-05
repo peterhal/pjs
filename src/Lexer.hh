@@ -8,6 +8,13 @@ require_once 'Location.hh';
 require_once 'SourceFile.hh';
 require_once 'Token.hh';
 
+namespace Syntax {
+
+use Utils\Char;
+use Utils\ErrorReporter;
+use Utils\SourceFile;
+use Utils\Location;
+
 class Lexer extends LexerBase
 {
   public static function lexFile(
@@ -510,3 +517,4 @@ class Lexer extends LexerBase
   }
 }
 
+}

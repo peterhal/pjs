@@ -1,5 +1,7 @@
 <?hh // strict
 
+namespace Utils {
+
 class Char
 {
   const int EOF = -1;
@@ -140,3 +142,6 @@ class Char
     return Char::isNameNonDigit($ch) || Char::isDigit($ch);
   }
 }
+
+}
+

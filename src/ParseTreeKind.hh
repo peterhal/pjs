@@ -1,5 +1,8 @@
 <?hh // strict
 
+namespace Syntax
+{
+
 enum ParseTreeKind : int
 {
   SCRIPT = 0;
@@ -85,4 +88,5 @@ enum ParseTreeKind : int
   LAMBDA_SIGNATURE = 80;
   PAREN_EXPRESSION = 81;
   PARSE_ERROR = 82;
+}
 }

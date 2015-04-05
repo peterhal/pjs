@@ -1,5 +1,7 @@
 <?hh //strict
 
+namespace Syntax {
+
 enum TokenKind : int
 {
   EOF = 0;
@@ -140,5 +142,7 @@ enum TokenKind : int
 function tokenKindToString(TokenKind $kind): string
 {
   return TokenKind::getNames()[$kind];
+}
+
 }
 

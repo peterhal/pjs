@@ -3,6 +3,8 @@
 require_once 'LineMap.hh';
 require_once 'Location.hh';
 
+namespace Utils {
+
 class SourceFile
 {
   public function __construct(private string $name, private string $contents)
@@ -30,3 +32,6 @@ class SourceFile
 
   private LineMap $lineMap;
 }
+
+}
+

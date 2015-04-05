@@ -2,6 +2,8 @@
 
 require_once 'Location.hh';
 
+namespace Utils {
+
 class Range
 {
   public function __construct(
@@ -21,4 +23,6 @@ class Range
       $this->start->offset(),
       $this->length());
   }
+}
+
 }

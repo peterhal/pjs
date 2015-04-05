@@ -6,6 +6,11 @@ require_once 'Lexer.hh';
 require_once 'Parser.hh';
 require_once 'ParseTreeDumper.hh';
 
+use Utils\SourceFile;
+use Utils\ConsoleErrorReporter;
+use Syntax\Lexer;
+use Syntax\Parser;
+use Syntax\ParseTreeDumper;
 
 function main(array<string> $argv) : int
 {

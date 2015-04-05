@@ -1,5 +1,13 @@
 <?hh //strict
 
+require_once 'Range.hh';
+require_once 'Location.hh';
+
+namespace Syntax {
+
+use Utils\Location;
+use Utils\Range;
+
 class Token
 {
   public function __construct(
@@ -75,4 +83,4 @@ class VariableNameToken extends Token
   public function value(): string { return $this->value; }
 }
 
-
+}

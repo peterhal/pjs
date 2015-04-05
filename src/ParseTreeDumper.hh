@@ -6,6 +6,13 @@ require_once 'TokenKind.hh';
 require_once 'ParseTree.hh';
 require_once 'ParseTreeKind.hh';
 
+namespace Syntax {
+
+use Utils\IndentedWriter;
+use \ReflectionClass;
+use \ReflectionProperty;
+use \Exception;
+
 function parseTreeKindToString(ParseTreeKind $kind): string
 {
   return ParseTreeKind::getNames()[$kind];
@@ -101,3 +108,6 @@ class ParseTreeDumper
 
   private IndentedWriter $writer;
 }
+
+}
+

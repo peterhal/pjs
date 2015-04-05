@@ -8,6 +8,12 @@ require_once 'PredefinedName.hh';
 require_once 'Token.hh';
 require_once 'TokenKind.hh';
 
+namespace Syntax {
+
+use \Exception;
+use Utils\Range;
+use Utils\ErrorReporter;
+
 class Parser extends ParserBase
 {
   public function __construct(
@@ -2703,3 +2709,4 @@ class Parser extends ParserBase
   }
 }
 
+}

@@ -6,6 +6,14 @@ require_once 'Location.hh';
 require_once 'Range.hh';
 require_once 'SourceFile.hh';
 
+namespace Syntax {
+
+use Utils\Char;
+use Utils\ErrorReporter;
+use Utils\Location;
+use Utils\SourceFile;
+use Utils\Range;
+
 class LexerBase
 {
   protected function __construct(
@@ -102,3 +110,6 @@ class LexerBase
 
   protected int $offset;
 }
+
+}
+

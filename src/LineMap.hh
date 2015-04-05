@@ -2,6 +2,8 @@
 
 require_once 'Char.hh';
 
+namespace Utils {
+
 class LineMap
 {
   public function __construct(private string $values)
@@ -53,4 +55,6 @@ class LineMap
   }
 
   private Vector<int> $offsets;
+}
+
 }

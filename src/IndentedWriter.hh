@@ -1,5 +1,9 @@
 <?hh //strict
 
+namespace Utils {
+
+use \Exception;
+
 class IndentedWriter {
   public function __construct(
     private resource $file)
@@ -41,4 +45,6 @@ class IndentedWriter {
 
   private bool $atBeginingOfLine;
   private int $indent;
+}
+
 }

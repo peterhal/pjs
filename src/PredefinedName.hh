@@ -1,5 +1,7 @@
 <?hh // strict
 
+namespace Syntax {
+
 abstract class PredefinedName
 {
   const string hh = 'hh';
@@ -16,3 +18,4 @@ abstract class PredefinedName
   const string __destruct = '__destruct';
 }
 
+}

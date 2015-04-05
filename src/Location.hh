@@ -2,6 +2,8 @@
 
 require_once 'SourceFile.hh';
 
+namespace Utils {
+
 class Location
 {
   public function __construct(
@@ -32,4 +34,6 @@ class Location
       && $this->line === $other->line
       && $this->column === $other->column;
   }
+}
+
 }

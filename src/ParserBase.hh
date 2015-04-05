@@ -5,6 +5,13 @@ require_once 'Token.hh';
 require_once 'TokenKind.hh';
 require_once 'utils.hh';
 
+namespace Syntax {
+  
+use Utils\contains;
+use Utils\Location;
+use Utils\Range;
+use Utils\ErrorReporter;
+
 class ParserBase
 {
   protected function __construct(
@@ -162,4 +169,6 @@ class ParserBase
   }
 
   protected int $index;
+}
+
 }

@@ -2,6 +2,8 @@
 
 require_once 'Char.hh';
 
+use Utils\Char;
+
 class ParseTreeSpecification
 {
   public function __construct(
@@ -76,10 +78,15 @@ FILE_HEADER
     fwrite($file, <<< 'FILE_HEADER'
 <?hh //strict
 
+require_once 'Location.hh';
+require_once 'Range.hh';
 require_once 'ParseTreeKind.hh';
 
 namespace Syntax
 {
+
+use Utils\Location;
+use Utils\Range;
 
 class ParseTree
 {
@@ -127,9 +134,12 @@ AS
 
 require_once 'ParseTree.hh';
 require_once 'ParseTreeKind.hh';
+require_once 'Range.hh';
 
 namespace Syntax
 {
+
+use Utils\Range;
 
 FILE_HEADER
 );

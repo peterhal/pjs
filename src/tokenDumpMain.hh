@@ -4,6 +4,11 @@ require_once 'ConsoleErrorReporter.hh';
 require_once 'SourceFile.hh';
 require_once 'Lexer.hh';
 
+use Utils\SourceFile;
+use Utils\ConsoleErrorReporter;
+use Syntax\Lexer;
+use Syntax\Token;
+use Syntax\tokenKindToString;
 
 function dumpString(string $value): void
 {
