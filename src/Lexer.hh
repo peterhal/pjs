@@ -62,6 +62,7 @@ class Lexer extends LexerBase
     case Char::CLOSE_PAREN: return $create(TokenKind::CLOSE_PAREN);
     case Char::OPEN_CURLY: return $create(TokenKind::OPEN_CURLY);
     case Char::CLOSE_CURLY: return $create(TokenKind::CLOSE_CURLY);
+    case Char::BACK_SLASH: return $create(TokenKind::BACK_SLASH);
     case Char::PERIOD: 
       if ($peekChar(Char::EQUAL)) {
         $next();
