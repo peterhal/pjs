@@ -1,5 +1,7 @@
 <?hh //strict
 
+namespace Syntax {
+
 require_once 'ParseTreeKind.hh';
 require_once 'ParseTree.hh';
 require_once 'ParseTrees.hh';
@@ -7,8 +9,6 @@ require_once 'ParserBase.hh';
 require_once 'PredefinedName.hh';
 require_once 'Token.hh';
 require_once 'TokenKind.hh';
-
-namespace Syntax {
 
 use \Exception;
 use Utils\Range;

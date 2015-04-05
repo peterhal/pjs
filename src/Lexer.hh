@@ -1,5 +1,7 @@
 <?hh //strict
 
+namespace Syntax {
+
 require_once 'Char.hh';
 require_once 'ErrorReporter.hh';
 require_once 'Keywords.hh';
@@ -7,8 +9,6 @@ require_once 'LexerBase.hh';
 require_once 'Location.hh';
 require_once 'SourceFile.hh';
 require_once 'Token.hh';
-
-namespace Syntax {
 
 use Utils\Char;
 use Utils\ErrorReporter;

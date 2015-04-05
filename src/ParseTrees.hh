@@ -1,11 +1,11 @@
 <?hh // strict
 
+namespace Syntax
+{
+
 require_once 'ParseTree.hh';
 require_once 'ParseTreeKind.hh';
 require_once 'Range.hh';
-
-namespace Syntax
-{
 
 use Utils\Range;
 

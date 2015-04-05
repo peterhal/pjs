@@ -1,8 +1,8 @@
 <?hh //strict
 
-require_once 'Location.hh';
-
 namespace Utils {
+
+require_once 'Location.hh';
 
 class Range
 {

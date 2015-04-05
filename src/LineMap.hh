@@ -1,8 +1,8 @@
 <?hh // strict
 
-require_once 'Char.hh';
-
 namespace Utils {
+
+require_once 'Char.hh';
 
 class LineMap
 {

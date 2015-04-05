@@ -1,8 +1,8 @@
 <?hh //strict
 
-require_once 'ErrorReporter.hh';
-
 namespace Utils {
+
+require_once 'ErrorReporter.hh';
 
 class ConsoleErrorReporter implements ErrorReporter
 {

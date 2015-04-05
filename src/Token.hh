@@ -1,9 +1,9 @@
 <?hh //strict
 
+namespace Syntax {
+
 require_once 'Range.hh';
 require_once 'Location.hh';
-
-namespace Syntax {
 
 use Utils\Location;
 use Utils\Range;

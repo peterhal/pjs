@@ -1,11 +1,9 @@
 <?hh // strict
 
-require_once 'TokenKind.hh';
-require_once 'utils.hh';
-
 namespace Syntax {
 
-use Utils\nullthrows;
+require_once 'TokenKind.hh';
+require_once 'utils.hh';
 
 class Keywords
 {
@@ -187,7 +185,7 @@ class Keywords
 
   public static function getKeyword(string $value): TokenKind
   {
-    return nullthrows(Keywords::$all->get($value));
+    return \Utils\nullthrows(Keywords::$all->get($value));
   }
 }
 

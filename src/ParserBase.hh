@@ -1,13 +1,12 @@
 <?hh //strict
 
+namespace Syntax {
+
 require_once 'ParseTreeKind.hh';
 require_once 'Token.hh';
 require_once 'TokenKind.hh';
 require_once 'utils.hh';
 
-namespace Syntax {
-  
-use Utils\contains;
 use Utils\Location;
 use Utils\Range;
 use Utils\ErrorReporter;
@@ -127,7 +126,7 @@ class ParserBase
 
   protected function peekAny(Vector<TokenKind> $kinds): bool
   {
-    return contains($kinds, $this->peek());
+    return \Utils\contains($kinds, $this->peek());
   }
 
   protected function next(): Token

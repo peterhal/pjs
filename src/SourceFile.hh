@@ -1,9 +1,9 @@
 <?hh //strict
 
+namespace Utils {
+
 require_once 'LineMap.hh';
 require_once 'Location.hh';
-
-namespace Utils {
 
 class SourceFile
 {

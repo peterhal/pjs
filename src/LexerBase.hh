@@ -1,12 +1,12 @@
 <?hh //strict
 
+namespace Syntax {
+
 require_once 'Char.hh';
 require_once 'ErrorReporter.hh';
 require_once 'Location.hh';
 require_once 'Range.hh';
 require_once 'SourceFile.hh';
-
-namespace Syntax {
 
 use Utils\Char;
 use Utils\ErrorReporter;

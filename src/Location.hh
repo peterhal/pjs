@@ -1,8 +1,8 @@
 <?hh //strict
 
-require_once 'SourceFile.hh';
-
 namespace Utils {
+
+require_once 'SourceFile.hh';
 
 class Location
 {
