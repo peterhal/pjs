@@ -218,10 +218,11 @@ class Lexer extends LexerBase
         return $this->lexName($start, $ch);
       } elseif (Char::isDigit($ch)) {
         return $this->lexNumber($start, $ch);
+      } else {
+        $this->errorOffset($start, "Unexpected char '$ch'.");
+        return new Token($this->currentRange($start), TokenKind::EOF);
       }
     }
-
-    return new Token($this->currentRange($start), TokenKind::EOF);
   }
 
   private function lexMultiLineString(int $start): Token
