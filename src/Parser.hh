@@ -50,6 +50,15 @@ class Parser extends ParserBase
       $this->error("Expected declaration.");
     }
 
+    for ($index = 1; $index < count($declarations); $index++) {
+      if ($declarations[$index]->isNamespaceDefinition()) {
+        $this->errorLocation(
+          $declarations[$index]->start(),
+          'Namespace declarations must be the first in a file.');
+        break;
+      }
+    }
+
     return new ScriptTree(
         $this->getRange($start),
         $declarations);
