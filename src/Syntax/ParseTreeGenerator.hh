@@ -81,8 +81,8 @@ FILE_HEADER
 namespace Syntax
 {
 
-require_once 'Location.hh';
-require_once 'Range.hh';
+require_once 'Utils/Location.hh';
+require_once 'Utils/Range.hh';
 require_once 'ParseTreeKind.hh';
 
 use Utils\Location;
@@ -137,7 +137,7 @@ namespace Syntax
 
 require_once 'ParseTree.hh';
 require_once 'ParseTreeKind.hh';
-require_once 'Range.hh';
+require_once 'Utils/Range.hh';
 
 use Utils\Range;
 

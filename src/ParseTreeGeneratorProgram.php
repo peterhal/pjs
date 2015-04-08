@@ -1,6 +1,6 @@
 <?hh
 
-require_once 'ParseTreeGenerator.hh';
+require_once 'Syntax/ParseTreeGenerator.hh';
 
 ParseTreeGenerator::main($argv);
 
