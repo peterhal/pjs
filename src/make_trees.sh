@@ -1,4 +1,4 @@
 #! /bin/sh
 
-hhvm ParseTreeGeneratorProgram.php ParseTreeKind.hh ParseTree.hh ParseTrees.hh
+hhvm ParseTreeGeneratorProgram.php Syntax/ParseTreeKind.hh Syntax/ParseTree.hh Syntax/ParseTrees.hh
 

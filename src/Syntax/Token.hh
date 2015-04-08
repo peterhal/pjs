@@ -2,8 +2,8 @@
 
 namespace Syntax {
 
-require_once 'Range.hh';
-require_once 'Location.hh';
+require_once 'Utils/Range.hh';
+require_once 'Utils/Location.hh';
 
 use Utils\Location;
 use Utils\Range;

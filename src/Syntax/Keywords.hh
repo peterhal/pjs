@@ -3,7 +3,7 @@
 namespace Syntax {
 
 require_once 'TokenKind.hh';
-require_once 'utils.hh';
+require_once 'Utils/utils.hh';
 
 class Keywords
 {

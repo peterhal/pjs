@@ -2,7 +2,7 @@
 
 namespace Syntax {
 
-require_once 'IndentedWriter.hh';
+require_once 'Utils/IndentedWriter.hh';
 require_once 'Token.hh';
 require_once 'TokenKind.hh';
 require_once 'ParseTree.hh';

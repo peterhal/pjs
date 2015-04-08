@@ -1,14 +1,13 @@
 <?hh //strict
 
-require_once 'ConsoleErrorReporter.hh';
-require_once 'SourceFile.hh';
-require_once 'Lexer.hh';
+require_once 'Utils/ConsoleErrorReporter.hh';
+require_once 'Utils/SourceFile.hh';
+require_once 'Syntax/Lexer.hh';
 
 use Utils\SourceFile;
 use Utils\ConsoleErrorReporter;
 use Syntax\Lexer;
 use Syntax\Token;
-use Syntax\tokenKindToString;
 
 function dumpString(string $value): void
 {
@@ -24,7 +23,7 @@ function dumpTokens(Vector<Token> $tokens): void
 
 function dumpToken(Token $token): void
 {
-    dumpString(tokenKindToString($token->kind()) . "\n");
+    dumpString(Syntax\tokenKindToString($token->kind()) . "\n");
 }
 
 function tokenDumpMain(array<string> $argv) : int

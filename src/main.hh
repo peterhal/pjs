@@ -1,10 +1,10 @@
 <?hh //strict
 
-require_once 'ConsoleErrorReporter.hh';
-require_once 'SourceFile.hh';
-require_once 'Lexer.hh';
-require_once 'Parser.hh';
-require_once 'ParseTreeDumper.hh';
+require_once 'Utils/ConsoleErrorReporter.hh';
+require_once 'Utils/SourceFile.hh';
+require_once 'Syntax/Lexer.hh';
+require_once 'Syntax/Parser.hh';
+require_once 'Syntax/ParseTreeDumper.hh';
 
 use Utils\SourceFile;
 use Utils\ConsoleErrorReporter;

@@ -2,11 +2,11 @@
 
 namespace Syntax {
 
-require_once 'Char.hh';
-require_once 'ErrorReporter.hh';
-require_once 'Location.hh';
-require_once 'Range.hh';
-require_once 'SourceFile.hh';
+require_once 'Utils/Char.hh';
+require_once 'Utils/ErrorReporter.hh';
+require_once 'Utils/Location.hh';
+require_once 'Utils/Range.hh';
+require_once 'Utils/SourceFile.hh';
 
 use Utils\Char;
 use Utils\ErrorReporter;

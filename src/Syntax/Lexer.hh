@@ -2,12 +2,12 @@
 
 namespace Syntax {
 
-require_once 'Char.hh';
-require_once 'ErrorReporter.hh';
+require_once 'Utils/Char.hh';
+require_once 'Utils/ErrorReporter.hh';
 require_once 'Keywords.hh';
 require_once 'LexerBase.hh';
-require_once 'Location.hh';
-require_once 'SourceFile.hh';
+require_once 'Utils/Location.hh';
+require_once 'Utils/SourceFile.hh';
 require_once 'Token.hh';
 
 use Utils\Char;

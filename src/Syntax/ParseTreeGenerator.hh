@@ -1,6 +1,6 @@
 <?hh //strict
 
-require_once 'Char.hh';
+require_once 'Utils/Char.hh';
 
 use Utils\Char;
 

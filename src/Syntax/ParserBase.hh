@@ -5,7 +5,7 @@ namespace Syntax {
 require_once 'ParseTreeKind.hh';
 require_once 'Token.hh';
 require_once 'TokenKind.hh';
-require_once 'utils.hh';
+require_once 'Utils/utils.hh';
 
 use Utils\Location;
 use Utils\Range;
