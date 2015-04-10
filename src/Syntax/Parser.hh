@@ -2,6 +2,10 @@
 
 namespace Syntax {
 
+require_once 'Utils/Range.hh';
+require_once 'Utils/ErrorReporter.hh';
+require_once 'Utils/SourceFile.hh';
+require_once 'Lexer.hh';
 require_once 'ParseTreeKind.hh';
 require_once 'ParseTree.hh';
 require_once 'ParseTrees.hh';
@@ -13,6 +17,7 @@ require_once 'TokenKind.hh';
 use \Exception;
 use Utils\Range;
 use Utils\ErrorReporter;
+use Utils\SourceFile;
 
 class Parser extends ParserBase
 {
@@ -21,6 +26,15 @@ class Parser extends ParserBase
       protected ErrorReporter $reporter)
   {
     parent::__construct($tokens, $reporter);
+  }
+
+  public static function parseFile(
+    SourceFile $file,
+    ErrorReporter $reporter): ParseTree
+  {
+    return Parser::parse(
+      Lexer::lexFile($file, $reporter),
+      $reporter);
   }
 
   public static function parse(
