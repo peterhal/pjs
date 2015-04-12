@@ -7,7 +7,8 @@ namespace Convert {
   require_once 'Syntax/ParseTreeKind.hh';
   require_once 'Syntax/ParseTrees.hh';
   require_once 'Syntax/Trees.hh';
-  require_once 'StatementConverter.hh';
+  require_once 'DeclarationConverter.hh';
+  require_once 'ClassConverter.hh';
 
   use Exception;
   use Utils\IndentedWriter;
@@ -21,15 +22,13 @@ namespace Convert {
   use Syntax\NamespaceDefinitionTree;
   use Syntax\ClassDeclarationTree;
 
-class ScriptConverter extends StatementConverter
+class ScriptConverter extends DeclarationConverter
 {
   public function __construct(
     IndentedWriter $writer)
   {
     parent::__construct($writer);
   }
-
-  private static string $export = '__export';
 
   public function convertScript(ScriptTree $tree): void
   {
@@ -78,34 +77,7 @@ class ScriptConverter extends StatementConverter
 
   public function convertClassDeclaration(ClassDeclarationTree $tree): void
   {
-    $name = $tree->name->text();
-    $className = self::$export . '.' . $name;
-
-    if ($tree->extendsClause !== null) {
-      throw new Exception('TODO');
-    }
-
-    // __export.ctor = function ...
-    $ctorTree = Trees::ctorOfClassDeclaration($tree);
-    if ($ctorTree === null) {
-      $this->write($className . ' = function() {};');
-      $this->writeLine();
-    } else {
-      $this->write($className . ' = function(');
-      // TODO: parameters
-      throw new Exception('TODO: ctor function params.');
-      /*
-      $this->write(') {');
-      $this->writeLine();
-      $this->indent();
-      // TODO: body
-      $this->outdent();
-      $this->write('}');
-      $this->writeLine();
-       */
-    }
-
-    // TODO: members
+    (new ClassConverter($this->writer))->convertClassDeclaration($tree);
   }
 
   public function convertNamespaceDefinition(NamespaceDefinitionTree $tree): void

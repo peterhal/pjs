@@ -82,7 +82,7 @@ class ParserBase
     if ($this->peekKind(TokenKind::NAME)) {
       return $this->eatName();
     } else if (isTokenKindKeyword($this->peek())) {
-      return new NameToken($this->peekToken()->range(), '');
+      return new NameToken($this->next()->range(), '');
     } else {
       // This will error
       return $this->eatName();
