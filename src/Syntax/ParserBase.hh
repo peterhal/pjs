@@ -77,6 +77,18 @@ class ParserBase
     }
   }
 
+  protected function eatNameOrKeyword(): NameToken
+  {
+    if ($this->peekKind(TokenKind::NAME)) {
+      return $this->eatName();
+    } else if (isTokenKindKeyword($this->peek())) {
+      return new NameToken($this->peekToken()->range(), '');
+    } else {
+      // This will error
+      return $this->eatName();
+    }
+  }
+
   protected function eatName(): NameToken
   {
     $token = $this->eat(TokenKind::NAME);

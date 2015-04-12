@@ -649,7 +649,7 @@ class Parser extends ParserBase
   private function parseMethodLikeDeclaration(Vector<Token> $modifiers): ParseTree
   {
     $this->eat(TokenKind::KW_FUNCTION);
-    $name = $this->eatName();
+    $name = $this->eatNameOrKeyword();
     if ($name->value() === PredefinedName::__construct) {
       return $this->parseConstructorDeclaration(
         $modifiers,
@@ -1392,7 +1392,7 @@ class Parser extends ParserBase
     $start = $object->start();
 
     $this->eat(TokenKind::NULL_SAFE_ARROW);
-    $name = $this->eatName();
+    $name = $this->eatNameOrKeyword();
 
     return new NullSafeMemberSelectionTree(
       $this->getRange($start),
@@ -1405,7 +1405,7 @@ class Parser extends ParserBase
     $start = $object->start();
 
     $this->eat(TokenKind::ARROW);
-    $name = $this->eatName();
+    $name = $this->eatNameOrKeyword();
 
     return new MemberSelectionTree(
       $this->getRange($start),
@@ -1921,7 +1921,7 @@ class Parser extends ParserBase
     // TODO: attributes
     $isAsync = $this->eatOpt(TokenKind::KW_ASYNC);
     $this->eat(TokenKind::KW_FUNCTION);
-    $name = $this->eatName();
+    $name = $this->eatNameOrKeyword();
     $typeParameters = $this->parseTypeParametersOpt();
     $parameters = $this->parseParameterList();
     $this->eat(TokenKind::COLON);

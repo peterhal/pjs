@@ -144,5 +144,11 @@ function tokenKindToString(TokenKind $kind): string
   return TokenKind::getNames()[$kind];
 }
 
+function isTokenKindKeyword(TokenKind $kind): bool
+{
+  return $kind >= TokenKind::KW_ABSTRACT
+    && $kind <= TokenKind::KW_LIST;
+}
+
 }
 
