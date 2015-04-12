@@ -1,3 +1,3 @@
 #! /bin/bash
 
-hhvm convertProgram.php main.hh
+hhvm convertProgram.php *.hh

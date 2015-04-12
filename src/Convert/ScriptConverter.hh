@@ -34,6 +34,8 @@ namespace Convert {
   use Syntax\ElseifClauseTree;
   use Syntax\ElseClauseTree;
   use Syntax\ReturnStatementTree;
+  use Syntax\ForStatementTree;
+  use Syntax\PostfixOperatorTree;
 
 class ScriptConverter 
 {
@@ -128,9 +130,27 @@ class ScriptConverter
     case ParseTreeKind::RETURN_STATEMENT:
       $this->convertReturnStatement($tree->asReturnStatement());
       break;
+    case ParseTreeKind::FOR_STATEMENT:
+      $this->convertForStatement($tree->asForStatement());
+      break;
     default:
       throw $this->unknownTree($tree);
     }
+  }
+
+  public function convertForStatement(ForStatementTree $tree): void
+  {
+    $this->write('for (');
+    $this->convertExpressionListOpt($tree->initializer);
+    $this->write('; ');
+    $this->convertExpressionListOpt($tree->condition);
+    $this->write('; ');
+    if ($tree->increment !== null) {
+      $this->convertExpressionListOpt($tree->increment);
+    }
+    $this->write(')');
+    $this->writeLine();
+    $this->convertIndentedStatement($tree->body);
   }
 
   public function writeEndStatement(): void
@@ -237,8 +257,46 @@ class ScriptConverter
     case ParseTreeKind::MEMBER_SELECTION:
       $this->convertMemberSelection($tree->asMemberSelection());
       break;
+    case ParseTreeKind::POSTFIX_OPERATOR:
+      $this->convertPostfixOperator($tree->asPostfixOperator());
+      break;
     default:
       throw $this->unknownTree($tree);
+    }
+  }
+
+  public function convertPostfixOperator(PostfixOperatorTree $tree): void
+  {
+    $this->convertExpression($tree->value);
+    $this->convertPostfixOperatorToken($tree->operator);
+  }
+
+  public function convertPostfixOperatorToken(Token $token): void
+  {
+    $this->write($this->postfixTokenKindToString($token->kind()));
+  }
+
+  public function postfixTokenKindToString(TokenKind $operator): string
+  {
+    switch ($operator) {
+    case TokenKind::PLUS_PLUS: return '++';
+    default:
+      throw $this->unknownTokenKind($operator);
+    }
+  }
+
+  public function convertExpressionListOpt(?Vector<ParseTree> $expressions): void
+  {
+    if ($expressions !== null) {
+      $first = true;
+      foreach ($expressions as $expression) {
+        if ($first) {
+          $first = false;
+        } else {
+          $this->write(', ');
+        }
+        $this->convertExpression($expression);
+      }
     }
   }
 
@@ -318,17 +376,7 @@ class ScriptConverter
   public function convertArgumentListOpt(?Vector<ParseTree> $arguments): void
   {
     $this->write('(');
-    if ($arguments !== null) {
-      $first = true;
-      foreach ($arguments as $argument) {
-        if ($first) {
-          $first = false;
-        } else {
-          $this->write(', ');
-        }
-        $this->convertExpression($argument);
-      }
-    }
+    $this->convertExpressionListOpt($arguments);
     $this->write(')');
   }
 

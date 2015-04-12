@@ -17,16 +17,18 @@ function convertMain(array<string> $argv) : int
     fwrite(STDERR, "Error: Missing required option 'filename'.\n");
     return 1;
   }
-  $filename = $argv[1];
-  fwrite(STDOUT, $filename . "\n");
+  for ($index = 1; $index < count($argv); $index++) {
+    $filename = $argv[$index];
+    fwrite(STDOUT, $filename . "\n");
 
-  $file = SourceFile::read($filename);
-  $reporter = new ConsoleErrorReporter();
-  $tree = Parser::parseFile($file, $reporter);
+    $file = SourceFile::read($filename);
+    $reporter = new ConsoleErrorReporter();
+    $tree = Parser::parseFile($file, $reporter);
 
-  $converter = new ScriptConverter(
-    new IndentedWriter(STDOUT));
-  $converter->convertScript($tree->asScript());
+    $converter = new ScriptConverter(
+      new IndentedWriter(STDOUT));
+    $converter->convertScript($tree->asScript());
+  }
 
   return 0;
 }
