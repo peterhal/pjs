@@ -50,11 +50,16 @@ class ParseTreeGenerator
 
     $file = fopen($filename, 'w');
 
-    fwrite($file, <<< FILE_HEADER
+    fwrite($file, <<< 'FILE_HEADER'
 <?hh // strict
 
 namespace Syntax
 {
+
+function parseTreeKindToString(ParseTreeKind $kind): string
+{
+  return ParseTreeKind::getNames()[$kind];
+}
 
 enum ParseTreeKind : int
 {

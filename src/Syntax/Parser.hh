@@ -2054,7 +2054,10 @@ class Parser extends ParserBase
       $names[] = $this->eatName();
     } while ($this->eatOpt(TokenKind::BACK_SLASH));
 
-    return new QualifiedNameTree($this->getRange($start), $fullyQualified, $names);
+    return new QualifiedNameTree(
+      $this->getRange($start), 
+      $fullyQualified, 
+      $names);
   }
 
   private function parseTypeSpecifierOpt(): ?ParseTree
@@ -2084,7 +2087,8 @@ class Parser extends ParserBase
     case TokenKind::KW_ARRAY:
       return $this->parseArrayType();
     default:
-      throw new Exception();
+      $this->error("Type expected.");
+      return $this->createError();
     }
   }
 

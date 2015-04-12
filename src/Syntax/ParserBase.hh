@@ -20,6 +20,11 @@ class ParserBase
     $this->index = 0;
   }
 
+  protected function createError(): ParseTree
+  {
+    return new ParseErrorTree($this->getRange($this->position()));
+  }
+
   protected function eat(TokenKind $kind): Token
   {
     if ($this->peek() === $kind) {

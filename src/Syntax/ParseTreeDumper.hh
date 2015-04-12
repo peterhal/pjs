@@ -13,11 +13,6 @@ use \ReflectionClass;
 use \ReflectionProperty;
 use \Exception;
 
-function parseTreeKindToString(ParseTreeKind $kind): string
-{
-  return ParseTreeKind::getNames()[$kind];
-}
-
 class ParseTreeDumper
 {
   public function __construct(resource $file)

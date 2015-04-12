@@ -3,6 +3,11 @@
 namespace Syntax
 {
 
+function parseTreeKindToString(ParseTreeKind $kind): string
+{
+  return ParseTreeKind::getNames()[$kind];
+}
+
 enum ParseTreeKind : int
 {
   SCRIPT = 0;
