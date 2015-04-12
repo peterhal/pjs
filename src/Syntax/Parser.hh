@@ -375,6 +375,7 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::KW_NAMESPACE);
     if ($this->peekKind(TokenKind::NAME)) {
+      // TODO: This should be a namelist separated by \
       $name = $this->eatName();
       if ($this->eatOpt(TokenKind::SEMI_COLON)) {
         return new NamespaceDefinitionTree(

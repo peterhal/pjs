@@ -19,6 +19,18 @@ class Trees {
       return Trees::lastNameOf($tree->name->asQualifiedName());
     }
   }
+
+  public static function ctorOfClassDeclaration(
+    ClassDeclarationTree $tree): ?ConstructorDeclarationTree
+  {
+    foreach ($tree->members as $member) {
+      if ($member instanceof ConstructorDeclarationTree) {
+        return $member;
+      }
+    }
+    return null;
+  }
+
 }
 
 }
