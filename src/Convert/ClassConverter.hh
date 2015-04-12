@@ -14,38 +14,34 @@ namespace Convert {
   use Utils\IndentedWriter;
   use Syntax\ParseTree;
   use Syntax\ParseTreeKind;
-  use Syntax\ScriptTree;
   use Syntax\Trees;
-  use Syntax\NamespaceUseDeclarationTree;
-  use Syntax\NamespaceUseClauseTree;
-  use Syntax\FunctionDefinitionTree;
-  use Syntax\NamespaceDefinitionTree;
   use Syntax\ClassDeclarationTree;
+  use Syntax\ConstructorDeclarationTree;
 
 class ClassConverter extends DeclarationConverter
 {
   public function __construct(
-    IndentedWriter $writer)
+    IndentedWriter $writer,
+    private ClassDeclarationTree $tree)
   {
     parent::__construct($writer);
+    $this->name = $tree->name->text();
+    $this->className = self::$export . '.' . $this->name;
+    $this->ctorTree = Trees::ctorOfClassDeclaration($tree);
   }
 
-  public function convertClassDeclaration(ClassDeclarationTree $tree): void
+  public function convertClassDeclaration(): void
   {
-    $name = $tree->name->text();
-    $className = self::$export . '.' . $name;
-
-    if ($tree->extendsClause !== null) {
+    if ($this->tree->extendsClause !== null) {
       throw new Exception('TODO');
     }
 
     // __export.ctor = function ...
-    $ctorTree = Trees::ctorOfClassDeclaration($tree);
-    if ($ctorTree === null) {
-      $this->write($className . ' = function() {};');
+    if ($this->ctorTree === null) {
+      $this->write($this->className . ' = function() {};');
       $this->writeLine();
     } else {
-      $this->write($className . ' = function(');
+      $this->write($this->className . ' = function(');
       // TODO: parameters
       throw new Exception('TODO: ctor function params.');
       /*
@@ -61,6 +57,10 @@ class ClassConverter extends DeclarationConverter
 
     // TODO: members
   }
+
+  private string $name;
+  private string $className;
+  private ?ConstructorDeclarationTree $ctorTree;
 }
 
 }

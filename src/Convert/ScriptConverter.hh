@@ -77,7 +77,7 @@ class ScriptConverter extends DeclarationConverter
 
   public function convertClassDeclaration(ClassDeclarationTree $tree): void
   {
-    (new ClassConverter($this->writer))->convertClassDeclaration($tree);
+    (new ClassConverter($this->writer, $tree))->convertClassDeclaration();
   }
 
   public function convertNamespaceDefinition(NamespaceDefinitionTree $tree): void
