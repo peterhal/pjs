@@ -15,8 +15,13 @@ namespace Convert {
   use Syntax\ParseTree;
   use Syntax\ParseTreeKind;
   use Syntax\Trees;
+  use Syntax\Token;
+  use Syntax\TokenKind;
   use Syntax\ClassDeclarationTree;
   use Syntax\ConstructorDeclarationTree;
+  use Syntax\ConstDeclarationTree;
+  use Syntax\ConstDeclaratorTree;
+  use Syntax\MethodDefinitionTree;
 
 class ClassConverter extends DeclarationConverter
 {
@@ -26,7 +31,7 @@ class ClassConverter extends DeclarationConverter
   {
     parent::__construct($writer);
     $this->name = $tree->name->text();
-    $this->className = self::$export . '.' . $this->name;
+    $this->exportName = self::$export . '.' . $this->name;
     $this->ctorTree = Trees::ctorOfClassDeclaration($tree);
   }
 
@@ -36,12 +41,12 @@ class ClassConverter extends DeclarationConverter
       throw new Exception('TODO');
     }
 
-    // __export.ctor = function ...
+    // var ctor = function ...
     if ($this->ctorTree === null) {
-      $this->write($this->className . ' = function() {};');
+      $this->write('var ' . $this->name . ' = function() {};');
       $this->writeLine();
     } else {
-      $this->write($this->className . ' = function(');
+      $this->write('var ' . $this->name . ' = function(');
       // TODO: parameters
       throw new Exception('TODO: ctor function params.');
       /*
@@ -55,11 +60,66 @@ class ClassConverter extends DeclarationConverter
        */
     }
 
-    // TODO: members
+    // TODO: traits
+
+    foreach ($this->tree->members as $member) {
+      $this->convertClassMember($member);
+    }
+
+    // __export.ctor = ctor;
+    $this->write($this->exportName . ' = ' . $this->name . ';');
+    $this->writeLine();
+  }
+
+  private function convertClassMember(ParseTree $tree) : void
+  {
+    switch ($tree->kind()) {
+    case ParseTreeKind::CONST_DECLARATION:
+      $this->convertConstDeclaration($tree->asConstDeclaration());
+      break;
+    case ParseTreeKind::METHOD_DEFINITION:
+      $this->convertMethodDefinition($tree->asMethodDefinition());
+      break;
+    default:
+      throw $this->unknownTree($tree);
+    }
+  }
+
+  private function convertMethodDefinition(MethodDefinitionTree $tree): void
+  {
+    $isStatic = !$tree->modifiers
+      ->filter($token ==> $token->kind() === TokenKind::KW_STATIC)->isEmpty();
+    $name = $tree->name->text();
+    $body = $tree->body;
+    if ($body !== null) {
+      if ($isStatic) {
+        $this->write($this->name . '.' . $name . ' = function ');
+      } else {
+        $this->write($this->name . '.prototype.' . $name . ' = function ');
+      }
+      $this->convertParameters($tree->parameters->asParameterList());
+      $this->convertCompoundStatement($body->asCompoundStatement());
+      $this->writeLine();
+    }
+  }
+
+  private function convertConstDeclaration(ConstDeclarationTree $tree): void
+  {
+    foreach ($tree->declarators as $declarator) {
+      $this->convertConstDeclarator($declarator->asConstDeclarator());
+    }
+  }
+
+  private function convertConstDeclarator(ConstDeclaratorTree $tree): void
+  {
+      $this->write($this->name . '.' . $tree->name->text() . ' = ');
+      $this->convertExpression($tree->value);
+      $this->write(';');
+      $this->writeLine();
   }
 
   private string $name;
-  private string $className;
+  private string $exportName;
   private ?ConstructorDeclarationTree $ctorTree;
 }
 

@@ -32,6 +32,9 @@ namespace Convert {
   use Syntax\ReturnStatementTree;
   use Syntax\ForStatementTree;
   use Syntax\PostfixOperatorTree;
+  use Syntax\UnaryExpressionTree;
+  use Syntax\ParenExpressionTree;
+  use Syntax\ConditionalExpressionTree;
 
 class ExpressionConverter 
 {
@@ -73,8 +76,51 @@ class ExpressionConverter
     case ParseTreeKind::POSTFIX_OPERATOR:
       $this->convertPostfixOperator($tree->asPostfixOperator());
       break;
+    case ParseTreeKind::UNARY_EXPRESSION:
+      $this->convertUnaryExpression($tree->asUnaryExpression());
+      break;
+    case ParseTreeKind::PAREN_EXPRESSION:
+      $this->convertParenExpression($tree->asParenExpression());
+      break;
+    case ParseTreeKind::CONDITIONAL_EXPRESSION:
+      $this->convertConditionalExpression($tree->asConditionalExpression());
+      break;
     default:
       throw $this->unknownTree($tree);
+    }
+  }
+
+  public function convertConditionalExpression(ConditionalExpressionTree $tree): void
+  {
+    $this->convertExpression($tree->condition);
+    $this->write(' ? ');
+    if ($tree->trueVaule === null) {
+      throw new Exception('conditional without first value.');
+    } else {
+      $this->convertExpression($tree->trueVaule);
+    }
+    $this->write(' : ');
+    $this->convertExpression($tree->falseValue);
+  }
+
+  public function convertUnaryExpression(UnaryExpressionTree $tree): void
+  {
+    $this->convertPrefixOperatorToken($tree->operator);
+    $this->convertExpression($tree->value);
+  }
+
+  public function convertPrefixOperatorToken(Token $token): void
+  {
+    $this->write($this->prefixTokenKindToString($token->kind()));
+  }
+
+  public function prefixTokenKindToString(TokenKind $operator): string
+  {
+    switch ($operator) {
+    case TokenKind::MINUS: return '-';
+    case TokenKind::PLUS_PLUS: return '++';
+    default:
+      throw $this->unknownTokenKind($operator);
     }
   }
 
@@ -113,7 +159,12 @@ class ExpressionConverter
     }
   }
 
-  public function convertParenExpression(ParseTree $tree): void
+  public function convertParenExpression(ParenExpressionTree $tree): void
+  {
+    $this->convertExpressionWithParens($tree->expression);
+  }
+
+  public function convertExpressionWithParens(ParseTree $tree): void
   {
     $this->write('(');
     $this->convertExpression($tree);
@@ -209,8 +260,17 @@ class ExpressionConverter
   {
     switch ($operator) {
     case TokenKind::OPEN_ANGLE: return '<';
+    case TokenKind::CLOSE_ANGLE: return '>';
+    case TokenKind::LESS_EQUAL: return '<=';
+    case TokenKind::GREATER_EQUAL: return '>=';
     case TokenKind::EQUAL: return '=';
+    case TokenKind::EQUAL_EQUAL_EQUAL: return '===';
+    case TokenKind::BANG_EQUAL_EQUAL: return '!==';
+    case TokenKind::BAR_BAR: return '||';
+    case TokenKind::AMPERSAND_AMPERSAND: return '&&';
     case TokenKind::PERIOD: return '+';
+    case TokenKind::PLUS: return '+';
+    case TokenKind::MINUS: return '-';
     default:
       throw $this->unknownTokenKind($operator);
     }

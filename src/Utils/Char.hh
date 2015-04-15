@@ -60,9 +60,10 @@ class Char
 
   public static function isNewLine(int $ch): bool
   {
-    return $ch == Char::CARRIAGE_RETURN
-      || $ch == Char::LINE_FEED;
+    return $ch === Char::CARRIAGE_RETURN
+      || $ch === Char::LINE_FEED;
   }
+
   public static function isWhitespace(int $ch): bool
   {
     switch ($ch) {

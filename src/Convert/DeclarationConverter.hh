@@ -21,6 +21,7 @@ namespace Convert {
   use Syntax\FunctionDefinitionTree;
   use Syntax\NamespaceDefinitionTree;
   use Syntax\ClassDeclarationTree;
+  use Syntax\ParameterListTree;
 
 class DeclarationConverter extends StatementConverter
 {
@@ -31,6 +32,23 @@ class DeclarationConverter extends StatementConverter
   }
 
   protected static string $export = '__export';
+
+  protected function convertParameters(ParameterListTree $parameters): void
+  {
+    $this->write('(');
+    if ($parameters->parameters !== null) {
+      $first = true;
+      foreach ($parameters->parameters as $parameter) {
+        if ($first) {
+          $first = false;
+        } else {
+          $this->write(', ');
+        }
+        $this->write($parameter->asParameterDeclaration()->name->value());
+      }
+    }
+    $this->write(')');
+  }
 }
 
 }

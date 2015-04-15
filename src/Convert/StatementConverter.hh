@@ -23,6 +23,7 @@ namespace Convert {
   use Syntax\ElseClauseTree;
   use Syntax\ReturnStatementTree;
   use Syntax\ForStatementTree;
+  use Syntax\SwitchStatementTree;
 
 class StatementConverter extends ExpressionConverter
 {
@@ -39,13 +40,18 @@ class StatementConverter extends ExpressionConverter
     $this->writeLine();
     $this->indent();
 
-    foreach ($tree->statements as $statement) {
-      $this->convertStatement($statement);
-    }
+    $this->convertStatementList($tree->statements);
 
     $this->outdent();
     $this->write('}');
     $this->writeLine();
+  }
+
+  public function convertStatementList(Vector<ParseTree> $statements): void
+  {
+    foreach ($statements as $statement) {
+      $this->convertStatement($statement);
+    }
   }
 
   public function convertStatement(ParseTree $tree): void
@@ -66,9 +72,38 @@ class StatementConverter extends ExpressionConverter
     case ParseTreeKind::FOR_STATEMENT:
       $this->convertForStatement($tree->asForStatement());
       break;
+    case ParseTreeKind::SWITCH_STATEMENT:
+      $this->convertSwitchStatement($tree->asSwitchStatement());
+      break;
     default:
       throw $this->unknownTree($tree);
     }
+  }
+
+  public function convertSwitchStatement(SwitchStatementTree $tree): void
+  {
+    $this->write('switch ');
+    $this->convertExpressionWithParens($tree->condition);
+    $this->write('{');
+    $this->writeLine();
+    foreach ($tree->caseClauses as $caseClause) {
+      foreach ($caseClause->asCaseClause()->labels as $label) {
+        if ($label->isCaseLabel()) {
+          $this->write('case ');
+          $this->convertExpression($label->asCaseLabel()->condition);
+          $this->write(':');
+          $this->writeLine();
+        } else {
+          $this->write('default:');
+          $this->writeLine();
+        }
+      }
+      $this->indent();
+      $this->convertStatementList($caseClause->asCaseClause()->statements);
+      $this->outdent();
+    }
+    $this->write('}');
+    $this->writeLine();
   }
 
   public function convertForStatement(ForStatementTree $tree): void
@@ -119,7 +154,7 @@ class StatementConverter extends ExpressionConverter
   public function convertIfStatement(IfStatementTree $tree): void
   {
     $this->write('if ');
-    $this->convertParenExpression($tree->condition);
+    $this->convertExpressionWithParens($tree->condition);
     $this->writeLine();
     $this->convertIndentedStatement($tree->thenClause);
     if ($tree->elseifClauses !== null) {
@@ -135,7 +170,7 @@ class StatementConverter extends ExpressionConverter
   public function convertElseIfClause(ElseifClauseTree $tree): void
   {
     $this->write('else if ');
-    $this->convertParenExpression($tree->condition);
+    $this->convertExpressionWithParens($tree->condition);
     $this->writeLine();
     $this->convertIndentedStatement($tree->elseClause);
   }

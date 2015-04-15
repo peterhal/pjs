@@ -38,7 +38,7 @@ class ScriptConverter extends DeclarationConverter
     $this->indent();
     $this->convertDeclarations($tree->declarations);
     $this->outdent();
-    $this->write('}(this))');
+    $this->write('}(this));');
     $this->writeLine();
   }
 
@@ -103,20 +103,8 @@ class ScriptConverter extends DeclarationConverter
   {
     $name = $tree->name->value();
 
-    $this->write(self::$export . ' = function (');
-    $parameters = $tree->parameters->asParameterList()->parameters;
-    if ($parameters !== null) {
-      $first = true;
-      foreach ($parameters as $parameter) {
-        if ($first) {
-          $first = false;
-        } else {
-          $this->write(', ');
-        }
-        $this->write($parameter->asParameterDeclaration()->name->value());
-      }
-    }
-    $this->write(') ');
+    $this->write(self::$export . ' = function ');
+    $this->convertParameters($tree->parameters->asParameterList());
 
     $this->convertCompoundStatement($tree->body->asCompoundStatement());
     $this->write(';');

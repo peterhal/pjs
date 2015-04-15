@@ -1,3 +1,3 @@
 #! /bin/bash
 
-hhvm convertProgram.php Utils/Char.hh
+hhvm convertProgram.php Utils/*.hh
