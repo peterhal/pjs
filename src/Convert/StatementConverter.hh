@@ -24,6 +24,7 @@ namespace Convert {
   use Syntax\ReturnStatementTree;
   use Syntax\ForStatementTree;
   use Syntax\SwitchStatementTree;
+  use Syntax\ThrowStatementTree;
 
 class StatementConverter extends ExpressionConverter
 {
@@ -75,9 +76,19 @@ class StatementConverter extends ExpressionConverter
     case ParseTreeKind::SWITCH_STATEMENT:
       $this->convertSwitchStatement($tree->asSwitchStatement());
       break;
+    case ParseTreeKind::THROW_STATEMENT:
+      $this->convertThrowStatement($tree->asThrowStatement());
+      break;
     default:
       throw $this->unknownTree($tree);
     }
+  }
+
+  public function convertThrowStatement(ThrowStatementTree $tree): void
+  {
+    $this->write('throw ');
+    $this->convertExpression($tree->value);
+    $this->writeEndStatement();
   }
 
   public function convertSwitchStatement(SwitchStatementTree $tree): void

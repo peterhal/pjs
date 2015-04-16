@@ -271,6 +271,8 @@ class ExpressionConverter
     case TokenKind::PERIOD: return '+';
     case TokenKind::PLUS: return '+';
     case TokenKind::MINUS: return '-';
+    case TokenKind::PLUS_EQUAL: return '+=';
+    case TokenKind::MINUS_EQUAL: return '-=';
     default:
       throw $this->unknownTokenKind($operator);
     }

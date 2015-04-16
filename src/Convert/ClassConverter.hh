@@ -42,22 +42,22 @@ class ClassConverter extends DeclarationConverter
     }
 
     // var ctor = function ...
-    if ($this->ctorTree === null) {
+    $ctorTree = $this->ctorTree;
+    if ($ctorTree === null) {
       $this->write('var ' . $this->name . ' = function() {};');
       $this->writeLine();
     } else {
-      $this->write('var ' . $this->name . ' = function(');
-      // TODO: parameters
-      throw new Exception('TODO: ctor function params.');
-      /*
-      $this->write(') {');
+      $this->write('var ' . $this->name . ' = function');
+      $this->convertConstructorParameters($ctorTree->parameters);
+      $this->write('{');
       $this->writeLine();
       $this->indent();
-      // TODO: body
+      $this->convertConstructorParameterInitializers($ctorTree->parameters);
+      $this->convertStatementList($ctorTree->body->asCompoundStatement()->statements);
       $this->outdent();
       $this->write('}');
       $this->writeLine();
-       */
+      $this->writeLine();
     }
 
     // TODO: traits
@@ -71,6 +71,38 @@ class ClassConverter extends DeclarationConverter
     $this->writeLine();
   }
 
+  private function convertConstructorParameterInitializers(?Vector<ParseTree> $parameters): void
+  {
+    if ($parameters !== null) {
+      foreach ($parameters as $tree) {
+        $parameter = $tree->asConstructorParameter();
+        if ($parameter->modifiers !== null) {
+          $name = $parameter->name->text();
+          $this->write('$this.' . $name . ' = ' . $name . ';');
+          $this->writeLine();
+        }
+      }
+    }
+  }
+
+  private function convertConstructorParameters(?Vector<ParseTree> $parameters): void
+  {
+    $this->write('(');
+    if ($parameters !== null) {
+      $first = true; 
+      foreach ($parameters as $parameter) {
+        if ($first) {
+          $first = false;
+        } else {
+          $this->write(', ');
+        }
+        $this->write($parameter->asConstructorParameter()->name->text());
+      }
+    }
+    $this->write(')');
+    $this->writeLine();
+  }
+
   private function convertClassMember(ParseTree $tree) : void
   {
     switch ($tree->kind()) {
@@ -79,6 +111,9 @@ class ClassConverter extends DeclarationConverter
       break;
     case ParseTreeKind::METHOD_DEFINITION:
       $this->convertMethodDefinition($tree->asMethodDefinition());
+      break;
+    case ParseTreeKind::CONSTRUCTOR_DECLARATION:
+      // ctors are handled with the class header.
       break;
     default:
       throw $this->unknownTree($tree);
@@ -98,6 +133,7 @@ class ClassConverter extends DeclarationConverter
         $this->write($this->name . '.prototype.' . $name . ' = function ');
       }
       $this->convertParameters($tree->parameters->asParameterList());
+      $this->writeLine();
       $this->convertCompoundStatement($body->asCompoundStatement());
       $this->writeLine();
     }

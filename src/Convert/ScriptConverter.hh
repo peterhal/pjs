@@ -21,6 +21,7 @@ namespace Convert {
   use Syntax\FunctionDefinitionTree;
   use Syntax\NamespaceDefinitionTree;
   use Syntax\ClassDeclarationTree;
+  use Syntax\InterfaceDeclarationTree;
 
 class ScriptConverter extends DeclarationConverter
 {
@@ -69,10 +70,17 @@ class ScriptConverter extends DeclarationConverter
         break;
       case ParseTreeKind::ENUM_DECLARATION:
       case ParseTreeKind::INTERFACE_DECLARATION:
+        $this->convertInterfaceDeclaration($declaration->asInterfaceDeclaration());
+        break;
       default:
         throw $this->unknownTree($declaration);
       }
     }
+  }
+
+  public function convertInterfaceDeclaration(InterfaceDeclarationTree $tree): void
+  {
+    // Interfaces produce no code.
   }
 
   public function convertClassDeclaration(ClassDeclarationTree $tree): void
