@@ -180,26 +180,228 @@ Utils/IndentedWriter.hh
 
   IndentedWriter.prototype.indent = function ()
   {
-    $this.indent += 
-Fatal error: Uncaught exception 'Exception' with message 'self within a class' in /home/peter/projects/pjs/src/Convert/ClassConverter.hh:76
-Stack trace:
-#0 /home/peter/projects/pjs/src/Convert/ExpressionConverter.hh(217): Convert\ClassConverter->convertSelf()
-#1 /home/peter/projects/pjs/src/Convert/ExpressionConverter.hh(68): Convert\ExpressionConverter->convertScopeResolution()
-#2 /home/peter/projects/pjs/src/Convert/ExpressionConverter.hh(267): Convert\ExpressionConverter->convertExpression()
-#3 /home/peter/projects/pjs/src/Convert/ExpressionConverter.hh(50): Convert\ExpressionConverter->convertBinaryExpression()
-#4 /home/peter/projects/pjs/src/Convert/StatementConverter.hh(161): Convert\ExpressionConverter->convertExpression()
-#5 /home/peter/projects/pjs/src/Convert/StatementConverter.hh(65): Convert\StatementConverter->convertExpressionStatement()
-#6 /home/peter/projects/pjs/src/Convert/StatementConverter.hh(54): Convert\StatementConverter->convertStatement()
-#7 /home/peter/projects/pjs/src/Convert/StatementConverter.hh(44): Convert\StatementConverter->convertStatementList()
-#8 /home/peter/projects/pjs/src/Convert/ClassConverter.hh(150): Convert\StatementConverter->convertCompoundStatement()
-#9 /home/peter/projects/pjs/src/Convert/ClassConverter.hh(123): Convert\ClassConverter->convertMethodDefinition()
-#10 /home/peter/projects/pjs/src/Convert/ClassConverter.hh(66): Convert\ClassConverter->convertClassMember()
-#11 /home/peter/projects/pjs/src/Convert/ScriptConverter.hh(88): Convert\ClassConverter->convertClassDeclaration()
-#12 /home/peter/projects/pjs/src/Convert/ScriptConverter.hh(69): Convert\ScriptConverter->convertClassDeclaration()
-#13 /home/peter/projects/pjs/src/Convert/ScriptConverter.hh(49): Convert\ScriptConverter->convertDeclarations()
-#14 /home/peter/projects/pjs/src/Convert/ScriptConverter.hh(100): Convert\ScriptConverter->convertDeclarationsOpt()
-#15 /home/peter/projects/pjs/src/Convert/ScriptConverter.hh(66): Convert\ScriptConverter->convertNamespaceDefinition()
-#16 /home/peter/projects/pjs/src/Convert/ScriptConverter.hh(40): Convert\ScriptConverter->convertDeclarations()
-#17 /home/peter/projects/pjs/src/convertMain.hh(30): Convert\ScriptConverter->convertScript()
-#18 /home/peter/projects/pjs/src/convertProgram.php(5): convertMain()
-#19 {main}
+    $this.indent += IndentedWriter.INDENT;
+  }
+
+  IndentedWriter.prototype.outdent = function ()
+  {
+    $this.indent -= IndentedWriter.INDENT;
+    if ($this.indent < 0)
+      {
+        throw new Exception();
+      }
+  }
+
+  IndentedWriter.INDENT = 2;
+  __export.IndentedWriter = IndentedWriter;
+  }(Utils));
+}(this));
+Utils/LineMap.hh
+(function(__export) {
+  var Utils = Utils || {};
+  (function(__export) {
+  var LineMap = function($values)
+  {
+    $this.$values = $values;
+    $this.offsets = LineMap.createOffsets($values);
+  }
+
+  LineMap.createOffsets = function ($values)
+  {
+    $result = [0];
+    for ($index = 0; $index < strlen($values); $index++)
+      {
+        $char = ord($values[$index]);
+        if (Char.isNewLine($char))
+          {
+            if ($char === Char.CARRIAGE_RETURN && $index + 1 < strlen($values) && ord($values[$index + 1]) === Char.LINE_FEED)
+              {
+                $index++;
+              }
+            ($result).push($index + 1);
+          }
+      }
+    ($result).push(PHP_INT_MAX);
+    return $result;
+  }
+
+  LineMap.prototype.offsetOfLine = function ($line)
+  {
+    return $this.offsets[$line];
+  }
+
+  LineMap.prototype.lineOfOffset = function ($offset)
+  {
+    for ($line = 0; $line < $this.offsets.count(); $line++)
+      {
+        if ($this.offsetOfLine($line) > $offset)
+          {
+            return $line - 1;
+          }
+      }
+    return $line;
+  }
+
+  LineMap.prototype.columnOfOffset = function ($offset)
+  {
+    return $offset - $this.offsetOfLine($this.lineOfOffset($offset));
+  }
+
+  __export.LineMap = LineMap;
+  }(Utils));
+}(this));
+Utils/Location.hh
+(function(__export) {
+  var Utils = Utils || {};
+  (function(__export) {
+  var Location = function($file, $line, $column)
+  {
+    $this.$file = $file;
+    $this.$line = $line;
+    $this.$column = $column;
+  }
+
+  Location.prototype.file = function ()
+  {
+    return $this.file;
+  }
+
+  Location.prototype.line = function ()
+  {
+    return $this.line;
+  }
+
+  Location.prototype.column = function ()
+  {
+    return $this.column;
+  }
+
+  Location.prototype.displayLine = function ()
+  {
+    return $this.line + 1;
+  }
+
+  Location.prototype.displayColumn = function ()
+  {
+    return $this.column + 1;
+  }
+
+  Location.prototype.offset = function ()
+  {
+    return $this.file.lineMap().offsetOfLine($this.line) + $this.column;
+  }
+
+  Location.prototype.toString = function ()
+  {
+    return "{$this->file()->name()}({$this->displayLine()}, {$this->displayColumn()})";
+  }
+
+  Location.prototype.isEqual = function ($other)
+  {
+    return $this.file === $other.file && $this.line === $other.line && $this.column === $other.column;
+  }
+
+  __export.Location = Location;
+  }(Utils));
+}(this));
+Utils/Range.hh
+(function(__export) {
+  var Utils = Utils || {};
+  (function(__export) {
+  var Range = function($start, $end)
+  {
+    $this.$start = $start;
+    $this.$end = $end;
+  }
+
+  Range.prototype.file = function ()
+  {
+    return $this.start.file();
+  }
+
+  Range.prototype.start = function ()
+  {
+    return $this.start;
+  }
+
+  Range.prototype.end = function ()
+  {
+    return $this.end;
+  }
+
+  Range.prototype.length = function ()
+  {
+    return $this.end.offset() - $this.start.offset();
+  }
+
+  Range.prototype.text = function ()
+  {
+    return substr($this.file().contents(), $this.start.offset(), $this.length());
+  }
+
+  __export.Range = Range;
+  }(Utils));
+}(this));
+Utils/SourceFile.hh
+(function(__export) {
+  var Utils = Utils || {};
+  (function(__export) {
+  var SourceFile = function($name, $contents)
+  {
+    $this.$name = $name;
+    $this.$contents = $contents;
+    $this.lineMap = new LineMap($contents);
+  }
+
+  SourceFile.prototype.name = function ()
+  {
+    return $this.name;
+  }
+
+  SourceFile.prototype.contents = function ()
+  {
+    return $this.contents;
+  }
+
+  SourceFile.prototype.count = function ()
+  {
+    return strlen($this.contents());
+  }
+
+  SourceFile.prototype.lineMap = function ()
+  {
+    return $this.lineMap;
+  }
+
+  SourceFile.prototype.location = function ($offset)
+  {
+    return new Location($this, $this.lineMap.lineOfOffset($offset), $this.lineMap.columnOfOffset($offset));
+  }
+
+  SourceFile.read = function ($filename)
+  {
+    return new SourceFile($filename, file_get_contents($filename));
+  }
+
+  __export.SourceFile = SourceFile;
+  }(Utils));
+}(this));
+Utils/utils.hh
+(function(__export) {
+  var Utils = Utils || {};
+  (function(__export) {
+  var Exception = Exception;
+  __export = function ($value, $message){
+    if ($value === null)
+      {
+        throw new Exception($message !== null ? $message : 'Unexpected null');
+      }
+    return $value;
+  }
+  ;
+  __export = function ($values, $value){
+    return -1 !== $values.linearSearch($value);
+  }
+  ;
+  }(Utils));
+}(this));

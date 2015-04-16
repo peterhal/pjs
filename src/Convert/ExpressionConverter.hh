@@ -287,9 +287,17 @@ class ExpressionConverter
 
   public function convertBinaryExpression(BinaryExpressionTree $tree): void
   {
-    $this->convertExpression($tree->left);
-    $this->convertBinaryOperator($tree->operator);
-    $this->convertExpression($tree->right);
+    if ($tree->operator->kind() === TokenKind::EQUAL
+        && $tree->left->isSubscriptOperator()
+        && $tree->left->asSubscriptOperator()->index === null) {
+      $this->convertExpressionWithParens($tree->left->asSubscriptOperator()->collection);
+      $this->write('.push');
+      $this->convertExpressionWithParens($tree->right);
+    } else {
+      $this->convertExpression($tree->left);
+      $this->convertBinaryOperator($tree->operator);
+      $this->convertExpression($tree->right);
+    }
   }
 
   public function convertBinaryOperator(Token $operator): void

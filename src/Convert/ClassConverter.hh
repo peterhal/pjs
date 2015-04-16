@@ -14,6 +14,7 @@ namespace Convert {
   use Utils\IndentedWriter;
   use Syntax\ParseTree;
   use Syntax\ParseTreeKind;
+  use Syntax\PredefinedName;
   use Syntax\Trees;
   use Syntax\Token;
   use Syntax\TokenKind;
@@ -22,6 +23,7 @@ namespace Convert {
   use Syntax\ConstDeclarationTree;
   use Syntax\ConstDeclaratorTree;
   use Syntax\MethodDefinitionTree;
+  use Syntax\FunctionCallTree;
 
 class ClassConverter extends DeclarationConverter
 {
@@ -37,10 +39,6 @@ class ClassConverter extends DeclarationConverter
 
   public function convertClassDeclaration(): void
   {
-    if ($this->tree->extendsClause !== null) {
-      throw new Exception('TODO');
-    }
-
     // var ctor = function ...
     $ctorTree = $this->ctorTree;
     if ($ctorTree === null) {
@@ -57,6 +55,19 @@ class ClassConverter extends DeclarationConverter
       $this->outdent();
       $this->write('}');
       $this->writeLine();
+      $this->writeLine();
+    }
+
+    $extendsClause = $this->tree->extendsClause;
+    if ($extendsClause !== null) {
+      // ctor.prototype = (function() { 
+      //   function t(){}; 
+      //   t.prototype = base; 
+      //   return new t();
+      // } ();
+      $this->write($this->name . '.prototype = (function() { function __t(){}; __t.prototype = ');
+      $this->convertBaseClass();
+      $this->write('; return new __t(); } ());');
       $this->writeLine();
     }
 
@@ -79,6 +90,37 @@ class ClassConverter extends DeclarationConverter
   public function convertParent(): void
   {
     throw new \Exception('parent within a class');
+  }
+
+  public function convertBaseClass(): void
+  {
+    $extendsClause = $this->tree->extendsClause;
+    if ($extendsClause === null) {
+      throw new \Exception('use of parent in class without a base');
+    }
+    $this->convertQualifiedName($extendsClause->asNamedType()->name->asQualifiedName());
+  }
+
+  public function convertFunctionCall(FunctionCallTree $tree): void
+  {
+    if ($tree->function->isScopeResolution()
+        && Trees::isParent($tree->function->asScopeResolution()->baseName)) {
+      $memberName = $tree->function->asScopeResolution()->memberName->text();
+      $this->convertBaseClass();
+      if ($memberName !== PredefinedName::__construct) {
+        $this->write('.prototype.' . $memberName);
+      }
+      $this->write('.call($this');
+      if ($tree->arguments !== null) {
+        foreach ($tree->arguments as $argument) {
+          $this->write(', ');
+          $this->convertExpression($argument);
+        }
+      }
+      $this->write(')');
+    } else {
+      parent::convertFunctionCall($tree);
+    }
   }
 
   private function convertConstructorParameterInitializers(?Vector<ParseTree> $parameters): void
