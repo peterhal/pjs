@@ -142,7 +142,10 @@ class ExpressionConverter
   public function prefixTokenKindToString(TokenKind $operator): string
   {
     switch ($operator) {
+    case TokenKind::BANG: return '!';
+    case TokenKind::PLUS: return '+';
     case TokenKind::MINUS: return '-';
+    case TokenKind::MINUS_MINUS: return '--';
     case TokenKind::PLUS_PLUS: return '++';
     default:
       throw $this->unknownTokenKind($operator);
