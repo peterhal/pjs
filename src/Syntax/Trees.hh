@@ -31,6 +31,24 @@ class Trees {
     return null;
   }
 
+  public static function isSelf(ParseTree $tree): bool
+  {
+    return self::isName($tree, PredefinedName::self);
+  }
+
+  public static function isParent(ParseTree $tree): bool
+  {
+    return self::isName($tree, PredefinedName::parent);
+  }
+
+  public static function isName(ParseTree $tree, string $value): bool
+  {
+    if (!$tree->isQualifiedName() || $tree->asQualifiedName()->fullyQualified) {
+      return false;
+    }
+    $names = $tree->asQualifiedName()->names;
+    return $names->count() === 1 && $names[0]->text() === $value;
+  }
 }
 
 }

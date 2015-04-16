@@ -201,9 +201,25 @@ class ExpressionConverter
     }
   }
 
+  public function convertSelf(): void
+  {
+    throw new \Exception('self not within a class');
+  }
+
+  public function convertParent(): void
+  {
+    throw new \Exception('parent not within a class');
+  }
+
   public function convertScopeResolution(ScopeResolutionTree $tree): void
   {
-    $this->convertExpression($tree->baseName);
+    if (Trees::isSelf($tree->baseName)) {
+      $this->convertSelf();
+    } else if (Trees::isParent($tree->baseName)) {
+      $this->convertParent();
+    } else {
+      $this->convertExpression($tree->baseName);
+    }
     $this->write('.');
     $this->write($tree->memberName->text());
   }

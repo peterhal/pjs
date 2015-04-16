@@ -71,6 +71,16 @@ class ClassConverter extends DeclarationConverter
     $this->writeLine();
   }
 
+  public function convertSelf(): void
+  {
+    $this->write($this->name);
+  }
+
+  public function convertParent(): void
+  {
+    throw new \Exception('parent within a class');
+  }
+
   private function convertConstructorParameterInitializers(?Vector<ParseTree> $parameters): void
   {
     if ($parameters !== null) {
@@ -114,6 +124,9 @@ class ClassConverter extends DeclarationConverter
       break;
     case ParseTreeKind::CONSTRUCTOR_DECLARATION:
       // ctors are handled with the class header.
+      break;
+    case ParseTreeKind::PROPERTY_DECLARATION:
+      // No codegen for properties.
       break;
     default:
       throw $this->unknownTree($tree);
