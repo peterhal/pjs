@@ -306,6 +306,18 @@ class ConstDeclaratorTree extends ParseTree
   }
 }
 
+class PropertyDeclarationTree extends ParseTree
+{
+  public function __construct(
+    Range $range,
+    public Vector<Token> $modifiers,
+    public ParseTree $type,
+    public Vector<ParseTree> $declarators)
+  {
+    parent::__construct($range, ParseTreeKind::PROPERTY_DECLARATION);
+  }
+}
+
 class PropertyDeclaratorTree extends ParseTree
 {
   public function __construct(
@@ -873,7 +885,7 @@ class ConditionalExpressionTree extends ParseTree
   public function __construct(
     Range $range,
     public ParseTree $condition,
-    public ?ParseTree $trueVaule,
+    public ?ParseTree $trueValue,
     public ParseTree $falseValue)
   {
     parent::__construct($range, ParseTreeKind::CONDITIONAL_EXPRESSION);

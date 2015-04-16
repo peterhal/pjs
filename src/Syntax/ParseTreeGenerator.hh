@@ -322,6 +322,12 @@ CONSTRUCTOR_BODY
             Pair { "name", "NameToken" },
             Pair { "value", "ParseTree" }
           }),
+      new ParseTreeSpecification("PropertyDeclaration",
+          Vector {
+            Pair { "modifiers", "Vector<Token>" },
+            Pair { "type", "ParseTree" },
+            Pair { "declarators", "Vector<ParseTree>" },
+          }),
       new ParseTreeSpecification("PropertyDeclarator",
           Vector {
             Pair { "name", "VariableNameToken" },
@@ -573,7 +579,7 @@ CONSTRUCTOR_BODY
       new ParseTreeSpecification("ConditionalExpression",
           Vector {
             Pair { "condition", "ParseTree" },
-            Pair { "trueVaule", "?ParseTree" },
+            Pair { "trueValue", "?ParseTree" },
             Pair { "falseValue", "ParseTree" },
           }),
       new ParseTreeSpecification("LambdaExpression",

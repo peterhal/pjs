@@ -94,10 +94,10 @@ class ExpressionConverter
   {
     $this->convertExpression($tree->condition);
     $this->write(' ? ');
-    if ($tree->trueVaule === null) {
+    if ($tree->trueValue === null) {
       throw new Exception('conditional without first value.');
     } else {
-      $this->convertExpression($tree->trueVaule);
+      $this->convertExpression($tree->trueValue);
     }
     $this->write(' : ');
     $this->convertExpression($tree->falseValue);

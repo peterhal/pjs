@@ -674,7 +674,11 @@ class Parser extends ParserBase
       () ==> $this->parsePropertyDeclarator());
     $this->eat(TokenKind::SEMI_COLON);
 
-    return $this->createErrorTree();
+    return new PropertyDeclarationTree(
+      $this->getRange($start),
+      $modifiers,
+      $type,
+      $declarators);
   }
 
   private function parsePropertyDeclarator(): ParseTree
