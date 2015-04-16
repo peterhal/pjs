@@ -41,6 +41,11 @@ class Trees {
     return self::isName($tree, PredefinedName::parent);
   }
 
+  public static function isVector(ParseTree $tree): bool
+  {
+    return self::isName($tree, PredefinedName::Vector);
+  }
+
   public static function isName(ParseTree $tree, string $value): bool
   {
     if (!$tree->isQualifiedName() || $tree->asQualifiedName()->fullyQualified) {

@@ -19,9 +19,9 @@ class LineMap
       $char = ord($values[$index]);
       if (Char::isNewLine($char))
       {
-        if ($char == Char::CARRIAGE_RETURN
+        if ($char === Char::CARRIAGE_RETURN
             && $index + 1 < strlen($values)
-            && $values[$index + 1] == Char::LINE_FEED)
+            && ord($values[$index + 1]) === Char::LINE_FEED)
         {
           $index++;
         }

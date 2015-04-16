@@ -19,6 +19,7 @@ abstract class PredefinedName
   const string invariant = 'invariant';
   const string __construct = '__construct';
   const string __destruct = '__destruct';
+  const string Vector = 'Vector';
 }
 
 }

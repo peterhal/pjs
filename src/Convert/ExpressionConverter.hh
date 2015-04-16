@@ -35,6 +35,7 @@ namespace Convert {
   use Syntax\UnaryExpressionTree;
   use Syntax\ParenExpressionTree;
   use Syntax\ConditionalExpressionTree;
+  use Syntax\CollectionLiteralTree;
 
 class ExpressionConverter 
 {
@@ -85,8 +86,32 @@ class ExpressionConverter
     case ParseTreeKind::CONDITIONAL_EXPRESSION:
       $this->convertConditionalExpression($tree->asConditionalExpression());
       break;
+    case ParseTreeKind::COLLECTION_LITERAL:
+      $this->convertCollectionLiteral($tree->asCollectionLiteral());
+      break;
     default:
       throw $this->unknownTree($tree);
+    }
+  }
+
+  public function convertCollectionLiteral(CollectionLiteralTree $tree): void
+  {
+    if (Trees::isVector($tree->name)) {
+      $this->write('[');
+      if ($tree->elements !== null) {
+        $first = true;
+        foreach ($tree->elements as $element) {
+          if ($first) {
+            $first = false;
+          } else {
+            $this->write(', ');
+          }
+          $this->convertExpression($element);
+        }
+      }
+      $this->write(']');
+    } else {
+      throw new \Exception('Unknown collection literal type.');
     }
   }
 
@@ -233,7 +258,7 @@ class ExpressionConverter
       $this->convertExpression($index);
       $this->write(']');
     } else {
-      throw new \Exception();
+      throw new \Exception('subscript with no index expression');
     }
   }
 
@@ -280,6 +305,8 @@ class ExpressionConverter
     case TokenKind::LESS_EQUAL: return '<=';
     case TokenKind::GREATER_EQUAL: return '>=';
     case TokenKind::EQUAL: return '=';
+    case TokenKind::EQUAL_EQUAL: return '==';
+    case TokenKind::BANG_EQUAL: return '!=';
     case TokenKind::EQUAL_EQUAL_EQUAL: return '===';
     case TokenKind::BANG_EQUAL_EQUAL: return '!==';
     case TokenKind::BAR_BAR: return '||';
