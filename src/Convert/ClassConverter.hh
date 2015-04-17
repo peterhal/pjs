@@ -33,7 +33,6 @@ class ClassConverter extends DeclarationConverter
   {
     parent::__construct($writer);
     $this->name = $tree->name->text();
-    $this->exportName = self::$export . '.' . $this->name;
     $this->ctorTree = Trees::ctorOfClassDeclaration($tree);
   }
 
@@ -77,9 +76,7 @@ class ClassConverter extends DeclarationConverter
       $this->convertClassMember($member);
     }
 
-    // __export.ctor = ctor;
-    $this->write($this->exportName . ' = ' . $this->name . ';');
-    $this->writeLine();
+    $this->writeExport($this->name);
   }
 
   public function convertSelf(): void
@@ -210,7 +207,6 @@ class ClassConverter extends DeclarationConverter
   }
 
   private string $name;
-  private string $exportName;
   private ?ConstructorDeclarationTree $ctorTree;
 }
 

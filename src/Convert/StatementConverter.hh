@@ -23,6 +23,7 @@ namespace Convert {
   use Syntax\ElseClauseTree;
   use Syntax\ReturnStatementTree;
   use Syntax\ForStatementTree;
+  use Syntax\ForEachStatementTree;
   use Syntax\WhileStatementTree;
   use Syntax\SwitchStatementTree;
   use Syntax\ThrowStatementTree;
@@ -76,6 +77,9 @@ abstract class StatementConverter extends ExpressionConverter
     case ParseTreeKind::FOR_STATEMENT:
       $this->convertForStatement($tree->asForStatement());
       break;
+    case ParseTreeKind::FOR_EACH_STATEMENT:
+      $this->convertForEachStatement($tree->asForEachStatement());
+      break;
     case ParseTreeKind::WHILE_STATEMENT:
       $this->convertWhileStatement($tree->asWhileStatement());
       break;
@@ -94,6 +98,15 @@ abstract class StatementConverter extends ExpressionConverter
     default:
       throw $this->unknownTree($tree);
     }
+  }
+
+  public function convertForEachStatement(ForEachStatementTree $tree): void
+  {
+    $this->write('for (var __collection = ');
+    $this->convertExpression($tree->collection);
+    $this->write(', __index = 0; __index < __collection.length; __index++)');
+    $this->writeLine();
+    $this->convertIndentedStatement($tree->body);
   }
 
   public function convertBreakStatement(BreakStatementTree $tree): void

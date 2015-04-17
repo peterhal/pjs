@@ -54,6 +54,12 @@ class DeclarationConverter extends StatementConverter
     }
     $this->write(')');
   }
+
+  protected function writeExport(string $name): void
+  {
+    $this->write(DeclarationConverter::$export . '.' . $name . ' = ' . $name . ';');
+    $this->writeLine();
+  }
 }
 
 }

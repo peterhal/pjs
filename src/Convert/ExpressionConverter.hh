@@ -123,7 +123,7 @@ abstract class ExpressionConverter
 
   public function convertCollectionLiteral(CollectionLiteralTree $tree): void
   {
-    if (Trees::isVector($tree->name)) {
+    if (Trees::isVector($tree->name) || Trees::isPair($tree->name)) {
       $this->write('[');
       if ($tree->elements !== null) {
         $first = true;

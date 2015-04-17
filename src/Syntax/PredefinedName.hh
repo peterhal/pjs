@@ -20,6 +20,7 @@ abstract class PredefinedName
   const string __construct = '__construct';
   const string __destruct = '__destruct';
   const string Vector = 'Vector';
+  const string Pair = 'Pair';
 }
 
 }

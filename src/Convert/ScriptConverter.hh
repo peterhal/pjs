@@ -111,12 +111,14 @@ class ScriptConverter extends DeclarationConverter
   {
     $name = $tree->name->value();
 
-    $this->write(self::$export . ' = function ');
+    $this->write('function ' . $name);
     $this->convertParameterList($tree->parameters->asParameterList());
 
     $this->convertCompoundStatement($tree->body->asCompoundStatement());
     $this->write(';');
     $this->writeLine();
+
+    $this->writeExport($name);
   }
 
   public function convertNamespaceUseDeclaration(
