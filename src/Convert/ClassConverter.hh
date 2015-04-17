@@ -187,7 +187,7 @@ class ClassConverter extends DeclarationConverter
       } else {
         $this->write($this->name . '.prototype.' . $name . ' = function ');
       }
-      $this->convertParameters($tree->parameters->asParameterList());
+      $this->convertParameterList($tree->parameters->asParameterList());
       $this->writeLine();
       $this->convertCompoundStatement($body->asCompoundStatement());
       $this->writeLine();

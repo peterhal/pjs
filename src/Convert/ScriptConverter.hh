@@ -112,7 +112,7 @@ class ScriptConverter extends DeclarationConverter
     $name = $tree->name->value();
 
     $this->write(self::$export . ' = function ');
-    $this->convertParameters($tree->parameters->asParameterList());
+    $this->convertParameterList($tree->parameters->asParameterList());
 
     $this->convertCompoundStatement($tree->body->asCompoundStatement());
     $this->write(';');

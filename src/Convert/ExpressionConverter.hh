@@ -36,8 +36,9 @@ namespace Convert {
   use Syntax\ParenExpressionTree;
   use Syntax\ConditionalExpressionTree;
   use Syntax\CollectionLiteralTree;
+  use Syntax\LambdaExpressionTree;
 
-class ExpressionConverter 
+abstract class ExpressionConverter 
 {
   public function __construct(
     protected IndentedWriter $writer)
@@ -89,8 +90,34 @@ class ExpressionConverter
     case ParseTreeKind::COLLECTION_LITERAL:
       $this->convertCollectionLiteral($tree->asCollectionLiteral());
       break;
+    case ParseTreeKind::LAMBDA_EXPRESSION:
+      $this->convertLambdaExpression($tree->asLambdaExpression());
+      break;
     default:
       throw $this->unknownTree($tree);
+    }
+  }
+
+  protected abstract function convertParameters(?Vector<ParseTree> $parameters): void;
+  public abstract function convertStatement(ParseTree $statement): void;
+
+  public function convertLambdaExpression(LambdaExpressionTree $tree): void
+  {
+    if ($tree->isAsync) {
+      throw new \Exception('async lambda');
+    }
+    $this->write('function ');
+    if ($tree->signature->isVariableName()) {
+      $this->write('(' . $tree->signature->asVariableName()->name->text() . ')');
+    } else {
+      $this->convertParameters($tree->signature->asLambdaSignature()->parameters);
+    }
+    if ($tree->body->isCompoundStatement()) {
+      $this->convertStatement($tree->body);
+    } else {
+      $this->write('{ return ');
+      $this->convertExpression($tree->body);
+      $this->write('; }');
     }
   }
 
@@ -323,8 +350,11 @@ class ExpressionConverter
     case TokenKind::BAR_BAR: return '||';
     case TokenKind::AMPERSAND_AMPERSAND: return '&&';
     case TokenKind::PERIOD: return '+';
+    case TokenKind::PERIOD_EQUAL: return '+=';
     case TokenKind::PLUS: return '+';
     case TokenKind::MINUS: return '-';
+    case TokenKind::STAR: return '*';
+    case TokenKind::STAR_EQUAL: return '*=';
     case TokenKind::PLUS_EQUAL: return '+=';
     case TokenKind::MINUS_EQUAL: return '-=';
     default:

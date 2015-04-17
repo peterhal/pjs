@@ -27,7 +27,7 @@ namespace Convert {
   use Syntax\SwitchStatementTree;
   use Syntax\ThrowStatementTree;
 
-class StatementConverter extends ExpressionConverter
+abstract class StatementConverter extends ExpressionConverter
 {
   public function __construct(
     IndentedWriter $writer)

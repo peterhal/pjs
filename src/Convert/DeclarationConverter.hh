@@ -33,12 +33,17 @@ class DeclarationConverter extends StatementConverter
 
   protected static string $export = '__export';
 
-  protected function convertParameters(ParameterListTree $parameters): void
+  protected function convertParameterList(ParameterListTree $parameters): void
+  {
+    $this->convertParameters($parameters->parameters);
+  }
+
+  protected function convertParameters(?Vector<ParseTree> $parameters): void
   {
     $this->write('(');
-    if ($parameters->parameters !== null) {
+    if ($parameters !== null) {
       $first = true;
-      foreach ($parameters->parameters as $parameter) {
+      foreach ($parameters as $parameter) {
         if ($first) {
           $first = false;
         } else {

@@ -1,3 +1,3 @@
 #! /bin/bash
 
-hhvm convertProgram.php Utils/*.hh
+hhvm convertProgram.php Syntax/*.hh
