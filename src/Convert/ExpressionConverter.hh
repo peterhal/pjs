@@ -194,6 +194,7 @@ abstract class ExpressionConverter
   {
     switch ($operator) {
     case TokenKind::PLUS_PLUS: return '++';
+    case TokenKind::MINUS_MINUS: return '--';
     default:
       throw $this->unknownTokenKind($operator);
     }
@@ -357,6 +358,12 @@ abstract class ExpressionConverter
     case TokenKind::STAR_EQUAL: return '*=';
     case TokenKind::PLUS_EQUAL: return '+=';
     case TokenKind::MINUS_EQUAL: return '-=';
+    case TokenKind::LEFT_SHIFT: return '<<';
+    case TokenKind::LEFT_SHIFT_EQUAL: return '<<=';
+    case TokenKind::RIGHT_SHIFT: return '>>';
+    case TokenKind::RIGHT_SHIFT_EQUAL: return '>>=';
+    // TODO: is this correct?
+    case TokenKind::KW_INSTANCEOF: return 'instanceof';
     default:
       throw $this->unknownTokenKind($operator);
     }

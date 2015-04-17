@@ -26,6 +26,8 @@ namespace Convert {
   use Syntax\WhileStatementTree;
   use Syntax\SwitchStatementTree;
   use Syntax\ThrowStatementTree;
+  use Syntax\BreakStatementTree;
+  use Syntax\ContinueStatementTree;
 
 abstract class StatementConverter extends ExpressionConverter
 {
@@ -83,9 +85,27 @@ abstract class StatementConverter extends ExpressionConverter
     case ParseTreeKind::THROW_STATEMENT:
       $this->convertThrowStatement($tree->asThrowStatement());
       break;
+    case ParseTreeKind::BREAK_STATEMENT:
+      $this->convertBreakStatement($tree->asBreakStatement());
+      break;
+    case ParseTreeKind::CONTINUE_STATEMENT:
+      $this->convertContinueStatement($tree->asContinueStatement());
+      break;
     default:
       throw $this->unknownTree($tree);
     }
+  }
+
+  public function convertBreakStatement(BreakStatementTree $tree): void
+  {
+    $this->write('break');
+    $this->writeEndStatement();
+  }
+
+  public function convertContinueStatement(ContinueStatementTree $tree): void
+  {
+    $this->write('continue');
+    $this->writeEndStatement();
   }
 
   public function convertWhileStatement(WhileStatementTree $tree): void
