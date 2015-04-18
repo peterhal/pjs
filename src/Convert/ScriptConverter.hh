@@ -9,6 +9,7 @@ namespace Convert {
   require_once 'Syntax/Trees.hh';
   require_once 'DeclarationConverter.hh';
   require_once 'ClassConverter.hh';
+  require_once 'EnumConverter.hh';
 
   use Exception;
   use Utils\IndentedWriter;
@@ -22,6 +23,7 @@ namespace Convert {
   use Syntax\NamespaceDefinitionTree;
   use Syntax\ClassDeclarationTree;
   use Syntax\InterfaceDeclarationTree;
+  use Syntax\EnumDeclarationTree;
 
 class ScriptConverter extends DeclarationConverter
 {
@@ -69,6 +71,8 @@ class ScriptConverter extends DeclarationConverter
         $this->convertClassDeclaration($declaration->asClassDeclaration());
         break;
       case ParseTreeKind::ENUM_DECLARATION:
+        $this->convertEnumDeclaration($declaration->asEnumDeclaration());
+        break;
       case ParseTreeKind::INTERFACE_DECLARATION:
         $this->convertInterfaceDeclaration($declaration->asInterfaceDeclaration());
         break;
@@ -76,6 +80,11 @@ class ScriptConverter extends DeclarationConverter
         throw $this->unknownTree($declaration);
       }
     }
+  }
+
+  public function convertEnumDeclaration(EnumDeclarationTree $tree): void
+  {
+    (new EnumConverter($this->writer, $tree))->convertEnumDeclaration();
   }
 
   public function convertInterfaceDeclaration(InterfaceDeclarationTree $tree): void
