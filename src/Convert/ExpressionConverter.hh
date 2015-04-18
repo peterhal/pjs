@@ -137,6 +137,12 @@ abstract class ExpressionConverter
         }
       }
       $this->write(']');
+    } else if (Trees::isMap($tree->name)) {
+      $this->write('{');
+      if ($tree->elements !== null) {
+        throw new \Exception('Map literal with elements.');
+      }
+      $this->write('}');
     } else {
       throw new \Exception('Unknown collection literal type.');
     }

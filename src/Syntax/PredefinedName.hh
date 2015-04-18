@@ -21,6 +21,7 @@ abstract class PredefinedName
   const string __destruct = '__destruct';
   const string Vector = 'Vector';
   const string Pair = 'Pair';
+  const string Map = 'Map';
 }
 
 }

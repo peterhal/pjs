@@ -1,3 +1,3 @@
 #! /bin/bash
 
-hhvm convertProgram.php Syntax/*.hh
+find . -name '*.hh' | xargs hhvm convertProgram.php

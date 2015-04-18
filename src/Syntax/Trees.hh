@@ -46,6 +46,11 @@ class Trees {
     return self::isName($tree, PredefinedName::Pair);
   }
 
+  public static function isMap(ParseTree $tree): bool
+  {
+    return self::isName($tree, PredefinedName::Map);
+  }
+
   public static function isVector(ParseTree $tree): bool
   {
     return self::isName($tree, PredefinedName::Vector);

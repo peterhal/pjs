@@ -34,6 +34,7 @@ class Loader {
     }
   }
 
+/*
   public static function dependencies(ScriptTree $tree): Generator<int, string, void>
   {
     foreach ($tree->declarations as $declaration) {
@@ -44,6 +45,7 @@ class Loader {
       }
     }
   }
+ */
 
   private Map<string, SourceFile> $files;
   private Map<string, ParseTree> $trees;
