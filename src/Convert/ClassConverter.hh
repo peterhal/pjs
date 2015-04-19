@@ -49,8 +49,11 @@ class ClassConverter extends DeclarationConverter
       $this->write('{');
       $this->writeLine();
       $this->indent();
+
+      $this->writeThisDeclaration();
       $this->convertConstructorParameterInitializers($ctorTree->parameters);
       $this->convertStatementList($ctorTree->body->asCompoundStatement()->statements);
+
       $this->outdent();
       $this->write('}');
       $this->writeLine();
@@ -77,6 +80,12 @@ class ClassConverter extends DeclarationConverter
     }
 
     $this->writeExport($this->name);
+  }
+
+  public function writeThisDeclaration(): void
+  {
+    $this->write('var $this = this;');
+    $this->writeLine();
   }
 
   public function convertSelf(): void
@@ -186,7 +195,16 @@ class ClassConverter extends DeclarationConverter
       }
       $this->convertParameterList($tree->parameters->asParameterList());
       $this->writeLine();
+      $this->write('{');
+      $this->writeLine();
+      $this->indent();
+
+      $this->writeThisDeclaration();
       $this->convertCompoundStatement($body->asCompoundStatement());
+
+      $this->outdent();
+      $this->write('}');
+      $this->writeLine();
       $this->writeLine();
     }
   }

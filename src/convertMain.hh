@@ -19,7 +19,6 @@ function convertMain(array<string> $argv) : int
   }
   for ($index = 1; $index < count($argv); $index++) {
     $filename = $argv[$index];
-    fwrite(STDOUT, $filename . "\n");
 
     $file = SourceFile::read($filename);
     $reporter = new ConsoleErrorReporter();

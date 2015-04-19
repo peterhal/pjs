@@ -35,6 +35,9 @@ class ScriptConverter extends DeclarationConverter
 
   public function convertScript(ScriptTree $tree): void
   {
+    $this->write('// ' . $tree->start()->file()->name());
+    $this->writeLine();
+
     // Wrap the whole file in an IIFE
     $this->write('(function(' . self::$export . ') {');
     $this->writeLine();
@@ -101,14 +104,21 @@ class ScriptConverter extends DeclarationConverter
   {
     if ($tree->name !== null) {
       $name = $tree->name->text();
-      $this->write('var ' . $name . ' = ' . $name . ' || {};'); 
+      $exportName = self::$export . '.' . $name;
+      $this->write($exportName . ' = ' . $exportName . ' || {};'); 
+      $this->writeLine();
+
+      // TODO: This assumes outer namespaces in scope in inner namespaces.
+      $this->write('var ' . $name . ' = ' . $exportName . ';'); 
       $this->writeLine();
       $this->write('(function(' . self::$export . ') {');
       $this->writeLine();
+      $this->indent();
 
       $this->convertDeclarationsOpt($tree->declarations);
 
-      $this->write('}(' . $name .'));');
+      $this->outdent();
+      $this->write('}(' . $exportName .'));');
       $this->writeLine();
     } else {
       throw new \Exception();
@@ -124,7 +134,6 @@ class ScriptConverter extends DeclarationConverter
     $this->convertParameterList($tree->parameters->asParameterList());
 
     $this->convertCompoundStatement($tree->body->asCompoundStatement());
-    $this->write(';');
     $this->writeLine();
 
     $this->writeExport($name);
