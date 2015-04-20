@@ -1,3 +1,3 @@
 #! /bin/bash
 
-find . -name '*.hh' | xargs hhvm convertProgram.php
+cat files.list | xargs hhvm convertProgram.php

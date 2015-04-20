@@ -45,7 +45,7 @@ class Loader {
       }
     }
   }
- */
+*/
 
   private Map<string, SourceFile> $files;
   private Map<string, ParseTree> $trees;

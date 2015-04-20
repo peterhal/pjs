@@ -59,6 +59,9 @@ class DeclarationConverter extends StatementConverter
   {
     $this->write(DeclarationConverter::$export . '.' . $name . ' = ' . $name . ';');
     $this->writeLine();
+    // TODO: Remove this once namespaces are fully supported.
+    $this->write('global.' . $name . ' = ' . $name . ';');
+    $this->writeLine();
     $this->writeLine();
   }
 }
