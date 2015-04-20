@@ -8,7 +8,10 @@ class Char
 
   const int HORIZONTAL_TAB =0x09;
   const int LINE_FEED = 0x0A;
+  const int VERTICAL_TAB = 0x0B;
+  const int FORM_FEED = 0x0C;
   const int CARRIAGE_RETURN = 0x0D;
+  const int ESCAPE = 0x1B;
   const int SPACE = 0x20; // ' '
   const int BANG = 0x21; // !
   const int DOUBLE_QUOTE = 0x22;
@@ -27,6 +30,11 @@ class Char
   const int FORWARD_SLASH = 0x2F; // /
   const int ZERO = 0x30; // 0
   const int ONE = 0x31; // 1
+  const int TWO = 0x32; // 1
+  const int THREE = 0x33; // 1
+  const int FOUR = 0x34; // 1
+  const int FIVE = 0x35; // 1
+  const int SIX = 0x36; // 1
   const int SEVEN = 0x37; // 7
   const int NINE = 0x39; // 9
   const int COLON = 0x3A; // :
@@ -51,6 +59,10 @@ class Char
   const int b = 0x62; // b
   const int e = 0x65; // e
   const int f = 0x66; // f
+  const int n = 0x6E; // n
+  const int r = 0x72; // r
+  const int t = 0x74; // t
+  const int v = 0x76; // v
   const int x = 0x78; // x
   const int z = 0x7A; // z
   const int OPEN_CURLY = 0x7B; // {

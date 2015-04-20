@@ -248,12 +248,16 @@ class Lexer extends LexerBase
       $isNowDoc = false;
     }
 
+    $value = '';
     // TODO: Validate that startIdentifier is a valid name
     do {
       $this->skipNewLine();
       $line = $this->getLine();
       $foundEnd = $line === $startIdentifier
         || $line === ($startIdentifier . ';');
+      if ($foundEnd) {
+        $value .= $this->escapeLine($line);
+      }
     } while (!$foundEnd && !$this->eof());
     if (!$foundEnd) {
       $this->errorOffset($start, "Missing multi line comment terminator.");
@@ -264,19 +268,129 @@ class Lexer extends LexerBase
       $this->skipNewLine();
     }
 
-    // TODO: Extent of token value.
-    return $this->createToken($start, TokenKind::MULTI_LINE_STRING);
+    return new StringLiteralToken(
+      $this->currentRange($start),
+      TokenKind::MULTI_LINE_STRING,
+      $value);
+  }
+
+  private function escapeLine(string $line): string
+  {
+    $result = '';
+    for ($index = 0; $index < count($line); $index++) {
+      $ch = ord($line[$index]);
+      if ($ch === Char::BACK_SLASH) {
+        switch ($this->peek()) {
+        case Char::BACK_SLASH:
+          $index++;
+          $ch = Char::BACK_SLASH;
+          break;
+        case Char::DOLLAR:
+          $index++;
+          $ch = Char::DOLLAR;
+          break;
+        case Char::e:
+          $index++;
+          $ch = Char::ESCAPE;
+          break;
+        case Char::f:
+          $index++;
+          $ch = Char::FORM_FEED;
+          break;
+        case Char::n:
+          $index++;
+          $ch = Char::LINE_FEED;
+          break;
+        case Char::r:
+          $index++;
+          $ch = Char::CARRIAGE_RETURN;
+          break;
+        case Char::t:
+          $index++;
+          $ch = Char::HORIZONTAL_TAB;
+          break;
+        case Char::v:
+          $index++;
+          $ch = Char::VERTICAL_TAB;
+          break;
+        case Char::x:
+        case Char::X:
+          throw new \Exception('Hex escapes');
+        case Char::ZERO:
+        case Char::ONE:
+        case Char::TWO:
+        case Char::THREE:
+        case Char::FOUR:
+        case Char::FIVE:
+        case Char::SIX:
+        case Char::SEVEN:
+          throw new \Exception('Octal escapes');
+        default:
+          break;
+        }
+      } else if ($ch === Char::DOLLAR) {
+        throw new \Exception('variable escapes in heredoc strings.');
+      }
+      $result .= chr($ch);
+    }
+    $result .= chr(Char::LINE_FEED);
+    return $result;
   }
 
   private function lexDoubleQuotedString(int $start): Token
   {
     $value = '';
     while (!$this->eof() && !$this->peekChar(Char::DOUBLE_QUOTE)) {
-      if ($this->peekChar(Char::BACK_SLASH)) {
-        $value .= chr($this->next());
-        // TODO: Escape sequences.
+      $ch = $this->next();
+      if ($ch === Char::BACK_SLASH) {
+        switch ($this->peek()) {
+        case Char::DOUBLE_QUOTE:
+          $ch = Char::DOUBLE_QUOTE;
+          break;
+        case Char::BACK_SLASH:
+          $ch = Char::BACK_SLASH;
+          break;
+        case Char::DOLLAR:
+          $ch = Char::DOLLAR;
+          break;
+        case Char::e:
+          $ch = Char::ESCAPE;
+          break;
+        case Char::f:
+          $ch = Char::FORM_FEED;
+          break;
+        case Char::n:
+          $ch = Char::LINE_FEED;
+          break;
+        case Char::r:
+          $ch = Char::CARRIAGE_RETURN;
+          break;
+        case Char::t:
+          $ch = Char::HORIZONTAL_TAB;
+          break;
+        case Char::v:
+          $ch = Char::VERTICAL_TAB;
+          break;
+        case Char::x:
+        case Char::X:
+          throw new \Exception('Hex escapes');
+        case Char::ZERO:
+        case Char::ONE:
+        case Char::TWO:
+        case Char::THREE:
+        case Char::FOUR:
+        case Char::FIVE:
+        case Char::SIX:
+        case Char::SEVEN:
+          throw new \Exception('Octal escapes');
+        default:
+          $this->error("Invalid double quoted string escape.");
+          break;
+        }
+      } else if ($ch === Char::DOLLAR) {
+        // TODO: variable names ...
       }
-      $value .= chr($this->next());
+      $value .= chr($ch);
     }
     if ($this->eof()) {
       $this->errorOffset($start, "Unterminated double quoted string.");
@@ -293,6 +407,14 @@ class Lexer extends LexerBase
     while (!$this->eof() && !$this->peekChar(Char::SINGLE_QUOTE)) {
       if ($this->peekChar(Char::BACK_SLASH)) {
         $this->next();
+        switch ($this->peek()) {
+        case Char::BACK_SLASH:
+        case Char::SINGLE_QUOTE:
+          break;
+        default:
+          $this->error('Only \'\\\' and \'\'\' are permitted escape sequences in single quoted strings.');
+          break;
+        }
       }
       $value .= chr($this->next());
     }
@@ -302,7 +424,10 @@ class Lexer extends LexerBase
       $this->next();
     }
 
-    return $this->createToken($start, TokenKind::SINGLE_QUOTED_STRING);
+    return new StringLiteralToken(
+      $this->currentRange($start), 
+      TokenKind::SINGLE_QUOTED_STRING,
+      $value);
   }
 
   private function lexNumber(int $start, int $firstChar): Token

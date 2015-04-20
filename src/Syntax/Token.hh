@@ -42,6 +42,23 @@ class Token
     return $this;
   }
 
+  public function isStringLiteral(): bool
+  {
+    switch ($this->kind) {
+    case TokenKind::SINGLE_QUOTED_STRING:
+    case TokenKind::DOUBLE_QUOTED_STRING:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  public function asStringLiteral(): StringLiteralToken
+  {
+    invariant($this instanceof StringLiteralToken, "Must be a variable name.");
+    return $this;
+  }
+
   public function isLiteral(): bool
   {
     switch ($this->kind) {
@@ -81,6 +98,17 @@ class VariableNameToken extends Token
     parent::__construct($range, TokenKind::VARIABLE_NAME);
   }
   public function value(): string { return $this->value; }
+}
+
+class StringLiteralToken extends Token
+{
+  public function __construct(
+    Range $range,
+    TokenKind $kind,
+    private string $value)
+  {
+    parent::__construct($range, $kind);
+  }
 }
 
 }
