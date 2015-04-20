@@ -398,7 +398,10 @@ class Lexer extends LexerBase
       $this->next();
     }
 
-    return $this->createToken($start, TokenKind::DOUBLE_QUOTED_STRING);
+    return new StringLiteralToken(
+      $this->currentRange($start), 
+      TokenKind::DOUBLE_QUOTED_STRING,
+      $value);
   }
 
   private function lexSingleQuotedString(int $start): Token

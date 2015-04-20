@@ -44,7 +44,7 @@ class ScriptConverter extends DeclarationConverter
     $this->indent();
     $this->convertDeclarations($tree->declarations);
     $this->outdent();
-    $this->write('}(this));');
+    $this->write('}(global));');
     $this->writeLine();
   }
 

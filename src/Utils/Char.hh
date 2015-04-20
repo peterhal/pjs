@@ -6,6 +6,7 @@ class Char
 {
   const int EOF = -1;
 
+  const int BACKSPACE =0x08;
   const int HORIZONTAL_TAB =0x09;
   const int LINE_FEED = 0x0A;
   const int VERTICAL_TAB = 0x0B;

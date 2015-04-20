@@ -47,6 +47,7 @@ class Token
     switch ($this->kind) {
     case TokenKind::SINGLE_QUOTED_STRING:
     case TokenKind::DOUBLE_QUOTED_STRING:
+    case TokenKind::MULTI_LINE_STRING:
       return true;
     default:
       return false;
@@ -65,6 +66,7 @@ class Token
     case TokenKind::NUMBER:
     case TokenKind::SINGLE_QUOTED_STRING:
     case TokenKind::DOUBLE_QUOTED_STRING:
+    case TokenKind::MULTI_LINE_STRING:
       return true;
     default:
      return false;
@@ -108,6 +110,11 @@ class StringLiteralToken extends Token
     private string $value)
   {
     parent::__construct($range, $kind);
+  }
+
+  public function value(): string
+  {
+    return $this->value;
   }
 }
 

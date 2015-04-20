@@ -2,6 +2,7 @@
 
 namespace Convert {
 
+  require_once 'Utils/Char.hh';
   require_once 'Utils/IndentedWriter.hh';
   require_once 'Syntax/ParseTree.hh';
   require_once 'Syntax/ParseTreeKind.hh';
@@ -9,6 +10,7 @@ namespace Convert {
   require_once 'Syntax/Trees.hh';
 
   use Exception;
+  use Utils\Char;
   use Utils\IndentedWriter;
   use Syntax\Token;
   use Syntax\TokenKind;
@@ -301,7 +303,48 @@ abstract class ExpressionConverter
 
   public function convertLiteral(LiteralTree $tree): void
   {
-    $this->write($tree->value->text());
+    if ($tree->value->isStringLiteral()) {
+      $value = $tree->value->asStringLiteral()->value();
+      $this->write('\'');
+      for ($index = 0; $index < count($value); $index++) {
+        $ch = ord($value[$index]);
+        switch ($ch) {
+        case Char::SINGLE_QUOTE:
+          $this->write('\\\'');
+          break;
+        case Char::DOUBLE_QUOTE:
+          $this->write('\\"');
+          break;
+        case Char::BACKSPACE:
+          $this->write('\\b');
+          break;
+        case Char::HORIZONTAL_TAB:
+          $this->write('\\t');
+          break;
+        case Char::LINE_FEED:
+          $this->write('\\n');
+          break;
+        case Char::VERTICAL_TAB:
+          $this->write('\\v');
+          break;
+        case Char::FORM_FEED:
+          $this->write('\\f');
+          break;
+        case Char::CARRIAGE_RETURN:
+          $this->write('\\r');
+          break;
+        case Char::BACK_SLASH:
+          $this->write('\\\\');
+          break;
+        default:
+          // TODO: non-printable chars
+          $this->write(chr($ch));
+        }
+      }
+      $this->write('\'');
+    } else {
+      $this->write($tree->value->text());
+    }
   }
 
   public function convertVariableName(VariableNameTree $tree): void
