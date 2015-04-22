@@ -23,7 +23,10 @@ function dumpTokens(Vector<Token> $tokens): void
 
 function dumpToken(Token $token): void
 {
-    dumpString(Syntax\tokenKindToString($token->kind()) . "\n");
+  dumpString(Syntax\tokenKindToString($token->kind()) . "\n");
+  if ($token->isStringLiteral()) {
+    dumpString($token->asStringLiteral()->value());
+  }
 }
 
 function tokenDumpMain(array<string> $argv) : int

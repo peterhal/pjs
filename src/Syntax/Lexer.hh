@@ -345,30 +345,39 @@ class Lexer extends LexerBase
       if ($ch === Char::BACK_SLASH) {
         switch ($this->peek()) {
         case Char::DOUBLE_QUOTE:
+          $this->next();
           $ch = Char::DOUBLE_QUOTE;
           break;
         case Char::BACK_SLASH:
+          $this->next();
           $ch = Char::BACK_SLASH;
           break;
         case Char::DOLLAR:
+          $this->next();
           $ch = Char::DOLLAR;
           break;
         case Char::e:
+          $this->next();
           $ch = Char::ESCAPE;
           break;
         case Char::f:
+          $this->next();
           $ch = Char::FORM_FEED;
           break;
         case Char::n:
+          $this->next();
           $ch = Char::LINE_FEED;
           break;
         case Char::r:
+          $this->next();
           $ch = Char::CARRIAGE_RETURN;
           break;
         case Char::t:
+          $this->next();
           $ch = Char::HORIZONTAL_TAB;
           break;
         case Char::v:
+          $this->next();
           $ch = Char::VERTICAL_TAB;
           break;
         case Char::x:

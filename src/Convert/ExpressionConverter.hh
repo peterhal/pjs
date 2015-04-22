@@ -305,7 +305,7 @@ abstract class ExpressionConverter
     if ($tree->value->isStringLiteral()) {
       $value = $tree->value->asStringLiteral()->value();
       $this->write('\'');
-      for ($index = 0; $index < count($value); $index++) {
+      for ($index = 0; $index < strlen($value); $index++) {
         $ch = ord($value[$index]);
         switch ($ch) {
         case Char::SINGLE_QUOTE:
@@ -338,6 +338,7 @@ abstract class ExpressionConverter
         default:
           // TODO: non-printable chars
           $this->write(chr($ch));
+          break;
         }
       }
       $this->write('\'');

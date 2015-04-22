@@ -69,7 +69,7 @@ class ClassConverter extends DeclarationConverter
       // } ();
       $this->write($this->name . '.prototype = (function() { function __t(){}; __t.prototype = ');
       $this->convertBaseClass();
-      $this->write('; return new __t(); } ());');
+      $this->write('.prototype; return new __t(); } ());');
       $this->writeLine();
     }
 
