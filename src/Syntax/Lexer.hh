@@ -219,7 +219,7 @@ class Lexer extends LexerBase
       } elseif (Char::isDigit($ch)) {
         return $this->lexNumber($start, $ch);
       } else {
-        $this->errorOffset($start, "Unexpected char '$ch'.");
+        $this->errorOffset($start, 'Unexpected char \''.$ch.'\'.');
         return new Token($this->currentRange($start), TokenKind::EOF);
       }
     }

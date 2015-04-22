@@ -25,7 +25,7 @@ class Location
 
   public function toString(): string
   {
-    return "{$this->file()->name()}({$this->displayLine()}, {$this->displayColumn()})";
+    return $this->file()->name().'('.$this->displayLine().', '.$this->displayColumn().')';
   }
 
   public function isEqual(Location $other): bool
