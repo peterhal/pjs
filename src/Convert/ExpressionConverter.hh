@@ -238,8 +238,7 @@ abstract class ExpressionConverter
   public function convertMemberSelection(MemberSelectionTree $tree): void
   {
     $this->convertExpression($tree->object);
-    // TODO: Handle the $ craziness
-    $this->write('.' . $tree->name->text());
+    $this->write('.$' . $tree->name->text());
   }
 
   public function convertObjectCreationExpression(ObjectCreationExpressionTree $tree): void
@@ -354,8 +353,19 @@ abstract class ExpressionConverter
 
   public function convertFunctionCall(FunctionCallTree $tree): void
   {
-    $this->convertExpression($tree->function);
+    $this->convertCallTargetExpression($tree->function);
     $this->convertArgumentListOpt($tree->arguments);
+  }
+
+  public function convertCallTargetExpression(ParseTree $tree): void
+  {
+    if ($tree->isMemberSelection()) {
+      $memberSelection = $tree->asMemberSelection();
+      $this->convertExpression($memberSelection->object);
+      $this->write('.' . $memberSelection->name->text());
+    } else {
+      $this->convertExpression($tree);
+    }
   }
 
   public function convertArgumentListOpt(?Vector<ParseTree> $arguments): void
