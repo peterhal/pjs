@@ -149,7 +149,7 @@ class ScriptConverter extends DeclarationConverter
       $this->write(
         'var ' 
         . $name 
-        . ' = '
+        . ' = global.'
         . $this->qualifiedNameToString($useClause->name->asQualifiedName())
         . ';');
       $this->writeLine();

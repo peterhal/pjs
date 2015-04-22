@@ -1,6 +1,5 @@
 
 var fs = require('fs');
-eval(fs.readFileSync('./t.js').toString());
 
 var count = function(values) {
   return values.length;
@@ -70,9 +69,16 @@ var invariant = function(condition, message) {
   }
 };
 
-var Exception = function(message) {
-  this.message = message;
-};
+global.Exception = Error;
 
-convertMain(['t.js', 'Utils/IndentedWriter.hh']);
+
+eval(fs.readFileSync('./t.js').toString());
+
+try {
+  convertMain(['t.js', 'Utils/IndentedWriter.hh']);
+} catch (e) {
+  fwrite(STDERR, e.message + "\n");
+  fwrite(STDERR, e.stack);
+  fwrite(STDERR, "\n");
+}
 

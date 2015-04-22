@@ -1015,7 +1015,7 @@ class Parser extends ParserBase
       // TODO
       throw new Exception($this->position()->toString());
     default:
-      throw new Exception($this->position()->toString());
+      throw new Exception('Unexpected primary expression '.$this->peek().' '.$this->position()->toString());
     }
   }
 
