@@ -1500,9 +1500,9 @@ class Parser extends ParserBase
       $type = $this->parseQualifiedName();
       $value = new BinaryExpressionTree(
         $this->getRange($start),
-        $type,
+        $value,
         $operator,
-        $value);
+        $type);
     }
 
     return $value;

@@ -203,7 +203,13 @@ abstract class StatementConverter extends ExpressionConverter
 
   public function convertExpressionStatement(ExpressionStatementTree $tree): void
   {
-    $this->convertExpression($tree->expression);
+    $expression= $tree->expression;
+    if ($expression->isBinaryExpression()
+        && $expression->asBinaryExpression()->operator->kind() == TokenKind::EQUAL
+        && $expression->asBinaryExpression()->left->isVariableName()) {
+      $this->write('var ');
+    }
+    $this->convertExpression($expression);
     $this->writeEndStatement();
   }
 

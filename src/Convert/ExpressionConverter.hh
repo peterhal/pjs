@@ -140,11 +140,22 @@ abstract class ExpressionConverter
       }
       $this->write(']');
     } else if (Trees::isMap($tree->name)) {
-      $this->write('{');
-      if ($tree->elements !== null) {
-        throw new \Exception('Map literal with elements.');
+      $this->write('(function() { var __ = {};');
+      $elements = $tree->elements;
+      if ($elements !== null) {
+        $this->indent();
+        foreach ($elements as $element) {
+          $elementMap = $element->asArrayElementInitializer();
+          $this->write('__[');
+          $this->convertExpression($elementMap->key);
+          $this->write('] = ');
+          $this->convertExpression($elementMap->value);
+          $this->write(';');
+          $this->writeLine();
+        }
+        $this->outdent();
       }
-      $this->write('}');
+      $this->write('return __; }())');
     } else {
       throw new \Exception('Unknown collection literal type.');
     }

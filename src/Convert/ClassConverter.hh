@@ -24,6 +24,7 @@ namespace Convert {
   use Syntax\ConstDeclaratorTree;
   use Syntax\MethodDefinitionTree;
   use Syntax\FunctionCallTree;
+  use Syntax\PropertyDeclarationTree;
 
 class ClassConverter extends DeclarationConverter
 {
@@ -174,10 +175,30 @@ class ClassConverter extends DeclarationConverter
       // ctors are handled with the class header.
       break;
     case ParseTreeKind::PROPERTY_DECLARATION:
-      // No codegen for properties.
+      $this->convertPropertyDeclaration($tree->asPropertyDeclaration());
       break;
     default:
       throw $this->unknownTree($tree);
+    }
+  }
+
+  private function convertPropertyDeclaration(PropertyDeclarationTree $tree): void
+  {
+    $isStatic = !$tree->modifiers
+      ->filter($token ==> $token->kind() === TokenKind::KW_STATIC)->isEmpty();
+
+    foreach ($tree->declarators as $element) {
+      $declarator = $element->asPropertyDeclarator();
+      $initializer = $declarator->initializer;
+      if ($initializer !== null) {
+        if ($isStatic) {
+          $this->write($this->name . '.' . $declarator->name->text() . ' = ');
+        } else {
+          throw new \Exception('Instance properties with initializers.');
+        }
+        $this->convertExpression($initializer);
+        $this->writeEndStatement();
+      }
     }
   }
 
