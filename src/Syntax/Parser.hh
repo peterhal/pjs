@@ -2424,10 +2424,10 @@ class Parser extends ParserBase
     $condition = $this->parseParenDelimitedExpression();
     $this->eat(TokenKind::SEMI_COLON);
 
-    return new WhileStatementTree(
+    return new DoStatementTree(
       $this->getRange($start),
-      $condition,
-      $body);
+      $body,
+      $condition);
   }
 
   private function parseForStatement(): ParseTree

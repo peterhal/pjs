@@ -48,6 +48,13 @@ Array.prototype.add = function(value) {
   this.push(value);
 };
 
+Array.prototype.linearSearch = function (value) {
+  for (var index = 0; index < this.length; index++) {
+    if (this[index] == value) return true;
+  }
+  return false;
+};
+
 // Map
 Object.prototype.containsKey = function(key) {
   return this.hasOwnProperty(key);
@@ -61,6 +68,10 @@ var invariant = function(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
+};
+
+var Exception = function(message) {
+  this.message = message;
 };
 
 convertMain(['t.js', 'Utils/IndentedWriter.hh']);

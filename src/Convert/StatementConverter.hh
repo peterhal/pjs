@@ -25,6 +25,7 @@ namespace Convert {
   use Syntax\ForStatementTree;
   use Syntax\ForEachStatementTree;
   use Syntax\WhileStatementTree;
+  use Syntax\DoStatementTree;
   use Syntax\SwitchStatementTree;
   use Syntax\ThrowStatementTree;
   use Syntax\BreakStatementTree;
@@ -83,6 +84,9 @@ abstract class StatementConverter extends ExpressionConverter
     case ParseTreeKind::WHILE_STATEMENT:
       $this->convertWhileStatement($tree->asWhileStatement());
       break;
+    case ParseTreeKind::DO_STATEMENT:
+      $this->convertDoStatement($tree->asDoStatement());
+      break;
     case ParseTreeKind::SWITCH_STATEMENT:
       $this->convertSwitchStatement($tree->asSwitchStatement());
       break;
@@ -119,6 +123,15 @@ abstract class StatementConverter extends ExpressionConverter
   {
     $this->write('continue');
     $this->writeEndStatement();
+  }
+
+  public function convertDoStatement(DoStatementTree $tree): void
+  {
+    $this->write('do ');
+    $this->convertStatement($tree->body);
+    $this->write(' while ');
+    $this->convertExpressionWithParens($tree->condition);
+    $this->writeLine();
   }
 
   public function convertWhileStatement(WhileStatementTree $tree): void
