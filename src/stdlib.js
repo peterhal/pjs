@@ -87,6 +87,10 @@ Array.prototype.linearSearch = function (value) {
   return -1;
 };
 
+Array.prototype.isEmpty = function() {
+  return this.length === 0;
+};
+
 // Map
 Object.prototype.containsKey = function(key) {
   return this.hasOwnProperty(key);
@@ -108,7 +112,11 @@ global.Exception = Error;
 
 eval(fs.readFileSync('./t.js').toString());
 
+// Remove the leading 'nodejs'
+// THe First element will be the .js file.
+var argv = process.argv.slice(1);
+
   // tokenDumpMain(['', 'Utils/IndentedWriter.hh']);
   // parseMain(['', 'main.hh']);
-  convertMain(['', 'main.hh']);
+  convertMain(argv);
 
