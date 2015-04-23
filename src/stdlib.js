@@ -75,7 +75,7 @@ global.Exception = Error;
 eval(fs.readFileSync('./t.js').toString());
 
 try {
-  convertMain(['t.js', 'Utils/IndentedWriter.hh']);
+  tokenDumpMain(['t.js', 'Utils/IndentedWriter.hh']);
 } catch (e) {
   fwrite(STDERR, e.message + "\n");
   fwrite(STDERR, e.stack);

@@ -31,8 +31,26 @@ class EnumConverter extends DeclarationConverter {
       }
     }
 
+    // getNames
+    $this->write($this->name . '.getNames = (function() { var names = {};');
+    $this->writeLine();
+    $this->indent();
+    if ($this->tree->enumerators !== null) {
+      foreach ($this->tree->enumerators as $enumerator) {
+        $enumeratorTree = $enumerator->asEnumerator();
+        $this->write('names[' . $this->name . '.' . $enumeratorTree->name->text() . '] = \'');
+        $this->write($enumeratorTree->name->text() . '\';');
+        $this->writeLine();
+      }
+    }
+    $this->outdent();
+    $this->write('return function() { return names; };}());');
+    $this->writeLine();
+
     $this->writeExport($this->name);
   }
+
+  // TODO: getNames, static member.
 
   public function convertEnumerator(EnumeratorTree $tree): void
   {
