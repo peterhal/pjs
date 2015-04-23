@@ -108,9 +108,16 @@ abstract class StatementConverter extends ExpressionConverter
   {
     $this->write('for (var __collection = ');
     $this->convertExpression($tree->collection);
-    $this->write(', __index = 0; __index < __collection.length; __index++)');
+    $this->write(', __index = 0; __index < __collection.length; __index++) {');
+    $this->writeLine();
+    if ($tree->key !== null) {
+      throw new \Exception('keyed foreach');
+    }
+    $this->write('var ' . $tree->value->asVariableName()->name->text() . ' = __collection[__index];');
     $this->writeLine();
     $this->convertIndentedStatement($tree->body);
+    $this->write('}');
+    $this->writeLine();
   }
 
   public function convertBreakStatement(BreakStatementTree $tree): void

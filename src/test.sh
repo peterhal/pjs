@@ -1,3 +1,3 @@
 #! /bin/bash
 
-nodejs stdlib.js >> tt.js
+nodejs stdlib.js > tt.js
