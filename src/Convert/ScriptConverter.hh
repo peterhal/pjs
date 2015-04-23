@@ -39,7 +39,7 @@ class ScriptConverter extends DeclarationConverter
     $this->writeLine();
 
     // Wrap the whole file in an IIFE
-    $this->write('(function(' . self::$export . ') {');
+    $this->write('(function(' . DeclarationConverter::$export . ') {');
     $this->writeLine();
     $this->indent();
     $this->convertDeclarations($tree->declarations);
@@ -104,14 +104,14 @@ class ScriptConverter extends DeclarationConverter
   {
     if ($tree->name !== null) {
       $name = $tree->name->text();
-      $exportName = self::$export . '.' . $name;
+      $exportName = DeclarationConverter::$export . '.' . $name;
       $this->write($exportName . ' = ' . $exportName . ' || {};'); 
       $this->writeLine();
 
       // TODO: This assumes outer namespaces in scope in inner namespaces.
       $this->write('var ' . $name . ' = ' . $exportName . ';'); 
       $this->writeLine();
-      $this->write('(function(' . self::$export . ') {');
+      $this->write('(function(' . DeclarationConverter::$export . ') {');
       $this->writeLine();
       $this->indent();
 
