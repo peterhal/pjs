@@ -109,14 +109,7 @@ var invariant = function(condition, message) {
 
 global.Exception = Error;
 
-
-eval(fs.readFileSync('./t.js').toString());
-
 // Remove the leading 'nodejs'
-// THe First element will be the .js file.
+// The First element will be the .js file.
 var argv = process.argv.slice(1);
-
-  // tokenDumpMain(['', 'Utils/IndentedWriter.hh']);
-  // parseMain(['', 'main.hh']);
-  convertMain(argv);
 
