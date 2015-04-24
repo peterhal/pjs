@@ -3,10 +3,12 @@
 require_once 'Utils/ConsoleErrorReporter.hh';
 require_once 'Utils/SourceFile.hh';
 require_once 'Syntax/Parser.hh';
+require_once 'Syntax/ParseTreeDumper.hh';
 
 use Utils\SourceFile;
 use Utils\ConsoleErrorReporter;
 use Syntax\Parser;
+use Syntax\ParseTreeDumper;
 
 function parseMain(array<string> $argv) : int
 {
@@ -18,9 +20,13 @@ function parseMain(array<string> $argv) : int
     $filename = $argv[$index];
     fwrite(STDOUT, $filename . "\n");
 
-    Parser::parseFile(
+    $tree = Parser::parseFile(
       SourceFile::read($filename), 
       new ConsoleErrorReporter());
+
+    $dumper = new ParseTreeDumper(STDOUT);
+    $dumper->dumpTree($tree);
+    fwrite(STDOUT, "\n");
   }
 
   return 0;
