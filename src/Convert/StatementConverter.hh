@@ -37,7 +37,10 @@ abstract class StatementConverter extends ExpressionConverter
     IndentedWriter $writer)
   {
     parent::__construct($writer);
+    $this->foreachNesting = 0;
   }
+
+  private int $foreachNesting;
 
   public function convertCompoundStatement(
     CompoundStatementTree $tree): void
@@ -106,18 +109,22 @@ abstract class StatementConverter extends ExpressionConverter
 
   public function convertForEachStatement(ForEachStatementTree $tree): void
   {
-    $this->write('for (var __collection = ');
+    $collection = '__collection' . $this->foreachNesting;
+    $index = '__index' . $this->foreachNesting;
+    $this->foreachNesting++;
+    $this->write('for (var ' . $collection . ' = ');
     $this->convertExpression($tree->collection);
-    $this->write(', __index = 0; __index < __collection.length; __index++) {');
+    $this->write(', ' . $index . ' = 0; ' . $index . ' < ' . $collection . '.length; ' . $index . '++) {');
     $this->writeLine();
     if ($tree->key !== null) {
       throw new \Exception('keyed foreach');
     }
-    $this->write('var ' . $tree->value->asVariableName()->name->text() . ' = __collection[__index];');
+    $this->write('var ' . $tree->value->asVariableName()->name->text() . ' = ' . $collection . '[' . $index . '];');
     $this->writeLine();
     $this->convertIndentedStatement($tree->body);
     $this->write('}');
     $this->writeLine();
+    $this->foreachNesting--;
   }
 
   public function convertBreakStatement(BreakStatementTree $tree): void
@@ -185,6 +192,9 @@ abstract class StatementConverter extends ExpressionConverter
   public function convertForStatement(ForStatementTree $tree): void
   {
     $this->write('for (');
+    if ($tree->initializer !== null && self::isLocalVarAssignment($tree->initializer[0])) {
+      $this->write('var ');
+    }
     $this->convertExpressionListOpt($tree->initializer);
     $this->write('; ');
     $this->convertExpressionListOpt($tree->condition);
@@ -221,12 +231,17 @@ abstract class StatementConverter extends ExpressionConverter
     $this->outdent();
   }
 
+  public static function isLocalVarAssignment(ParseTree $tree): bool
+  {
+    return $tree->isBinaryExpression()
+        && $tree->asBinaryExpression()->operator->kind() == TokenKind::EQUAL
+        && $tree->asBinaryExpression()->left->isVariableName();
+  }
+
   public function convertExpressionStatement(ExpressionStatementTree $tree): void
   {
     $expression= $tree->expression;
-    if ($expression->isBinaryExpression()
-        && $expression->asBinaryExpression()->operator->kind() == TokenKind::EQUAL
-        && $expression->asBinaryExpression()->left->isVariableName()) {
+    if (self::isLocalVarAssignment($expression)) {
       $this->write('var ');
     }
     $this->convertExpression($expression);

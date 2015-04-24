@@ -255,8 +255,8 @@ class Lexer extends LexerBase
       $line = $this->getLine();
       $foundEnd = $line === $startIdentifier
         || $line === ($startIdentifier . ';');
-      if ($foundEnd) {
-        $value .= $this->escapeLine($line);
+      if (!$foundEnd) {
+        $value .= $isNowDoc ? $line . "\n" : $this->escapeLine($line);
       }
     } while (!$foundEnd && !$this->eof());
     if (!$foundEnd) {
@@ -329,7 +329,7 @@ class Lexer extends LexerBase
           break;
         }
       } else if ($ch === Char::DOLLAR) {
-        throw new \Exception('variable escapes in heredoc strings.');
+        throw new \Exception($this->location()->toString() . ' variable escapes in heredoc strings.');
       }
       $result .= chr($ch);
     }

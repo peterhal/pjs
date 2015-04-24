@@ -15,7 +15,6 @@
 ./Syntax/Trees.hh
 ./Syntax/Keywords.hh
 ./Syntax/PredefinedName.hh
-./Syntax/ParseTreeGenerator.hh
 ./Syntax/LexerBase.hh
 ./Syntax/ParseTreeDumper.hh
 ./Syntax/Lexer.hh
