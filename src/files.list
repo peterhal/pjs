@@ -30,4 +30,3 @@
 ./convertMain.hh
 ./tokenDumpMain.hh
 ./parseMain.hh
-./main.hh

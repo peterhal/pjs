@@ -1,3 +1,3 @@
 #! /bin/bash
-
-cat files.list | xargs hhvm convertProgram.php > t.js
+HHVM=${HHVM:-hhvm}
+cat files.list | xargs $HHVM convertProgram.php > t.js
