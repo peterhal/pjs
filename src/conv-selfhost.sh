@@ -1,3 +1,3 @@
 #! /bin/bash
-NODEJS={NODEJS:-nodejs}
+NODEJS=${NODEJS:-nodejs}
 cat files.list | xargs $NODEJS convertMain.js > tt.js
