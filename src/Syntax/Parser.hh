@@ -237,7 +237,7 @@ class Parser extends ParserBase
   private function parseExtendsClause(): ?Vector<ParseTree>
   {
     if ($this->eatOpt(TokenKind::KW_EXTENDS)) {
-      return 
+      return
         $this->parseCommaSeparatedList(() ==> $this->parseQualifiedNameType());
     } else {
       return null;
@@ -314,7 +314,6 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::KW_REQUIRE_ONCE);
     $includeFilename = $this->parseExpression();
-    // TODO: SPEC missing ; in grammar
     $this->eat(TokenKind::SEMI_COLON);
 
     return new RequireOnceDirectiveTree(
@@ -328,7 +327,6 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::KW_REQUIRE);
     $includeFilename = $this->parseExpression();
-    // TODO: SPEC missing ; in grammar
     $this->eat(TokenKind::SEMI_COLON);
 
     return new RequireMultipleDirectiveTree(
@@ -339,7 +337,7 @@ class Parser extends ParserBase
   {
     $start = $this->position();
 
-    $useClauses = 
+    $useClauses =
       $this->parseDelimitedCommaSeparatedList(
         TokenKind::KW_USE,
         TokenKind::SEMI_COLON,
@@ -419,7 +417,7 @@ class Parser extends ParserBase
     $base = $this->parseTypeSpecifier();
     if (!Parser::isValidEnumBase($base)) {
       $this->errorLocation(
-        $base->start(), 
+        $base->start(),
         "Invalid enum base. Expected 'int' or 'string'.");
     }
 
@@ -714,7 +712,7 @@ class Parser extends ParserBase
     $start = $this->position();
 
     $this->eat(TokenKind::KW_CONST);
-    if (!$this->peekKind(TokenKind::NAME) 
+    if (!$this->peekKind(TokenKind::NAME)
         || !$this->peekIndexKind(1, TokenKind::EQUAL)) {
       $type = $this->parseTypeSpecifier();
     } else {
@@ -778,7 +776,7 @@ class Parser extends ParserBase
 
     $this->eat(TokenKind::KW_USE);
 
-    $traits = 
+    $traits =
       $this->parseCommaSeparatedList(() ==> $this->parseQualifiedNameType());
 
     return new TraitUseClauseTree(
@@ -1084,7 +1082,6 @@ class Parser extends ParserBase
     $start = $baseName->start();
 
     $this->eat(TokenKind::COLON_COLON);
-    // TODO: SPEC: class??
     $memberName = $this->eatAnyName();
 
     return new ScopeResolutionTree(
@@ -1531,7 +1528,7 @@ class Parser extends ParserBase
   private static Vector<TokenKind> $MULTIPLICATIVE_OPERATORS = Vector {
     TokenKind::STAR,
     TokenKind::FORWARD_SLASH,
-    TokenKind::PERCENT 
+    TokenKind::PERCENT
   };
 
   private function parseMultiplicativeExpression(): ParseTree
@@ -1544,7 +1541,7 @@ class Parser extends ParserBase
   private static Vector<TokenKind> $ADDITIVE_OPERATORS = Vector {
     TokenKind::PLUS,
     TokenKind::MINUS,
-    TokenKind::PERIOD 
+    TokenKind::PERIOD
   };
 
   private function parseAdditiveExpression(): ParseTree
@@ -2060,8 +2057,8 @@ class Parser extends ParserBase
     } while ($this->eatOpt(TokenKind::BACK_SLASH));
 
     return new QualifiedNameTree(
-      $this->getRange($start), 
-      $fullyQualified, 
+      $this->getRange($start),
+      $fullyQualified,
       $names);
   }
 
@@ -2546,7 +2543,7 @@ class Parser extends ParserBase
     }
 
     return new TryStatementTree(
-      $this->getRange($start), 
+      $this->getRange($start),
       $body,
       $catchClauses,
       $finallyClause);
